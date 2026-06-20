@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.env
+.env
+venv/
+.venv/
+instance/
+*.db
+*.sqlite3
+.DS_Store
+Thumbs.db
+models/*.pkl
+models/*.joblib
+data/*.csv
+*.log
