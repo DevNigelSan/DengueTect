@@ -1,0 +1,55 @@
+:root {
+  --blue-deep:    #0D3B7A;
+  --blue-primary: #1A56A0;
+  --blue-mid:     #2E6FBF;
+  --blue-light:   #E8F1FB;
+  --blue-pale:    #F0F4FA;
+  --white:        #FFFFFF;
+  --gray-100:     #F7F9FC;
+  --gray-200:     #E2E8F0;
+  --gray-400:     #94A3B8;
+  --gray-600:     #475569;
+  --gray-800:     #1E293B;
+  --red-alert:    #DC2626;
+  --red-light:    #FEE2E2;
+  --green-safe:   #16A34A;
+  --yellow-warn:  #D97706;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  color: var(--gray-800);
+  background: var(--gray-100);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--blue-deep);
+}
+
+a {
+  color: var(--blue-primary);
+  text-decoration: none;
+}
+
+a:hover { text-decoration: underline; }
+
+button {
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+}
+
+input, select, textarea {
+  font-family: 'Inter', sans-serif;
+}
