@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In{% endblock %}
+
+{% block stylesheet %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}"/>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+
+  <!-- LEFT PANEL -->
+  <aside class="left-panel">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">DengueTect</div>
+        <div class="brand-sub">Marikina City Health Office</div>
+      </div>
+    </div>
+
+    <div class="pulse-wrap">
+      <svg class="pulse-svg" viewBox="0 0 520 80" preserveAspectRatio="none">
+        <path class="pulse-line" d="M0,40 L100,40 L140,40 L150,40 L155,20 L160,60 L165,15 L172,55 L178,40 L220,40 L260,40 L270,40 L275,22 L280,58 L285,17 L292,53 L298,40 L340,40 L380,40 L390,40 L395,20 L400,60 L405,15 L412,55 L418,40 L520,40"/>
+        <path class="pulse-line-active" d="M0,40 L100,40 L140,40 L150,40 L155,20 L160,60 L165,15 L172,55 L178,40 L220,40 L260,40 L270,40 L275,22 L280,58 L285,17 L292,53 L298,40 L340,40 L380,40 L390,40 L395,20 L400,60 L405,15 L412,55 L418,40 L520,40"/>
+      </svg>
+    </div>
+
+    <div class="hero">
+      <p class="hero-eyebrow">Machine Learning · Public Health</p>
+      <h2 class="hero-title">Early dengue alerts for<br><span>Marikina's riverside</span><br>communities.</h2>
+      <p class="hero-desc">
+        A climate-driven forecasting system for Barangays Nangka, Tumana, and Malanday —
+        predicting outbreaks 2–4 weeks ahead so health workers can act before cases peak.
+      </p>
+      <div class="stat-row">
+        <div class="stat-pill">
+          <span class="stat-num">2–4 wks</span>
+          <span class="stat-label">Forecast lead time</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-num">3</span>
+          <span class="stat-label">Target barangays</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-num">11 yrs</span>
+          <span class="stat-label">Historical data</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="left-footer">
+      <div class="locale-badge">
+        <div class="locale-dot"></div>
+        System active · Marikina City, Metro Manila
+      </div>
+    </div>
+  </aside>
+
+  <!-- RIGHT PANEL -->
+  <main class="right-panel">
+    <div class="form-shell">
+
+      <div class="alert-banner">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <div class="alert-text">
+          <strong>Dengue Alert — Marikina City</strong>
+          <p>Elevated case counts reported in target barangays. Check the dashboard for the latest forecast.</p>
+        </div>
+      </div>
+
+      <div class="form-header">
+        <h1>Sign in to your account</h1>
+        <p>Access is restricted to authorized health personnel of the Marikina City Health Office.</p>
+      </div>
+
+      <form id="loginForm" action="/login" method="POST" novalidate>
+
+        <div style="margin-bottom:6px;">
+          <label>Sign in as</label>
+        </div>
+        <div class="role-grid">
+          <label class="role-card selected" id="role-ho">
+            <input type="radio" name="role" value="health_officer" checked/>
+            <span class="role-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </span>
+            <span class="role-info">
+              <span class="role-name">Health Officer</span>
+              <span class="role-desc">Barangay / MCHO</span>
+            </span>
+          </label>
+
+          <label class="role-card" id="role-admin">
+            <input type="radio" name="role" value="admin"/>
+            <span class="role-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+            </span>
+            <span class="role-info">
+              <span class="role-name">IT Admin</span>
+              <span class="role-desc">System management</span>
+            </span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label for="email">Email address</label>
+          <div class="input-wrap">
+            <span class="input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </span>
+            <input type="email" id="email" name="email" placeholder="yourname@marikina.gov.ph" autocomplete="email"/>
+          </div>
+          <p class="field-error" id="email-err">Please enter a valid email address.</p>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </span>
+            <input type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password"/>
+            <button type="button" class="pw-toggle" id="pwToggle" aria-label="Show password">
+              <svg id="eyeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <p class="field-error" id="pw-err">Password is required.</p>
+        </div>
+
+        <div class="form-meta">
+          <label class="remember">
+            <input type="checkbox" name="remember"/> Remember me
+          </label>
+          <a href="#" class="forgot">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn-login">Sign in to DengueTect</button>
+      </form>
+
+      <div class="divider">
+        <div class="divider-line"></div>
+        <span class="divider-text">Need help?</span>
+        <div class="divider-line"></div>
+      </div>
+
+      <div class="help-row">
+        <a href="#" class="help-link">Request access</a>
+        <a href="#" class="help-link">Contact IT support</a>
+        <a href="#" class="help-link">User guide</a>
+      </div>
+
+      <div class="right-footer">
+        <p>DengueTect v1.0 · Eulogio "Amang" Rodriguez Institute of Science and Technology</p>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+{% endblock %}
