@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}"/>
+{% endblock %}
+
+{% block content %}
+<div class="app-shell">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+      <span class="nav-title">DengueTect</span>
+      <span class="nav-sub">Marikina CHO</span>
+    </div>
+
+    <div class="nav-center">
+      <div class="barangay-tabs">
+        <button class="btab active" data-barangay="nangka">Nangka</button>
+        <button class="btab" data-barangay="tumana">Tumana</button>
+        <button class="btab" data-barangay="malanday">Malanday</button>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <div class="nav-user">
+        <div class="user-avatar">HO</div>
+        <div class="user-info">
+          <span class="user-name">Health Officer</span>
+          <span class="user-role">Marikina CHO</span>
+        </div>
+      </div>
+      <a href="/login" class="btn-logout">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Sign out
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Forecast Dashboard</h1>
+        <p class="page-sub">Dengue outbreak predictions for flood-prone barangays · Updated weekly</p>
+      </div>
+      <div class="header-meta">
+        <span class="last-updated">Last updated: <strong>June 21, 2026</strong></span>
+      </div>
+    </div>
+
+    <!-- ALERT TIER BANNER -->
+    <div class="alert-tier high" id="alertBanner">
+      <div class="tier-left">
+        <div class="tier-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div class="tier-text">
+          <strong>HIGH RISK — Barangay Nangka</strong>
+          <p>Outbreak probability exceeds 75%. Immediate response recommended.</p>
+        </div>
+      </div>
+      <div class="tier-badge">HIGH</div>
+    </div>
+
+    <!-- FORECAST CARDS -->
+    <div class="forecast-grid">
+
+      <div class="forecast-card primary">
+        <div class="card-eyebrow">Random Forest · Case Prediction</div>
+        <div class="card-value">47</div>
+        <div class="card-label">Projected cases in the next 2 weeks</div>
+        <div class="card-trend up">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="18 15 12 9 6 15"/>
+          </svg>
+          +12 from last forecast
+        </div>
+      </div>
+
+      <div class="forecast-card secondary">
+        <div class="card-eyebrow">Logistic Regression · Outbreak Risk</div>
+        <div class="card-value">82<span class="card-unit">%</span></div>
+        <div class="card-label">Probability of outbreak this period</div>
+        <div class="risk-bar-wrap">
+          <div class="risk-bar">
+            <div class="risk-fill" style="width: 82%"></div>
+          </div>
+          <span class="risk-pct">82%</span>
+        </div>
+      </div>
+
+      <div class="forecast-card tertiary">
+        <div class="card-eyebrow">Forecast Window</div>
+        <div class="card-value">2–4<span class="card-unit">wks</span></div>
+        <div class="card-label">Lead time ahead of outbreak</div>
+        <div class="card-meta">Week of June 21 – July 5</div>
+      </div>
+
+    </div>
+
+    <!-- CLIMATE SNAPSHOT -->
+    <div class="section-title">Climate Inputs <span>· 4-week lag applied</span></div>
+    <div class="climate-grid">
+      <div class="climate-card">
+        <div class="climate-icon rain">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="16" y1="13" x2="16" y2="21"/><line x1="8" y1="13" x2="8" y2="21"/>
+            <line x1="12" y1="15" x2="12" y2="23"/>
+            <path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/>
+          </svg>
+        </div>
+        <div class="climate-value">182<span>mm</span></div>
+        <div class="climate-label">Rainfall</div>
+      </div>
+
+      <div class="climate-card">
+        <div class="climate-icon temp">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+          </svg>
+        </div>
+        <div class="climate-value">31.4<span>°C</span></div>
+        <div class="climate-label">Temperature</div>
+      </div>
+
+      <div class="climate-card">
+        <div class="climate-icon humid">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+          </svg>
+        </div>
+        <div class="climate-value">87<span>%</span></div>
+        <div class="climate-label">Humidity</div>
+      </div>
+    </div>
+
+    <!-- RECENT FORECASTS TABLE -->
+    <div class="section-title">Recent Forecasts <span>· Barangay Nangka</span></div>
+    <div class="table-wrap">
+      <table class="forecast-table">
+        <thead>
+          <tr>
+            <th>Week</th>
+            <th>Predicted Cases</th>
+            <th>Outbreak Probability</th>
+            <th>Risk Level</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Jun 21 – Jun 28</td>
+            <td>47</td>
+            <td>82%</td>
+            <td><span class="badge high">High</span></td>
+            <td><span class="status-dot active"></span> Current</td>
+          </tr>
+          <tr>
+            <td>Jun 14 – Jun 21</td>
+            <td>35</td>
+            <td>68%</td>
+            <td><span class="badge moderate">Moderate</span></td>
+            <td>Completed</td>
+          </tr>
+          <tr>
+            <td>Jun 7 – Jun 14</td>
+            <td>21</td>
+            <td>41%</td>
+            <td><span class="badge low">Low</span></td>
+            <td>Completed</td>
+          </tr>
+          <tr>
+            <td>May 31 – Jun 7</td>
+            <td>18</td>
+            <td>35%</td>
+            <td><span class="badge low">Low</span></td>
+            <td>Completed</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
