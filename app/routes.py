@@ -19,3 +19,10 @@ def login():
 @main.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html')
+
+@main.route('/input', methods=['GET', 'POST'])
+def climate_input():
+    if request.method == 'POST':
+        # TODO: pass form data to ML model
+        return redirect(url_for('main.dashboard'))
+    return render_template('climate_input.html')
