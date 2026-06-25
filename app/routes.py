@@ -24,5 +24,10 @@ def dashboard():
 def climate_input():
     if request.method == 'POST':
         # TODO: pass form data to ML model
-        return redirect(url_for('main.dashboard'))
+        return redirect(url_for('main.forecast_result'))
     return render_template('climate_input.html')
+
+@main.route('/result')
+def forecast_result():
+    # TODO: receive model output and pass to template
+    return render_template('forecast_result.html')
