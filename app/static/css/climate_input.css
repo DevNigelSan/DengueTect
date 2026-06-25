@@ -299,21 +299,28 @@ input::placeholder { color: var(--gray-400); }
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 11px 24px;
+  padding: 13px 32px;
   background: var(--blue-primary);
   color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 9px;
+  font-size: 15px;
   font-family: 'DM Sans', sans-serif;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.15s, box-shadow 0.15s;
+  transition: background 0.18s, box-shadow 0.18s, transform 0.1s;
+  box-shadow: 0 4px 14px rgba(26,86,160,0.35);
+  letter-spacing: 0.2px;
 }
 
 .btn-forecast:hover {
   background: var(--blue-deep);
-  box-shadow: 0 4px 14px rgba(13,59,122,0.3);
+  box-shadow: 0 6px 20px rgba(13,59,122,0.4);
+  transform: translateY(-1px);
+}
+
+.btn-forecast:active {
+  transform: scale(0.98);
 }
 
 /* ── INFO PANEL ── */
