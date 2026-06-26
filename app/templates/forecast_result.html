@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block title %}Forecast Result{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/forecast_result.css') }}"/>
+{% endblock %}
+
+{% block content %}
+<div class="app-shell">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+      <div class="nav-brand-text">
+        <span class="nav-title">DengueTect</span>
+        <span class="nav-sub">Marikina City Health Office</span>
+      </div>
+    </div>
+
+    <div class="nav-center">
+      <div class="nav-links">
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/input" class="nav-link">Climate Input</a>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <div class="nav-status">
+        <span class="status-pulse"></span>
+        <span class="status-text">Live</span>
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-user">
+        <div class="user-avatar">HO</div>
+        <div class="user-info">
+          <span class="user-name">Health Officer</span>
+          <span class="user-role">Marikina CHO</span>
+        </div>
+      </div>
+      <a href="/login" class="btn-logout">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Sign out
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Forecast Result</h1>
+        <p class="page-sub">Generated report · Barangay Nangka · Week of June 21, 2026</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-print" onclick="window.print()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"/>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+            <rect x="6" y="14" width="12" height="8"/>
+          </svg>
+          Print Report
+        </button>
+        <a href="/input" class="btn-back">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          New Forecast
+        </a>
+      </div>
+    </div>
+
+    <!-- REPORT BODY -->
+    <div class="report-wrap">
+
+      <!-- REPORT HEADER -->
+      <div class="report-header">
+        <div class="report-header-left">
+          <div class="report-logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+          <div>
+            <div class="report-system-name">DengueTect Forecasting System</div>
+            <div class="report-org">Marikina City Health Office · EARIST</div>
+          </div>
+        </div>
+        <div class="report-header-right">
+          <div class="report-meta-row">
+            <span class="report-meta-label">Report ID</span>
+            <span class="report-meta-val">#RPT-2026-0621-001</span>
+          </div>
+          <div class="report-meta-row">
+            <span class="report-meta-label">Generated</span>
+            <span class="report-meta-val">June 21, 2026 · 10:44 AM</span>
+          </div>
+          <div class="report-meta-row">
+            <span class="report-meta-label">Officer</span>
+            <span class="report-meta-val">Health Officer, Marikina CHO</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RISK VERDICT -->
+      <div class="verdict-block high">
+        <div class="verdict-left">
+          <div class="verdict-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <div>
+            <div class="verdict-label">OUTBREAK RISK LEVEL</div>
+            <div class="verdict-level">HIGH RISK</div>
+            <div class="verdict-brgy">Barangay Nangka · June 21 – July 5, 2026</div>
+          </div>
+        </div>
+        <div class="verdict-score">
+          <div class="verdict-score-num">82<span>%</span></div>
+          <div class="verdict-score-label">Outbreak Probability</div>
+        </div>
+      </div>
+
+      <!-- TWO COLUMN RESULTS -->
+      <div class="report-results-grid">
+
+        <!-- Random Forest -->
+        <div class="result-card">
+          <div class="result-card-header">
+            <div class="result-model-badge rf">Random Forest</div>
+            <div class="result-type">Case Count Prediction</div>
+          </div>
+          <div class="result-main">
+            <div class="result-number">47</div>
+            <div class="result-unit">projected cases</div>
+          </div>
+          <div class="result-detail-row">
+            <div class="result-detail">
+              <div class="rd-label">Forecast window</div>
+              <div class="rd-val">2 weeks</div>
+            </div>
+            <div class="result-detail">
+              <div class="rd-label">vs. last period</div>
+              <div class="rd-val trend-up">+12 cases</div>
+            </div>
+            <div class="result-detail">
+              <div class="rd-label">Model accuracy</div>
+              <div class="rd-val">R² = 0.87</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logistic Regression -->
+        <div class="result-card">
+          <div class="result-card-header">
+            <div class="result-model-badge lr">Logistic Regression</div>
+            <div class="result-type">Outbreak Classification</div>
+          </div>
+          <div class="result-main">
+            <div class="result-number">82<span class="result-pct">%</span></div>
+            <div class="result-unit">outbreak probability</div>
+          </div>
+          <div class="prob-bar-wrap">
+            <div class="prob-bar">
+              <div class="prob-fill high" style="width:82%"></div>
+            </div>
+            <span class="prob-label high">High likelihood</span>
+          </div>
+          <div class="result-detail-row" style="margin-top:12px">
+            <div class="result-detail">
+              <div class="rd-label">Classification</div>
+              <div class="rd-val">Outbreak</div>
+            </div>
+            <div class="result-detail">
+              <div class="rd-label">Threshold</div>
+              <div class="rd-val">≥ 50%</div>
+            </div>
+            <div class="result-detail">
+              <div class="rd-label">Model F1</div>
+              <div class="rd-val">0.91</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- CLIMATE INPUTS USED -->
+      <div class="report-section">
+        <div class="report-section-title">Climate Inputs Used</div>
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Variable</th>
+              <th>Week −4</th>
+              <th>Week −3</th>
+              <th>Week −2</th>
+              <th>Week −1</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Rainfall (mm)</strong></td>
+              <td>145.2</td>
+              <td>162.8</td>
+              <td>175.0</td>
+              <td>182.4</td>
+            </tr>
+            <tr>
+              <td><strong>Temperature (°C)</strong></td>
+              <td>29.8</td>
+              <td>30.4</td>
+              <td>31.0</td>
+              <td>31.4</td>
+            </tr>
+            <tr>
+              <td><strong>Humidity (%)</strong></td>
+              <td>81.0</td>
+              <td>83.5</td>
+              <td>85.2</td>
+              <td>87.0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- RECOMMENDED ACTIONS -->
+      <div class="report-section">
+        <div class="report-section-title">Recommended Actions</div>
+        <div class="action-list">
+          <div class="action-item high">
+            <div class="action-num">1</div>
+            <div class="action-text">
+              <strong>Activate barangay health response team</strong> — coordinate with Marikina CHO for immediate deployment of health workers to Barangay Nangka.
+            </div>
+          </div>
+          <div class="action-item high">
+            <div class="action-num">2</div>
+            <div class="action-text">
+              <strong>Conduct emergency fogging operations</strong> — prioritize flood-prone zones and areas with standing water near the Marikina River.
+            </div>
+          </div>
+          <div class="action-item high">
+            <div class="action-num">3</div>
+            <div class="action-text">
+              <strong>Issue community health advisory</strong> — distribute information materials on dengue prevention and early symptom recognition.
+            </div>
+          </div>
+          <div class="action-item moderate">
+            <div class="action-num">4</div>
+            <div class="action-text">
+              <strong>Increase case surveillance frequency</strong> — shift from weekly to daily case reporting for the next two weeks.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORT FOOTER -->
+      <div class="report-footer">
+        <p>This forecast was generated automatically by DengueTect v1.0 using Random Forest and Logistic Regression models trained on 2015–2026 epidemiological and climate data. Results are intended to support — not replace — professional public health judgment.</p>
+        <div class="report-footer-meta">
+          <span>DengueTect v1.0</span>
+          <span>·</span>
+          <span>EARIST — Group 10</span>
+          <span>·</span>
+          <span>Confidential — For authorized personnel only</span>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/forecast_result.js') }}"></script>
+{% endblock %}
