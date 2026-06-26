@@ -117,3 +117,51 @@
   color: var(--blue-primary);
   text-decoration: none;
 }
+
+/* ── Forecast Loader Overlay ── */
+#forecast-loader {
+  position: fixed;
+  inset: 0;
+  background: rgba(13,59,122,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.loader-box {
+  text-align: center;
+}
+
+.loader-ekg {
+  width: 220px;
+  height: 70px;
+  overflow: visible;
+  margin-bottom: 20px;
+}
+
+.loader-ekg path {
+  fill: none;
+  stroke: #60C8FF;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: drawEkg 1.6s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(96,200,255,0.6));
+}
+
+.loader-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 6px;
+}
+
+.loader-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+}
