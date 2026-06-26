@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/errors.css') }}"/>
+{% endblock %}
+
+{% block content %}
+<div class="app-shell">
+
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+      <div class="nav-brand-text">
+        <span class="nav-title">DengueTect</span>
+        <span class="nav-sub">Marikina City Health Office</span>
+      </div>
+    </div>
+    <div class="nav-right">
+      <a href="/login" class="btn-logout">Sign out</a>
+    </div>
+  </nav>
+
+  <main class="error-main">
+    <div class="error-wrap">
+      <div class="error-code">404</div>
+      <div class="error-pulse">
+        <svg viewBox="0 0 200 60" preserveAspectRatio="none">
+          <path class="error-ekg" d="M0,30 L40,30 L55,30 L60,10 L65,50 L70,5 L77,45 L82,30 L120,30 L160,30 L200,30"/>
+        </svg>
+      </div>
+      <h1 class="error-title">Page not found</h1>
+      <p class="error-desc">The page you're looking for doesn't exist or you don't have permission to access it.</p>
+      <div class="error-actions">
+        <a href="/dashboard" class="btn-forecast">Go to Dashboard</a>
+        <a href="/input" class="btn-back">New Forecast</a>
+      </div>
+    </div>
+  </main>
+
+</div>
+{% endblock %}
