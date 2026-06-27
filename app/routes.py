@@ -31,3 +31,7 @@ def climate_input():
 def forecast_result():
     # TODO: receive model output and pass to template
     return render_template('forecast_result.html')
+
+@main.route('/history')
+def history():
+    return render_template('history.html')
