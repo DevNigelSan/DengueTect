@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Forecast History{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}"/>
+{% endblock %}
+
+{% block content %}
+<div class="app-shell">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+      <div class="nav-brand-text">
+        <span class="nav-title">DengueTect</span>
+        <span class="nav-sub">Marikina City Health Office</span>
+      </div>
+    </div>
+
+    <div class="nav-center">
+      <div class="nav-links">
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/input" class="nav-link">Climate Input</a>
+        <a href="/history" class="nav-link active">History</a>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <div class="nav-status">
+        <span class="status-pulse"></span>
+        <span class="status-text">Live</span>
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-user">
+        <div class="user-avatar">HO</div>
+        <div class="user-info">
+          <span class="user-name">Health Officer</span>
+          <span class="user-role">Marikina CHO</span>
+        </div>
+      </div>
+      <a href="/login" class="btn-logout">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Sign out
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Forecast History</h1>
+        <p class="page-sub">Complete log of past dengue outbreak forecasts by barangay</p>
+      </div>
+      <button class="btn-print" onclick="window.print()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 6 2 18 2 18 9"/>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+          <rect x="6" y="14" width="12" height="8"/>
+        </svg>
+        Export
+      </button>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label for="filter-brgy">Barangay</label>
+        <select id="filter-brgy" onchange="filterHistory()">
+          <option value="all">All Barangays</option>
+          <option value="nangka">Barangay Nangka</option>
+          <option value="tumana">Barangay Tumana</option>
+          <option value="malanday">Barangay Malanday</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="filter-risk">Risk Level</label>
+        <select id="filter-risk" onchange="filterHistory()">
+          <option value="all">All Levels</option>
+          <option value="high">High</option>
+          <option value="moderate">Moderate</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="filter-from">From</label>
+        <input type="date" id="filter-from"/>
+      </div>
+      <div class="filter-group">
+        <label for="filter-to">To</label>
+        <input type="date" id="filter-to"/>
+      </div>
+      <button class="btn-filter" onclick="filterHistory()">Apply Filter</button>
+      <button class="btn-clear-filter" onclick="clearFilters()">Clear</button>
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="summary-row">
+      <div class="summary-card">
+        <div class="summary-num" id="totalForecasts">24</div>
+        <div class="summary-label">Total Forecasts</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num red" id="highRiskWeeks">8</div>
+        <div class="summary-label">High Risk Weeks</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num yellow" id="moderateWeeks">10</div>
+        <div class="summary-label">Moderate Risk Weeks</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num green" id="lowWeeks">6</div>
+        <div class="summary-label">Low Risk Weeks</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num" id="avgProb">61%</div>
+        <div class="summary-label">Avg. Outbreak Probability</div>
+      </div>
+    </div>
+
+    <!-- HISTORY TABLE -->
+    <div class="table-panel">
+      <div class="panel-header">
+        <div class="panel-title">Forecast Records</div>
+        <div class="panel-sub" id="recordCount">Showing 24 records</div>
+      </div>
+      <div class="table-wrap">
+        <table class="forecast-table" id="historyTable">
+          <thead>
+            <tr>
+              <th>Week</th>
+              <th>Barangay</th>
+              <th>Predicted Cases</th>
+              <th>Probability</th>
+              <th>Risk Level</th>
+              <th>Rainfall (mm)</th>
+              <th>Temp (°C)</th>
+              <th>Humidity (%)</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody">
+            <tr data-brgy="nangka" data-risk="high">
+              <td>Jun 21 – Jun 28, 2026</td>
+              <td>Nangka</td>
+              <td><strong>47</strong></td>
+              <td>82%</td>
+              <td><span class="badge high">High</span></td>
+              <td>182.4</td><td>31.4</td><td>87.0</td>
+              <td><a href="/result" class="tbl-link">View</a></td>
+            </tr>
+            <tr data-brgy="tumana" data-risk="moderate">
+              <td>Jun 21 – Jun 28, 2026</td>
+              <td>Tumana</td>
+              <td>28</td>
+              <td>61%</td>
+              <td><span class="badge moderate">Moderate</span></td>
+              <td>165.0</td><td>30.8</td><td>83.0</td>
+              <td><a href="/result" class="tbl-link">View</a></td>
+            </tr>
+            <tr data-brgy="malanday" data-risk="low">
+              <td>Jun 21 – Jun 28, 2026</td>
+              <td>Malanday</td>
+              <td>14</td>
+              <td>33%</td>
+              <td><span class="badge low">Low</span></td>
+              <td>140.0</td><td>30.1</td><td>79.0</td>
+              <td><a href="/result" class="tbl-link">View</a></td>
+            </tr>
+            <tr data-brgy="nangka" data-risk="moderate">
+              <td>Jun 14 – Jun 21, 2026</td>
+              <td>Nangka</td>
+              <td>35</td>
+              <td>68%</td>
+              <td><span class="badge moderate">Moderate</span></td>
+              <td>175.0</td><td>31.0</td><td>85.2</td>
+              <td><a href="/result" class="tbl-link">View</a></td>
+            </tr>
+            <tr data-brgy="tumana" data-risk="moderate">
+              <td>Jun 14 – Jun 21, 2026</td>
+              <td>Tumana</td>
+              <td>22</td>
+              <td>54%</td>
+              <td><span class="badge moderate">Moderate</span></td>
+              <td>158.0</td><td>30.5</td><td>81.0</td>
+              <td><a href="/result" class="tbl-link">View</a></td>
+            </tr>
+            <tr data-brgy="malanday" data-risk="low">
+              <td>Jun 14 – Jun 21, 2026</td>
+              <td>Malanday</td>
+              <td>11</td>
+              <td>28%</td>
+              <td><span class="badge low">Low</span></td>
+              <td>132.0</td><td>29.8</td><td>77.0</td>
+              <td><a href="/result" class="tbl-link">View</a></td>
+            </tr>
+            <tr data-brgy="nangka" data-risk="low">
+              <td>Jun 7 – Jun 14, 2026</td>
+              <td>Nangka</td>
+              <td>21</td>
+              <td>41%</td>
+              <td><span class="badge low">Low</span></td>
+              <td>162.8</td><td>30.4</td><td>83.5</td>
+              <td><a href="/result" class="tbl-link">View</a></td>
+            </tr>
+            <tr data-brgy="nangka" data-risk="high">
+              <td>May 31 – Jun 7, 2026</td>
+              <td>Nangka</td>
+              <td>52</td>
+              <td>88%</td>
+              <td><span class="badge high">High</span></td>
+              <td>190.2</td><td>32.1</td><td>89.0</td>
+              <td><a href="/result" class="tbl-link">View</a></td>
+            </tr>
+            <tr data-brgy="tumana" data-risk="high">
+              <td>May 31 – Jun 7, 2026</td>
+              <td>Tumana</td>
+              <td>38</td>
+              <td>74%</td>
+              <td><span class="badge high">High</span></td>
+              <td>178.5</td><td>31.6</td><td>86.0</td>
+              <td><a href="/result" class="tbl-link">View</a></td>
+            </tr>
+            <tr data-brgy="malanday" data-risk="moderate">
+              <td>May 31 – Jun 7, 2026</td>
+              <td>Malanday</td>
+              <td>24</td>
+              <td>57%</td>
+              <td><span class="badge moderate">Moderate</span></td>
+              <td>155.0</td><td>30.9</td><td>82.0</td>
+              <td><a href="/result" class="tbl-link">View</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/history.js') }}"></script>
+{% endblock %}
