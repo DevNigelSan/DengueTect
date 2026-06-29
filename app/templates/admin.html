@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}"/>
+{% endblock %}
+
+{% block content %}
+<div class="app-shell">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+      <div class="nav-brand-text">
+        <span class="nav-title">DengueTect</span>
+        <span class="nav-sub">Marikina City Health Office</span>
+      </div>
+    </div>
+
+    <div class="nav-center">
+      <div class="nav-links">
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/input" class="nav-link">Climate Input</a>
+        <a href="/history" class="nav-link">History</a>
+        <a href="/admin" class="nav-link active">Admin</a>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <div class="nav-status">
+        <span class="status-pulse"></span>
+        <span class="status-text">Live</span>
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-user">
+        <div class="user-avatar">AD</div>
+        <div class="user-info">
+          <span class="user-name">IT Admin</span>
+          <span class="user-role">System Management</span>
+        </div>
+      </div>
+      <a href="/login" class="btn-logout">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Sign out
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Admin Panel</h1>
+        <p class="page-sub">System management · User accounts · Model configuration</p>
+      </div>
+      <div class="admin-role-badge">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        IT Admin Access
+      </div>
+    </div>
+
+    <!-- SYSTEM STATS -->
+    <div class="admin-stats-row">
+      <div class="admin-stat-card">
+        <div class="asc-icon blue">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="asc-info">
+          <div class="asc-num">6</div>
+          <div class="asc-label">Registered Users</div>
+        </div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="asc-icon green">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <div class="asc-info">
+          <div class="asc-num">24</div>
+          <div class="asc-label">Forecasts Generated</div>
+        </div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="asc-icon yellow">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="asc-info">
+          <div class="asc-num">v1.0</div>
+          <div class="asc-label">System Version</div>
+        </div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="asc-icon red">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div class="asc-info">
+          <div class="asc-num">3</div>
+          <div class="asc-label">Active Alerts</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN GRID -->
+    <div class="admin-grid">
+
+      <!-- USER MANAGEMENT -->
+      <div class="admin-panel">
+        <div class="panel-header">
+          <div class="panel-title">User Accounts</div>
+          <button class="btn-add-user" onclick="showAddUser()">+ Add User</button>
+        </div>
+
+        <div class="user-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-dot">HO</div>
+                    Maria Santos
+                  </div>
+                </td>
+                <td>m.santos@marikina.gov.ph</td>
+                <td><span class="role-tag ho">Health Officer</span></td>
+                <td><span class="status-tag active">Active</span></td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn-edit">Edit</button>
+                    <button class="btn-deactivate">Deactivate</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-dot">HO</div>
+                    Juan dela Cruz
+                  </div>
+                </td>
+                <td>j.delacruz@marikina.gov.ph</td>
+                <td><span class="role-tag ho">Health Officer</span></td>
+                <td><span class="status-tag active">Active</span></td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn-edit">Edit</button>
+                    <button class="btn-deactivate">Deactivate</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-dot">HO</div>
+                    Ana Reyes
+                  </div>
+                </td>
+                <td>a.reyes@marikina.gov.ph</td>
+                <td><span class="role-tag ho">Health Officer</span></td>
+                <td><span class="status-tag inactive">Inactive</span></td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn-edit">Edit</button>
+                    <button class="btn-activate">Activate</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-dot admin">AD</div>
+                    IT Admin
+                  </div>
+                </td>
+                <td>admin@marikina.gov.ph</td>
+                <td><span class="role-tag admin">IT Admin</span></td>
+                <td><span class="status-tag active">Active</span></td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn-edit">Edit</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="admin-right">
+
+        <!-- MODEL CONFIG -->
+        <div class="admin-panel">
+          <div class="panel-header">
+            <div class="panel-title">Model Configuration</div>
+          </div>
+          <div class="config-list">
+            <div class="config-item">
+              <div class="config-info">
+                <div class="config-name">Random Forest</div>
+                <div class="config-desc">Case count prediction model</div>
+              </div>
+              <div class="config-right">
+                <div class="config-val">n=100 trees</div>
+                <span class="model-status active">Loaded</span>
+              </div>
+            </div>
+            <div class="config-item">
+              <div class="config-info">
+                <div class="config-name">Logistic Regression</div>
+                <div class="config-desc">Outbreak classification model</div>
+              </div>
+              <div class="config-right">
+                <div class="config-val">threshold=0.5</div>
+                <span class="model-status active">Loaded</span>
+              </div>
+            </div>
+            <div class="config-item">
+              <div class="config-info">
+                <div class="config-name">Lag Window</div>
+                <div class="config-desc">Climate variable lag applied</div>
+              </div>
+              <div class="config-right">
+                <div class="config-val">4 weeks</div>
+                <span class="model-status neutral">Config</span>
+              </div>
+            </div>
+            <div class="config-item">
+              <div class="config-info">
+                <div class="config-name">Alert Threshold</div>
+                <div class="config-desc">High risk classification cutoff</div>
+              </div>
+              <div class="config-right">
+                <div class="config-val">≥ 75%</div>
+                <span class="model-status neutral">Config</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SYSTEM LOG -->
+        <div class="admin-panel">
+          <div class="panel-header">
+            <div class="panel-title">System Log</div>
+            <div class="panel-sub">Last 5 events</div>
+          </div>
+          <div class="log-list">
+            <div class="log-item">
+              <div class="log-dot green"></div>
+              <div class="log-text">
+                <div class="log-msg">Forecast generated — Brgy. Nangka</div>
+                <div class="log-time">Jun 21, 2026 · 10:44 AM</div>
+              </div>
+            </div>
+            <div class="log-item">
+              <div class="log-dot green"></div>
+              <div class="log-text">
+                <div class="log-msg">User login — m.santos@marikina.gov.ph</div>
+                <div class="log-time">Jun 21, 2026 · 10:41 AM</div>
+              </div>
+            </div>
+            <div class="log-item">
+              <div class="log-dot yellow"></div>
+              <div class="log-text">
+                <div class="log-msg">High risk alert triggered — Brgy. Nangka</div>
+                <div class="log-time">Jun 21, 2026 · 10:44 AM</div>
+              </div>
+            </div>
+            <div class="log-item">
+              <div class="log-dot green"></div>
+              <div class="log-text">
+                <div class="log-msg">Forecast generated — Brgy. Tumana</div>
+                <div class="log-time">Jun 21, 2026 · 09:30 AM</div>
+              </div>
+            </div>
+            <div class="log-item">
+              <div class="log-dot red"></div>
+              <div class="log-text">
+                <div class="log-msg">Failed login attempt — unknown user</div>
+                <div class="log-time">Jun 20, 2026 · 11:12 PM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}
