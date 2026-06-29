@@ -35,3 +35,7 @@ def forecast_result():
 @main.route('/history')
 def history():
     return render_template('history.html')
+
+@main.route('/admin')
+def admin():
+    return render_template('admin.html')
