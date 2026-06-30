@@ -9,8 +9,11 @@ DengueTect is a machine learning-powered web application that forecasts dengue o
 - Random Forest model for weekly case count prediction
 - Logistic Regression model for outbreak probability classification
 - Tiered alert system: Low / Moderate / High risk
-- Climate input dashboard: rainfall, temperature, humidity (4-week lag)
+- Climate input form with 4-week lag variable entry
 - Barangay-level switching for targeted monitoring
+- Forecast history log with filtering by barangay and risk level
+- Printable forecast result reports
+- Admin panel for user management and model configuration
 
 ## Tech Stack
 - Python 3.14 / Flask 3.x
@@ -26,10 +29,24 @@ python run.py
 
 Then open `http://127.0.0.1:5000` in your browser.
 
+## Pages
+- `/` → redirects to login
+- `/login` → login page
+- `/dashboard` → forecast dashboard
+- `/input` → climate data input form
+- `/result` → forecast result report
+- `/history` → forecast history log
+- `/admin` → admin panel
+
 ## Status
 - [x] Project structure
 - [x] Login page
 - [x] Forecast dashboard
+- [x] Climate input form
+- [x] Forecast result report
+- [x] Forecast history page
+- [x] Admin panel
+- [x] 404 error page
 - [ ] ML model integration
 - [ ] Climate data pipeline
 - [ ] User authentication
