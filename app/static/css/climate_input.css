@@ -205,10 +205,10 @@ input::placeholder { color: var(--gray-400); }
 /* ── CLIMATE INPUT GRID ── */
 .week-grid-header {
   display: grid;
-  grid-template-columns: 180px repeat(4, 1fr);
+  grid-template-columns: 190px repeat(4, 1fr);
   gap: 10px;
-  margin-bottom: 10px;
-  padding: 0 4px;
+  margin-bottom: 8px;
+  padding: 0 14px;
 }
 
 .wgh-label {
@@ -222,16 +222,15 @@ input::placeholder { color: var(--gray-400); }
 
 .climate-input-row {
   display: grid;
-  grid-template-columns: 180px repeat(4, 1fr);
+  grid-template-columns: 190px repeat(4, 1fr);
   gap: 10px;
   align-items: center;
-  margin-bottom: 12px;
-  padding: 12px;
+  margin-bottom: 10px;
+  padding: 12px 14px;
   background: var(--gray-100);
   border-radius: 10px;
   border: 1px solid var(--gray-200);
 }
-
 .climate-input-row:last-child { margin-bottom: 0; }
 
 .cir-label {
@@ -264,9 +263,9 @@ input::placeholder { color: var(--gray-400); }
 .cir-icon.humid { background: #F0FDF4; color: var(--green-safe); }
 
 .climate-input-row input[type="number"] {
-  padding: 9px 12px;
+  padding: 9px 10px;
   text-align: center;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
 }
 
