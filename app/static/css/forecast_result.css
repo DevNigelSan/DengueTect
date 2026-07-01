@@ -161,8 +161,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 28px 32px;
-  border-bottom: 1.5px solid var(--gray-200);
+  padding: 28px 32px 24px;
+  border-bottom: 3px solid var(--gray-200);
 }
 
 .verdict-block.high     { background: #FEF2F2; }
@@ -247,11 +247,21 @@
   grid-template-columns: 1fr 1fr;
   gap: 0;
   border-bottom: 1.5px solid var(--gray-200);
+  background: var(--gray-100);
 }
 
 .result-card {
   padding: 28px 32px;
   border-right: 1px solid var(--gray-200);
+  background: var(--white);
+  margin: 12px;
+  margin-right: 0;
+  border-radius: 12px;
+  border: 1.5px solid var(--gray-200);
+}
+
+.result-card:last-child {
+  margin-right: 12px;
 }
 
 .result-card:last-child { border-right: none; }
