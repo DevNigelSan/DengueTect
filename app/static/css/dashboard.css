@@ -318,8 +318,8 @@
 .forecast-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 18px;
+  margin-bottom: 28px;
 }
 
 .forecast-card {
@@ -365,10 +365,10 @@
 
 .fcard-number {
   font-family: 'DM Sans', sans-serif;
-  font-size: 58px;
+  font-size: 52px;
   font-weight: 700;
   line-height: 1;
-  letter-spacing: -3px;
+  letter-spacing: -2px;
   color: var(--blue-deep);
 }
 
@@ -452,8 +452,8 @@
 /* ── LOWER GRID ── */
 .lower-grid {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 16px;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
 }
 
 /* ── PANELS ── */
