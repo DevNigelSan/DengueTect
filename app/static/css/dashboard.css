@@ -10,8 +10,8 @@
 /* ── NAVBAR ── */
 .navbar {
   background: var(--blue-deep);
-  padding: 0 36px;
-  height: 64px;
+  padding: 0 40px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -19,7 +19,7 @@
   top: 0;
   z-index: 100;
   border-bottom: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 2px 16px rgba(13,59,122,0.3);
+  box-shadow: 0 2px 12px rgba(13,59,122,0.25);
 }
 
 .nav-brand {
@@ -48,10 +48,10 @@
 
 .nav-title {
   font-family: 'DM Sans', sans-serif;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--white);
-  letter-spacing: -0.3px;
+  letter-spacing: -0.2px;
   line-height: 1.2;
 }
 
