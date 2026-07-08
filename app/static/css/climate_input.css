@@ -72,8 +72,8 @@
 .form-section {
   background: var(--white);
   border: 1.5px solid var(--gray-200);
-  border-radius: 14px;
-  padding: 24px;
+  border-radius: 12px;
+  padding: 22px 24px;
 }
 
 .form-section-header {
@@ -334,8 +334,8 @@ input::placeholder { color: var(--gray-400); }
 .info-card {
   background: var(--white);
   border: 1.5px solid var(--gray-200);
-  border-radius: 14px;
-  padding: 20px;
+  border-radius: 12px;
+  padding: 18px 20px;
 }
 
 .info-card-title {
