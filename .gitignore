@@ -11,5 +11,6 @@ instance/
 Thumbs.db
 models/*.pkl
 models/*.joblib
+data/raw/
 data/*.csv
 *.log
