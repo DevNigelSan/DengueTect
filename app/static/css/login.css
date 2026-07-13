@@ -223,6 +223,12 @@
   margin-bottom: 32px;
 }
 
+.alert-banner.info {
+  background: var(--blue-light);
+  border: 1px solid #BFD9F5;
+  border-left: 3px solid var(--blue-primary);
+}
+
 .alert-banner svg { flex-shrink: 0; margin-top: 1px; }
 
 .alert-text strong {
@@ -240,6 +246,9 @@
   line-height: 1.5;
   margin-top: 2px;
 }
+
+.alert-banner.info .alert-text strong { color: var(--blue-primary); }
+.alert-banner.info .alert-text p { color: var(--blue-deep); }
 
 /* ── FORM HEADER ── */
 .form-header { margin-bottom: 32px; }
