@@ -62,7 +62,13 @@
     <div class="page-header">
       <div>
         <h1 class="page-title">Forecast Result</h1>
-        <p class="page-sub">Generated report · Barangay Nangka · Week of June 21, 2026</p>
+        <p class="page-sub">
+          {% if forecast %}
+            Generated report · Barangay {{ forecast.barangay }} · Week of {{ forecast.week_date }}
+          {% else %}
+            No forecast generated yet
+          {% endif %}
+        </p>
       </div>
       <div class="header-actions">
         <button class="btn-print" onclick="window.print()">
@@ -100,22 +106,23 @@
         </div>
         <div class="report-header-right">
           <div class="report-meta-row">
-            <span class="report-meta-label">Report ID</span>
-            <span class="report-meta-val">#RPT-2026-0621-001</span>
+            <span class="report-meta-label">Barangay</span>
+            <span class="report-meta-val">{{ forecast.barangay if forecast else '—' }}</span>
+          </div>
+          <div class="report-meta-row">
+            <span class="report-meta-label">Week</span>
+            <span class="report-meta-val">{{ forecast.week_date if forecast else '—' }}</span>
           </div>
           <div class="report-meta-row">
             <span class="report-meta-label">Generated</span>
-            <span class="report-meta-val">June 21, 2026 · 10:44 AM</span>
-          </div>
-          <div class="report-meta-row">
-            <span class="report-meta-label">Officer</span>
-            <span class="report-meta-val">Health Officer, Marikina CHO</span>
+            <span class="report-meta-val" id="genTime">—</span>
           </div>
         </div>
       </div>
 
       <!-- RISK VERDICT -->
-      <div class="verdict-block high">
+      {% if forecast %}
+      <div class="verdict-block {{ forecast.risk_level }}">
         <div class="verdict-left">
           <div class="verdict-icon">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -126,15 +133,33 @@
           </div>
           <div>
             <div class="verdict-label">OUTBREAK RISK LEVEL</div>
-            <div class="verdict-level">HIGH RISK</div>
-            <div class="verdict-brgy">Barangay Nangka · June 21 – July 5, 2026</div>
+            <div class="verdict-level">{{ forecast.risk_level | upper }} RISK</div>
+            <div class="verdict-brgy">Barangay {{ forecast.barangay }} · {{ forecast.week_date }}</div>
           </div>
         </div>
         <div class="verdict-score">
-          <div class="verdict-score-num">82<span>%</span></div>
+          <div class="verdict-score-num">{{ forecast.outbreak_proba }}<span>%</span></div>
           <div class="verdict-score-label">Outbreak Probability</div>
         </div>
       </div>
+      {% else %}
+      <div class="verdict-block low">
+        <div class="verdict-left">
+          <div class="verdict-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <div>
+            <div class="verdict-label">NO FORECAST AVAILABLE</div>
+            <div class="verdict-level">Submit Climate Data</div>
+            <div class="verdict-brgy">Use the Climate Input form to generate a forecast</div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
 
       <!-- TWO COLUMN RESULTS -->
       <div class="report-results-grid">
@@ -146,7 +171,7 @@
             <div class="result-type">Case Count Prediction</div>
           </div>
           <div class="result-main">
-            <div class="result-number">47</div>
+            <div class="result-number">{{ forecast.predicted_cases if forecast else '—' }}</div>
             <div class="result-unit">projected cases</div>
           </div>
           <div class="result-detail-row">
@@ -155,12 +180,12 @@
               <div class="rd-val">2 weeks</div>
             </div>
             <div class="result-detail">
-              <div class="rd-label">vs. last period</div>
-              <div class="rd-val trend-up">+12 cases</div>
+              <div class="rd-label">Model metric</div>
+              <div class="rd-val">R² = 0.37</div>
             </div>
             <div class="result-detail">
-              <div class="rd-label">Model accuracy</div>
-              <div class="rd-val">R² = 0.87</div>
+              <div class="rd-label">RMSE</div>
+              <div class="rd-val">2.35</div>
             </div>
           </div>
         </div>
@@ -172,80 +197,47 @@
             <div class="result-type">Outbreak Classification</div>
           </div>
           <div class="result-main">
-            <div class="result-number">82<span class="result-pct">%</span></div>
+            <div class="result-number">
+              {{ forecast.outbreak_proba if forecast else '—' }}<span class="result-pct">%</span>
+            </div>
             <div class="result-unit">outbreak probability</div>
           </div>
           <div class="prob-bar-wrap">
             <div class="prob-bar">
-              <div class="prob-fill high" style="width:82%"></div>
+              <div class="prob-fill {{ forecast.risk_level if forecast else 'low' }}"
+                   style="width:{{ forecast.outbreak_proba if forecast else 0 }}%"></div>
             </div>
-            <span class="prob-label high">High likelihood</span>
+            <span class="prob-label {{ forecast.risk_level if forecast else 'low' }}">
+              {{ forecast.risk_level | title if forecast else '—' }} likelihood
+            </span>
           </div>
           <div class="result-detail-row" style="margin-top:12px">
             <div class="result-detail">
               <div class="rd-label">Classification</div>
-              <div class="rd-val">Outbreak</div>
+              <div class="rd-val">{{ 'Outbreak' if forecast and forecast.outbreak_proba >= 50 else 'No Outbreak' }}</div>
             </div>
             <div class="result-detail">
               <div class="rd-label">Threshold</div>
               <div class="rd-val">≥ 50%</div>
             </div>
             <div class="result-detail">
-              <div class="rd-label">Model F1</div>
-              <div class="rd-val">0.91</div>
+              <div class="rd-label">Accuracy</div>
+              <div class="rd-val">79%</div>
             </div>
           </div>
         </div>
 
       </div>
 
-      <!-- CLIMATE INPUTS USED -->
-      <div class="report-section">
-        <div class="report-section-title">Climate Inputs Used</div>
-        <table class="report-table">
-          <thead>
-            <tr>
-              <th>Variable</th>
-              <th>Week −4</th>
-              <th>Week −3</th>
-              <th>Week −2</th>
-              <th>Week −1</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Rainfall (mm)</strong></td>
-              <td>145.2</td>
-              <td>162.8</td>
-              <td>175.0</td>
-              <td>182.4</td>
-            </tr>
-            <tr>
-              <td><strong>Temperature (°C)</strong></td>
-              <td>29.8</td>
-              <td>30.4</td>
-              <td>31.0</td>
-              <td>31.4</td>
-            </tr>
-            <tr>
-              <td><strong>Humidity (%)</strong></td>
-              <td>81.0</td>
-              <td>83.5</td>
-              <td>85.2</td>
-              <td>87.0</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
       <!-- RECOMMENDED ACTIONS -->
       <div class="report-section">
         <div class="report-section-title">Recommended Actions</div>
         <div class="action-list">
+          {% if forecast and forecast.risk_level == 'high' %}
           <div class="action-item high">
             <div class="action-num">1</div>
             <div class="action-text">
-              <strong>Activate barangay health response team</strong> — coordinate with Marikina CHO for immediate deployment of health workers to Barangay Nangka.
+              <strong>Activate barangay health response team</strong> — coordinate with Marikina CHO for immediate deployment of health workers to Barangay {{ forecast.barangay }}.
             </div>
           </div>
           <div class="action-item high">
@@ -266,12 +258,45 @@
               <strong>Increase case surveillance frequency</strong> — shift from weekly to daily case reporting for the next two weeks.
             </div>
           </div>
+          {% elif forecast and forecast.risk_level == 'moderate' %}
+          <div class="action-item moderate">
+            <div class="action-num">1</div>
+            <div class="action-text">
+              <strong>Increase surveillance activities</strong> — step up monitoring in Barangay {{ forecast.barangay }} and surrounding areas.
+            </div>
+          </div>
+          <div class="action-item moderate">
+            <div class="action-num">2</div>
+            <div class="action-text">
+              <strong>Schedule preventive fogging</strong> — conduct fogging operations in high-risk zones within the barangay.
+            </div>
+          </div>
+          <div class="action-item moderate">
+            <div class="action-num">3</div>
+            <div class="action-text">
+              <strong>Community awareness campaign</strong> — remind residents to eliminate standing water and use mosquito repellent.
+            </div>
+          </div>
+          {% else %}
+          <div class="action-item moderate">
+            <div class="action-num">1</div>
+            <div class="action-text">
+              <strong>Continue routine monitoring</strong> — maintain regular weekly surveillance in Barangay {{ forecast.barangay if forecast else 'target barangays' }}.
+            </div>
+          </div>
+          <div class="action-item moderate">
+            <div class="action-num">2</div>
+            <div class="action-text">
+              <strong>Maintain community education</strong> — keep residents informed about dengue prevention best practices.
+            </div>
+          </div>
+          {% endif %}
         </div>
       </div>
 
       <!-- REPORT FOOTER -->
       <div class="report-footer">
-        <p>This forecast was generated automatically by DengueTect v1.0 using Random Forest and Logistic Regression models trained on 2015–2026 epidemiological and climate data. Results are intended to support — not replace — professional public health judgment.</p>
+        <p>This forecast was generated automatically by DengueTect v1.0 using Random Forest and Logistic Regression models trained on 2022–2026 epidemiological and climate data. Results are intended to support — not replace — professional public health judgment.</p>
         <div class="report-footer-meta">
           <span>DengueTect v1.0</span>
           <span>·</span>
