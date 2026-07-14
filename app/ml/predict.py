@@ -31,7 +31,7 @@ def run_forecast(barangay, week_date, climate_inputs):
     """
 
     # Encode barangay
-    brgy_encoded = label_encoder.transform([barangay])[0]
+    brgy_encoded = label_encoder.transform([barangay.capitalize()])[0]
 
     # Extract climate lag values
     r1 = float(climate_inputs.get('rain_w1', 0))
