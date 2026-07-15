@@ -80,7 +80,7 @@ def run_forecast(barangay, week_date, climate_inputs):
     risk_level      = get_risk_level(outbreak_proba)
 
     return {
-        'barangay':        barangay,
+        'barangay':        barangay.capitalize(),
         'week_date':       week_date,
         'predicted_cases': predicted_cases,
         'outbreak_proba':  round(outbreak_proba * 100, 1),
