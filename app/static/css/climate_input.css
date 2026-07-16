@@ -261,6 +261,9 @@ input::placeholder { color: var(--gray-400); }
 .cir-icon.rain  { background: #EFF6FF; color: var(--blue-primary); }
 .cir-icon.temp  { background: #FEF2F2; color: var(--red-alert); }
 .cir-icon.humid { background: #F0FDF4; color: var(--green-safe); }
+.cir-icon.cases { background: #FEF3C7; color: var(--yellow-warn); }
+
+.cases-row { border-color: var(--yellow-warn); background: #FFFBEB; }
 
 .climate-input-row input[type="number"] {
   padding: 9px 10px;

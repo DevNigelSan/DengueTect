@@ -49,8 +49,12 @@ def run_forecast(barangay, week_date, climate_inputs):
     h3 = float(climate_inputs.get('humid_w3', 0))
     h4 = float(climate_inputs.get('humid_w4', 0))
 
-    # Rolling mean placeholder (last 4 weeks average)
-    cases_roll4 = 0.0
+    # Recent case counts — 4 week rolling average
+    c1 = float(climate_inputs.get('cases_w1', 0))
+    c2 = float(climate_inputs.get('cases_w2', 0))
+    c3 = float(climate_inputs.get('cases_w3', 0))
+    c4 = float(climate_inputs.get('cases_w4', 0))
+    cases_roll4 = (c1 + c2 + c3 + c4) / 4
 
     # Month as seasonal feature
     month = pd.to_datetime(week_date).month

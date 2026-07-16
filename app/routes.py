@@ -30,18 +30,22 @@ def climate_input():
         week_date = request.form.get('week_date')
 
         climate_inputs = {
-            'rain_w1':  request.form.get('rain_w1'),
-            'rain_w2':  request.form.get('rain_w2'),
-            'rain_w3':  request.form.get('rain_w3'),
-            'rain_w4':  request.form.get('rain_w4'),
-            'temp_w1':  request.form.get('temp_w1'),
-            'temp_w2':  request.form.get('temp_w2'),
-            'temp_w3':  request.form.get('temp_w3'),
-            'temp_w4':  request.form.get('temp_w4'),
-            'humid_w1': request.form.get('humid_w1'),
-            'humid_w2': request.form.get('humid_w2'),
-            'humid_w3': request.form.get('humid_w3'),
-            'humid_w4': request.form.get('humid_w4'),
+            'rain_w1':   request.form.get('rain_w1'),
+            'rain_w2':   request.form.get('rain_w2'),
+            'rain_w3':   request.form.get('rain_w3'),
+            'rain_w4':   request.form.get('rain_w4'),
+            'temp_w1':   request.form.get('temp_w1'),
+            'temp_w2':   request.form.get('temp_w2'),
+            'temp_w3':   request.form.get('temp_w3'),
+            'temp_w4':   request.form.get('temp_w4'),
+            'humid_w1':  request.form.get('humid_w1'),
+            'humid_w2':  request.form.get('humid_w2'),
+            'humid_w3':  request.form.get('humid_w3'),
+            'humid_w4':  request.form.get('humid_w4'),
+            'cases_w1':  request.form.get('cases_w1'),
+            'cases_w2':  request.form.get('cases_w2'),
+            'cases_w3':  request.form.get('cases_w3'),
+            'cases_w4':  request.form.get('cases_w4'),
         }
 
         result = run_forecast(barangay, week_date, climate_inputs)
