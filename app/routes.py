@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from app.ml.predict import run_forecast
+from app.ml.storage import save_forecast, get_latest_forecast, get_all_forecasts
 
 main = Blueprint('main', __name__)
 
@@ -20,8 +21,17 @@ def login():
 
 @main.route('/dashboard')
 def dashboard():
-    forecast = session.get('last_forecast', None)
-    return render_template('dashboard.html', forecast=forecast)
+    # Get latest forecast for each barangay
+    nangka   = get_latest_forecast('Nangka')
+    tumana   = get_latest_forecast('Tumana')
+    malanday = get_latest_forecast('Malanday')
+
+    return render_template('dashboard.html',
+        nangka=nangka,
+        tumana=tumana,
+        malanday=malanday,
+        active_forecast=nangka or tumana or malanday
+    )
 
 @main.route('/input', methods=['GET', 'POST'])
 def climate_input():
@@ -49,6 +59,7 @@ def climate_input():
         }
 
         result = run_forecast(barangay, week_date, climate_inputs)
+        save_forecast(result)
         session['last_forecast'] = result
         return redirect(url_for('main.forecast_result'))
 
@@ -61,8 +72,14 @@ def forecast_result():
 
 @main.route('/history')
 def history():
-    return render_template('history.html')
+    all_forecasts = get_all_forecasts()
+    rows = []
+    for brgy, entries in all_forecasts.items():
+        for entry in entries:
+            rows.append(entry)
+    rows.sort(key=lambda x: x.get('generated_at', ''), reverse=True)
+    return render_template('history.html', rows=rows)
 
 @main.route('/admin')
 def admin():
-    return render_template('admin.html')    
+    return render_template('admin.html')
