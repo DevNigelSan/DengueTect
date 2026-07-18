@@ -63,7 +63,7 @@
     <div class="page-header">
       <div>
         <h1 class="page-title">Forecast History</h1>
-        <p class="page-sub">Complete log of past dengue outbreak forecasts by barangay</p>
+        <p class="page-sub">Complete log of all past dengue outbreak forecasts</p>
       </div>
       <button class="btn-print" onclick="window.print()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -75,19 +75,55 @@
       </button>
     </div>
 
+    <!-- SUMMARY CARDS -->
+    <div class="summary-row">
+      <div class="summary-card">
+        <div class="summary-num" id="totalForecasts">{{ rows | length }}</div>
+        <div class="summary-label">Total Forecasts</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num red">
+          {{ rows | selectattr('risk_level', 'equalto', 'high') | list | length }}
+        </div>
+        <div class="summary-label">High Risk</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num yellow">
+          {{ rows | selectattr('risk_level', 'equalto', 'moderate') | list | length }}
+        </div>
+        <div class="summary-label">Moderate Risk</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num green">
+          {{ rows | selectattr('risk_level', 'equalto', 'low') | list | length }}
+        </div>
+        <div class="summary-label">Low Risk</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num">
+          {% if rows %}
+            {{ (rows | map(attribute='outbreak_proba') | map('float') | sum / rows | length) | round(1) }}%
+          {% else %}
+            —
+          {% endif %}
+        </div>
+        <div class="summary-label">Avg. Probability</div>
+      </div>
+    </div>
+
     <!-- FILTER BAR -->
     <div class="filter-bar">
       <div class="filter-group">
-        <label for="filter-brgy">Barangay</label>
+        <label>Barangay</label>
         <select id="filter-brgy" onchange="filterHistory()">
           <option value="all">All Barangays</option>
-          <option value="nangka">Barangay Nangka</option>
-          <option value="tumana">Barangay Tumana</option>
-          <option value="malanday">Barangay Malanday</option>
+          <option value="Nangka">Barangay Nangka</option>
+          <option value="Tumana">Barangay Tumana</option>
+          <option value="Malanday">Barangay Malanday</option>
         </select>
       </div>
       <div class="filter-group">
-        <label for="filter-risk">Risk Level</label>
+        <label>Risk Level</label>
         <select id="filter-risk" onchange="filterHistory()">
           <option value="all">All Levels</option>
           <option value="high">High</option>
@@ -95,154 +131,49 @@
           <option value="low">Low</option>
         </select>
       </div>
-      <div class="filter-group">
-        <label for="filter-from">From</label>
-        <input type="date" id="filter-from"/>
-      </div>
-      <div class="filter-group">
-        <label for="filter-to">To</label>
-        <input type="date" id="filter-to"/>
-      </div>
-      <button class="btn-filter" onclick="filterHistory()">Apply Filter</button>
+      <button class="btn-filter" onclick="filterHistory()">Apply</button>
       <button class="btn-clear-filter" onclick="clearFilters()">Clear</button>
-    </div>
-
-    <!-- SUMMARY CARDS -->
-    <div class="summary-row">
-      <div class="summary-card">
-        <div class="summary-num" id="totalForecasts">24</div>
-        <div class="summary-label">Total Forecasts</div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-num red" id="highRiskWeeks">8</div>
-        <div class="summary-label">High Risk Weeks</div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-num yellow" id="moderateWeeks">10</div>
-        <div class="summary-label">Moderate Risk Weeks</div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-num green" id="lowWeeks">6</div>
-        <div class="summary-label">Low Risk Weeks</div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-num" id="avgProb">61%</div>
-        <div class="summary-label">Avg. Outbreak Probability</div>
-      </div>
     </div>
 
     <!-- HISTORY TABLE -->
     <div class="table-panel">
       <div class="panel-header">
         <div class="panel-title">Forecast Records</div>
-        <div class="panel-sub" id="recordCount">Showing 24 records</div>
+        <div class="panel-sub" id="recordCount">
+          Showing {{ rows | length }} record{{ 's' if rows | length != 1 else '' }}
+        </div>
       </div>
       <div class="table-wrap">
         <table class="forecast-table" id="historyTable">
           <thead>
             <tr>
-              <th>Week</th>
               <th>Barangay</th>
+              <th>Week</th>
               <th>Predicted Cases</th>
               <th>Probability</th>
               <th>Risk Level</th>
-              <th>Rainfall (mm)</th>
-              <th>Temp (°C)</th>
-              <th>Humidity (%)</th>
+              <th>Generated</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody id="historyBody">
-            <tr data-brgy="nangka" data-risk="high">
-              <td>Jun 21 – Jun 28, 2026</td>
-              <td>Nangka</td>
-              <td><strong>47</strong></td>
-              <td>82%</td>
-              <td><span class="badge high">High</span></td>
-              <td>182.4</td><td>31.4</td><td>87.0</td>
+            {% for f in rows %}
+            <tr data-brgy="{{ f.barangay }}" data-risk="{{ f.risk_level }}">
+              <td><strong>{{ f.barangay }}</strong></td>
+              <td>{{ f.week_date }}</td>
+              <td>{{ f.predicted_cases }}</td>
+              <td>{{ f.outbreak_proba }}%</td>
+              <td><span class="badge {{ f.risk_level }}">{{ f.risk_level | title }}</span></td>
+              <td class="td-done">{{ f.generated_at }}</td>
               <td><a href="/result" class="tbl-link">View</a></td>
             </tr>
-            <tr data-brgy="tumana" data-risk="moderate">
-              <td>Jun 21 – Jun 28, 2026</td>
-              <td>Tumana</td>
-              <td>28</td>
-              <td>61%</td>
-              <td><span class="badge moderate">Moderate</span></td>
-              <td>165.0</td><td>30.8</td><td>83.0</td>
-              <td><a href="/result" class="tbl-link">View</a></td>
+            {% else %}
+            <tr>
+              <td colspan="7" style="text-align:center;color:var(--gray-400);padding:32px">
+                No forecast history yet — <a href="/input">generate your first forecast</a>
+              </td>
             </tr>
-            <tr data-brgy="malanday" data-risk="low">
-              <td>Jun 21 – Jun 28, 2026</td>
-              <td>Malanday</td>
-              <td>14</td>
-              <td>33%</td>
-              <td><span class="badge low">Low</span></td>
-              <td>140.0</td><td>30.1</td><td>79.0</td>
-              <td><a href="/result" class="tbl-link">View</a></td>
-            </tr>
-            <tr data-brgy="nangka" data-risk="moderate">
-              <td>Jun 14 – Jun 21, 2026</td>
-              <td>Nangka</td>
-              <td>35</td>
-              <td>68%</td>
-              <td><span class="badge moderate">Moderate</span></td>
-              <td>175.0</td><td>31.0</td><td>85.2</td>
-              <td><a href="/result" class="tbl-link">View</a></td>
-            </tr>
-            <tr data-brgy="tumana" data-risk="moderate">
-              <td>Jun 14 – Jun 21, 2026</td>
-              <td>Tumana</td>
-              <td>22</td>
-              <td>54%</td>
-              <td><span class="badge moderate">Moderate</span></td>
-              <td>158.0</td><td>30.5</td><td>81.0</td>
-              <td><a href="/result" class="tbl-link">View</a></td>
-            </tr>
-            <tr data-brgy="malanday" data-risk="low">
-              <td>Jun 14 – Jun 21, 2026</td>
-              <td>Malanday</td>
-              <td>11</td>
-              <td>28%</td>
-              <td><span class="badge low">Low</span></td>
-              <td>132.0</td><td>29.8</td><td>77.0</td>
-              <td><a href="/result" class="tbl-link">View</a></td>
-            </tr>
-            <tr data-brgy="nangka" data-risk="low">
-              <td>Jun 7 – Jun 14, 2026</td>
-              <td>Nangka</td>
-              <td>21</td>
-              <td>41%</td>
-              <td><span class="badge low">Low</span></td>
-              <td>162.8</td><td>30.4</td><td>83.5</td>
-              <td><a href="/result" class="tbl-link">View</a></td>
-            </tr>
-            <tr data-brgy="nangka" data-risk="high">
-              <td>May 31 – Jun 7, 2026</td>
-              <td>Nangka</td>
-              <td>52</td>
-              <td>88%</td>
-              <td><span class="badge high">High</span></td>
-              <td>190.2</td><td>32.1</td><td>89.0</td>
-              <td><a href="/result" class="tbl-link">View</a></td>
-            </tr>
-            <tr data-brgy="tumana" data-risk="high">
-              <td>May 31 – Jun 7, 2026</td>
-              <td>Tumana</td>
-              <td>38</td>
-              <td>74%</td>
-              <td><span class="badge high">High</span></td>
-              <td>178.5</td><td>31.6</td><td>86.0</td>
-              <td><a href="/result" class="tbl-link">View</a></td>
-            </tr>
-            <tr data-brgy="malanday" data-risk="moderate">
-              <td>May 31 – Jun 7, 2026</td>
-              <td>Malanday</td>
-              <td>24</td>
-              <td>57%</td>
-              <td><span class="badge moderate">Moderate</span></td>
-              <td>155.0</td><td>30.9</td><td>82.0</td>
-              <td><a href="/result" class="tbl-link">View</a></td>
-            </tr>
+            {% endfor %}
           </tbody>
         </table>
       </div>
