@@ -1,0 +1,18 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Maria Santos",
+      "email": "m.santos@marikina.gov.ph",
+      "password": "pbkdf2:sha256:600000$placeholder",
+      "role": "health_officer"
+    },
+    {
+      "id": 2,
+      "name": "IT Admin",
+      "email": "admin@marikina.gov.ph",
+      "password": "pbkdf2:sha256:600000$placeholder",
+      "role": "admin"
+    }
+  ]
+}
