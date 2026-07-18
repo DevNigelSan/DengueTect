@@ -56,7 +56,8 @@
   </nav>
 
   <!-- ALERT TIER BANNER -->
-  <div class="alert-tier-bar high" id="alertBanner">
+  {% if active_forecast %}
+  <div class="alert-tier-bar {{ active_forecast.risk_level }}" id="alertBanner">
     <div class="tier-bar-inner">
       <div class="tier-bar-left">
         <div class="tier-icon-wrap">
@@ -67,19 +68,45 @@
           </svg>
         </div>
         <div>
-          <div class="tier-bar-title" id="tierTitle">HIGH RISK — Barangay Nangka</div>
-          <div class="tier-bar-desc" id="tierDesc">Outbreak probability exceeds 75%. Immediate response recommended.</div>
+          <div class="tier-bar-title" id="tierTitle">
+            {{ active_forecast.risk_level | upper }} RISK — Barangay {{ active_forecast.barangay }}
+          </div>
+          <div class="tier-bar-desc" id="tierDesc">
+            Outbreak probability: {{ active_forecast.outbreak_proba }}% · {{ active_forecast.predicted_cases }} projected cases · {{ active_forecast.week_date }}
+          </div>
         </div>
       </div>
       <div class="tier-bar-right">
-        <div class="tier-pill" id="tierPill">HIGH</div>
+        <div class="tier-pill" id="tierPill">{{ active_forecast.risk_level | upper }}</div>
         <div class="tier-actions">
-          <button class="tier-btn">View Protocol</button>
-          <button class="tier-btn">Export Report</button>
+          <a href="/input" class="tier-btn">New Forecast</a>
+          <a href="/result" class="tier-btn">View Report</a>
         </div>
       </div>
     </div>
   </div>
+  {% else %}
+  <div class="alert-tier-bar low">
+    <div class="tier-bar-inner">
+      <div class="tier-bar-left">
+        <div class="tier-icon-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <div>
+          <div class="tier-bar-title">No forecast generated yet</div>
+          <div class="tier-bar-desc">Submit climate data to generate your first outbreak forecast</div>
+        </div>
+      </div>
+      <div class="tier-bar-right">
+        <a href="/input" class="tier-btn">Generate Forecast</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
 
   <!-- MAIN CONTENT -->
   <main class="main-content">
@@ -93,17 +120,20 @@
       <div class="header-meta">
         <div class="meta-badge">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
           </svg>
-          Last updated: <strong>June 21, 2026</strong>
+          {% if active_forecast %}
+            Last updated: <strong>{{ active_forecast.generated_at }}</strong>
+          {% else %}
+            No forecasts yet
+          {% endif %}
         </div>
         <div class="meta-badge">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
             <circle cx="12" cy="10" r="3"/>
           </svg>
-          Barangay <strong id="activeBrgy">Nangka</strong>
+          Barangay <strong id="activeBrgy">{{ active_forecast.barangay if active_forecast else '—' }}</strong>
         </div>
       </div>
     </div>
@@ -117,17 +147,13 @@
           <span class="fcard-model">Random Forest</span>
         </div>
         <div class="fcard-body">
-          <div class="fcard-number" id="caseCount">47</div>
+          <div class="fcard-number" id="caseCount">
+            {{ active_forecast.predicted_cases if active_forecast else '—' }}
+          </div>
           <div class="fcard-unit">cases</div>
         </div>
         <div class="fcard-footer">
           <div class="fcard-sub">Projected over the next 2 weeks</div>
-          <div class="fcard-trend up">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="18 15 12 9 6 15"/>
-            </svg>
-            +12 vs last week
-          </div>
         </div>
         <div class="fcard-accent"></div>
       </div>
@@ -138,16 +164,23 @@
           <span class="fcard-model">Logistic Regression</span>
         </div>
         <div class="fcard-body">
-          <div class="fcard-number" id="probValue">82</div>
+          <div class="fcard-number" id="probValue">
+            {{ active_forecast.outbreak_proba if active_forecast else '—' }}
+          </div>
           <div class="fcard-unit">%</div>
         </div>
         <div class="fcard-footer">
           <div class="risk-bar-wrap">
             <div class="risk-bar">
-              <div class="risk-fill high" id="riskFill" style="width:82%"></div>
+              <div class="risk-fill {{ active_forecast.risk_level if active_forecast else 'low' }}"
+                   id="riskFill"
+                   style="width:{{ active_forecast.outbreak_proba if active_forecast else 0 }}%">
+              </div>
             </div>
           </div>
-          <div class="fcard-sub" style="margin-top:8px">High outbreak likelihood this period</div>
+          <div class="fcard-sub" style="margin-top:8px">
+            {{ active_forecast.risk_level | title if active_forecast else 'No data' }} outbreak likelihood
+          </div>
         </div>
         <div class="fcard-accent danger"></div>
       </div>
@@ -162,7 +195,7 @@
           <div class="fcard-unit">weeks</div>
         </div>
         <div class="fcard-footer">
-          <div class="fcard-sub">Jun 21 – Jul 5, 2026</div>
+          <div class="fcard-sub">{{ active_forecast.week_date if active_forecast else '—' }}</div>
           <div class="fcard-tag">Active Window</div>
         </div>
         <div class="fcard-accent info"></div>
@@ -170,62 +203,89 @@
 
     </div>
 
-    <!-- CLIMATE + TABLE ROW -->
+    <!-- BARANGAY SUMMARY -->
+    <div class="section-title">Barangay Summary <span>· Latest forecasts per barangay</span></div>
     <div class="lower-grid">
 
-      <!-- CLIMATE PANEL -->
       <div class="climate-panel">
         <div class="panel-header">
-          <div class="panel-title">Climate Inputs</div>
-          <div class="panel-sub">4-week lag applied</div>
+          <div class="panel-title">Risk Overview</div>
+          <div class="panel-sub">All barangays</div>
         </div>
         <div class="climate-stack">
+
+          <!-- Nangka -->
           <div class="climate-row">
             <div class="climate-icon-wrap rain">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="16" y1="13" x2="16" y2="21"/><line x1="8" y1="13" x2="8" y2="21"/>
-                <line x1="12" y1="15" x2="12" y2="23"/>
-                <path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
               </svg>
             </div>
             <div class="climate-info">
-              <div class="climate-label">Rainfall</div>
+              <div class="climate-label">Barangay Nangka</div>
               <div class="climate-bar-wrap">
-                <div class="climate-bar"><div class="climate-fill rain" style="width:73%"></div></div>
+                <div class="climate-bar">
+                  <div class="climate-fill rain" style="width:{{ nangka.outbreak_proba if nangka else 0 }}%"></div>
+                </div>
               </div>
             </div>
-            <div class="climate-val" id="rainfallVal">182<span>mm</span></div>
+            <div class="climate-val">
+              {% if nangka %}
+                <span class="badge {{ nangka.risk_level }}">{{ nangka.risk_level | upper }}</span>
+              {% else %}
+                <span style="font-size:13px;color:var(--gray-400)">—</span>
+              {% endif %}
+            </div>
           </div>
 
+          <!-- Tumana -->
           <div class="climate-row">
             <div class="climate-icon-wrap temp">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
               </svg>
             </div>
             <div class="climate-info">
-              <div class="climate-label">Temperature</div>
+              <div class="climate-label">Barangay Tumana</div>
               <div class="climate-bar-wrap">
-                <div class="climate-bar"><div class="climate-fill temp" style="width:63%"></div></div>
+                <div class="climate-bar">
+                  <div class="climate-fill temp" style="width:{{ tumana.outbreak_proba if tumana else 0 }}%"></div>
+                </div>
               </div>
             </div>
-            <div class="climate-val" id="tempVal">31.4<span>°C</span></div>
+            <div class="climate-val">
+              {% if tumana %}
+                <span class="badge {{ tumana.risk_level }}">{{ tumana.risk_level | upper }}</span>
+              {% else %}
+                <span style="font-size:13px;color:var(--gray-400)">—</span>
+              {% endif %}
+            </div>
           </div>
 
+          <!-- Malanday -->
           <div class="climate-row">
             <div class="climate-icon-wrap humid">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
               </svg>
             </div>
             <div class="climate-info">
-              <div class="climate-label">Humidity</div>
+              <div class="climate-label">Barangay Malanday</div>
               <div class="climate-bar-wrap">
-                <div class="climate-bar"><div class="climate-fill humid" style="width:87%"></div></div>
+                <div class="climate-bar">
+                  <div class="climate-fill humid" style="width:{{ malanday.outbreak_proba if malanday else 0 }}%"></div>
+                </div>
               </div>
             </div>
-            <div class="climate-val" id="humidVal">87<span>%</span></div>
+            <div class="climate-val">
+              {% if malanday %}
+                <span class="badge {{ malanday.risk_level }}">{{ malanday.risk_level | upper }}</span>
+              {% else %}
+                <span style="font-size:13px;color:var(--gray-400)">—</span>
+              {% endif %}
+            </div>
           </div>
+
         </div>
       </div>
 
@@ -233,48 +293,41 @@
       <div class="table-panel">
         <div class="panel-header">
           <div class="panel-title">Recent Forecasts</div>
-          <div class="panel-sub" id="tableBregy">Barangay Nangka</div>
+          <div class="panel-sub">All barangays</div>
         </div>
         <div class="table-wrap">
           <table class="forecast-table">
             <thead>
               <tr>
+                <th>Barangay</th>
                 <th>Week</th>
                 <th>Cases</th>
                 <th>Probability</th>
                 <th>Risk</th>
-                <th>Status</th>
+                <th>Generated</th>
               </tr>
             </thead>
             <tbody>
-              <tr class="row-current">
-                <td>Jun 21 – Jun 28</td>
-                <td><strong>47</strong></td>
-                <td>82%</td>
-                <td><span class="badge high">High</span></td>
-                <td><span class="dot-active"></span> Current</td>
-              </tr>
+              {% set all = [] %}
+              {% if nangka %}{% set _ = all.append(nangka) %}{% endif %}
+              {% if tumana %}{% set _ = all.append(tumana) %}{% endif %}
+              {% if malanday %}{% set _ = all.append(malanday) %}{% endif %}
+              {% for f in all %}
               <tr>
-                <td>Jun 14 – Jun 21</td>
-                <td>35</td>
-                <td>68%</td>
-                <td><span class="badge moderate">Moderate</span></td>
-                <td class="td-done">Completed</td>
+                <td><strong>{{ f.barangay }}</strong></td>
+                <td>{{ f.week_date }}</td>
+                <td>{{ f.predicted_cases }}</td>
+                <td>{{ f.outbreak_proba }}%</td>
+                <td><span class="badge {{ f.risk_level }}">{{ f.risk_level | title }}</span></td>
+                <td class="td-done">{{ f.generated_at }}</td>
               </tr>
+              {% else %}
               <tr>
-                <td>Jun 7 – Jun 14</td>
-                <td>21</td>
-                <td>41%</td>
-                <td><span class="badge low">Low</span></td>
-                <td class="td-done">Completed</td>
+                <td colspan="6" style="text-align:center;color:var(--gray-400);padding:24px">
+                  No forecasts yet — <a href="/input">generate one</a>
+                </td>
               </tr>
-              <tr>
-                <td>May 31 – Jun 7</td>
-                <td>18</td>
-                <td>35%</td>
-                <td><span class="badge low">Low</span></td>
-                <td class="td-done">Completed</td>
-              </tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>
