@@ -305,6 +305,7 @@
                 <th>Probability</th>
                 <th>Risk</th>
                 <th>Generated</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -312,7 +313,7 @@
               {% if nangka %}{% set _ = all.append(nangka) %}{% endif %}
               {% if tumana %}{% set _ = all.append(tumana) %}{% endif %}
               {% if malanday %}{% set _ = all.append(malanday) %}{% endif %}
-              {% for f in all %}
+                 {% for f in all %}
               <tr>
                 <td><strong>{{ f.barangay }}</strong></td>
                 <td>{{ f.week_date }}</td>
@@ -320,6 +321,13 @@
                 <td>{{ f.outbreak_proba }}%</td>
                 <td><span class="badge {{ f.risk_level }}">{{ f.risk_level | title }}</span></td>
                 <td class="td-done">{{ f.generated_at }}</td>
+                <td>
+                  <form action="/delete-forecast" method="POST" onsubmit="return confirm('Remove this forecast?')">
+                    <input type="hidden" name="barangay" value="{{ f.barangay }}"/>
+                    <input type="hidden" name="index" value="0"/>
+                    <button type="submit" class="btn-delete">Remove</button>
+                  </form>
+                </td>
               </tr>
               {% else %}
               <tr>

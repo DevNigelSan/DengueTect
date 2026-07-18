@@ -83,3 +83,18 @@ def history():
 @main.route('/admin')
 def admin():
     return render_template('admin.html')
+
+@main.route('/delete-forecast', methods=['POST'])
+def delete_forecast():
+    barangay = request.form.get('barangay')
+    index    = int(request.form.get('index', 0))
+
+    forecasts = get_all_forecasts()
+    if barangay in forecasts and index < len(forecasts[barangay]):
+        forecasts[barangay].pop(index)
+        from app.ml.storage import FORECAST_FILE
+        import json
+        with open(FORECAST_FILE, 'w') as f:
+            json.dump(forecasts, f, indent=2)
+
+    return redirect(url_for('main.dashboard'))
