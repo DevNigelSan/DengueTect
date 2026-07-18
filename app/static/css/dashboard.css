@@ -639,3 +639,18 @@
   .navbar        { padding: 0 20px; }
   .alert-tier-bar { padding: 12px 20px; }
 }
+
+/* ── DELETE BUTTON ── */
+.btn-delete {
+  padding: 4px 10px;
+  border: 1.5px solid #FECACA;
+  border-radius: 6px;
+  background: #FEF2F2;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--red-alert);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-delete:hover { background: #FEE2E2; }
