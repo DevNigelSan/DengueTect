@@ -38,6 +38,13 @@ Then open `http://127.0.0.1:5000` in your browser.
 - `/history` → forecast history log
 - `/admin` → admin panel
 
+## Default Accounts
+
+| Role | Email | Password |
+|------|-------|----------|
+| Health Officer | m.santos@marikina.gov.ph | health2024 |
+| IT Admin | admin@marikina.gov.ph | admin2024 |
+
 ## Status
 - [x] Project structure
 - [x] Login page
