@@ -1,8 +1,28 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from app.ml.predict import run_forecast
 from app.ml.storage import save_forecast, get_latest_forecast, get_all_forecasts
+from app.ml.auth import verify_password
+from functools import wraps
 
 main = Blueprint('main', __name__)
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if 'user_email' not in session:
+            return redirect(url_for('main.login'))
+        return f(*args, **kwargs)
+    return decorated
+
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if 'user_email' not in session:
+            return redirect(url_for('main.login'))
+        if session.get('user_role') != 'admin':
+            return redirect(url_for('main.dashboard'))
+        return f(*args, **kwargs)
+    return decorated
 
 @main.route('/')
 def index():
@@ -10,22 +30,31 @@ def index():
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
+    error = None
     if request.method == 'POST':
         email    = request.form.get('email')
         password = request.form.get('password')
-        role     = request.form.get('role')
-        # TODO: add real auth logic
-        session['role'] = role
-        return redirect(url_for('main.dashboard'))
-    return render_template('login.html')
+        user = verify_password(email, password)
+        if user:
+            session['user_email'] = user['email']
+            session['user_name']  = user['name']
+            session['user_role']  = user['role']
+            return redirect(url_for('main.dashboard'))
+        else:
+            error = 'Invalid email or password. Please try again.'
+    return render_template('login.html', error=error)
+
+@main.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('main.login'))
 
 @main.route('/dashboard')
+@login_required
 def dashboard():
-    # Get latest forecast for each barangay
     nangka   = get_latest_forecast('Nangka')
     tumana   = get_latest_forecast('Tumana')
     malanday = get_latest_forecast('Malanday')
-
     return render_template('dashboard.html',
         nangka=nangka,
         tumana=tumana,
@@ -34,11 +63,11 @@ def dashboard():
     )
 
 @main.route('/input', methods=['GET', 'POST'])
+@login_required
 def climate_input():
     if request.method == 'POST':
         barangay  = request.form.get('barangay')
         week_date = request.form.get('week_date')
-
         climate_inputs = {
             'rain_w1':   request.form.get('rain_w1'),
             'rain_w2':   request.form.get('rain_w2'),
@@ -57,20 +86,20 @@ def climate_input():
             'cases_w3':  request.form.get('cases_w3'),
             'cases_w4':  request.form.get('cases_w4'),
         }
-
         result = run_forecast(barangay, week_date, climate_inputs)
         save_forecast(result)
         session['last_forecast'] = result
         return redirect(url_for('main.forecast_result'))
-
     return render_template('climate_input.html')
 
 @main.route('/result')
+@login_required
 def forecast_result():
     forecast = session.get('last_forecast', None)
     return render_template('forecast_result.html', forecast=forecast)
 
 @main.route('/history')
+@login_required
 def history():
     all_forecasts = get_all_forecasts()
     rows = []
@@ -81,14 +110,15 @@ def history():
     return render_template('history.html', rows=rows)
 
 @main.route('/admin')
+@admin_required
 def admin():
     return render_template('admin.html')
 
 @main.route('/delete-forecast', methods=['POST'])
+@login_required
 def delete_forecast():
     barangay = request.form.get('barangay')
     index    = int(request.form.get('index', 0))
-
     forecasts = get_all_forecasts()
     if barangay in forecasts and index < len(forecasts[barangay]):
         forecasts[barangay].pop(index)
@@ -96,5 +126,4 @@ def delete_forecast():
         import json
         with open(FORECAST_FILE, 'w') as f:
             json.dump(forecasts, f, indent=2)
-
     return redirect(url_for('main.dashboard'))
