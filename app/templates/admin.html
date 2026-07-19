@@ -40,10 +40,10 @@
       </div>
       <div class="nav-divider"></div>
       <div class="nav-user">
-        <div class="user-avatar">AD</div>
+         <div class="user-avatar">{{ session.user_name[:2].upper() if session.user_name else 'AD' }}</div>
         <div class="user-info">
-          <span class="user-name">IT Admin</span>
-          <span class="user-role">System Management</span>
+          <span class="user-name">{{ session.user_name if session.user_name else 'IT Admin' }}</span>
+          <span class="user-role">{{ 'IT Admin' if session.user_role == 'admin' else 'Marikina CHO' }}</span>
         </div>
       </div>
       <a href="/login" class="btn-logout">
