@@ -60,7 +60,11 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     valid = false;
   }
 
-  if (valid) {
+   if (valid) {
+    const btn = document.querySelector('.btn-login');
+    btn.textContent = 'Signing in...';
+    btn.disabled = true;
+    btn.style.opacity = '0.8';
     this.submit();
   }
 });
