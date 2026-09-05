@@ -263,7 +263,7 @@ input::placeholder { color: var(--gray-400); }
 .cir-icon.humid { background: #F0FDF4; color: var(--green-safe); }
 .cir-icon.cases { background: #FEF3C7; color: var(--yellow-warn); }
 
-.cases-row { border-color: var(--gray-200); background: var(--gray-100); }
+.cases-row { border-color: var(--green-safe); background: #F0FDF4; }
 .cases-row.has-warning { border-color: var(--yellow-warn); background: #FFFBEB; }
 
 .climate-input-row input[type="number"] {
