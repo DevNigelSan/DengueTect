@@ -84,15 +84,15 @@
 }
 
 .step-num {
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   background: var(--blue-primary);
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   flex-shrink: 0;
   font-family: 'DM Sans', sans-serif;
@@ -100,14 +100,14 @@
 
 .step-title {
   font-family: 'DM Sans', sans-serif;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--blue-deep);
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 
 .step-sub {
-  font-size: 12.5px;
+  font-size: 13.5px;
   color: var(--gray-400);
 }
 
@@ -125,7 +125,7 @@
 }
 
 label {
-  font-size: 13px;
+  font-size: 14.5px;
   font-weight: 500;
   color: var(--gray-800);
   letter-spacing: 0.1px;
@@ -147,10 +147,10 @@ label {
 
 select {
   width: 100%;
-  padding: 10px 14px 10px 36px;
+  padding: 13px 14px 13px 40px;
   border: 1.5px solid var(--gray-200);
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--gray-800);
   background: var(--gray-100);
   outline: none;
@@ -182,10 +182,10 @@ select:focus {
 input[type="date"],
 input[type="number"] {
   width: 100%;
-  padding: 10px 14px 10px 36px;
+  padding: 13px 14px 13px 40px;
   border: 1.5px solid var(--gray-200);
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 15px;
   font-family: 'Inter', sans-serif;
   color: var(--gray-800);
   background: var(--gray-100);
@@ -212,7 +212,7 @@ input::placeholder { color: var(--gray-400); }
 }
 
 .wgh-label {
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--gray-400);
   text-align: center;
@@ -237,7 +237,7 @@ input::placeholder { color: var(--gray-400); }
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 13px;
+  font-size: 14.5px;
   font-weight: 500;
   color: var(--gray-800);
 }
@@ -263,13 +263,13 @@ input::placeholder { color: var(--gray-400); }
 .cir-icon.humid { background: #F0FDF4; color: var(--green-safe); }
 .cir-icon.cases { background: #FEF3C7; color: var(--yellow-warn); }
 
-.cases-row { border-color: var(--green-safe); background: #F0FDF4; }
+.cases-row { border-color: var(--green-safe); background: #F0FDF4; }  
 .cases-row.has-warning { border-color: var(--yellow-warn); background: #FFFBEB; }
 
 .climate-input-row input[type="number"] {
-  padding: 9px 10px;
+  padding: 12px 10px;
   text-align: center;
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 500;
 }
 
@@ -344,7 +344,7 @@ input::placeholder { color: var(--gray-400); }
 
 .info-card-title {
   font-family: 'DM Sans', sans-serif;
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--blue-deep);
   margin-bottom: 14px;
@@ -382,7 +382,7 @@ input::placeholder { color: var(--gray-400); }
 }
 
 .info-step-text {
-  font-size: 12.5px;
+  font-size: 14px;
   color: var(--gray-600);
   line-height: 1.5;
 }
@@ -434,7 +434,7 @@ input::placeholder { color: var(--gray-400); }
 }
 
 .warning-card p {
-  font-size: 12.5px;
+  font-size: 14px;
   color: #92400E;
   line-height: 1.6;
 }
@@ -455,7 +455,7 @@ input::placeholder { color: var(--gray-400); }
 .fetch-card { border-color: var(--blue-primary); }
 
 .fetch-desc {
-  font-size: 12.5px;
+  font-size: 14px;
   color: var(--gray-600);
   line-height: 1.6;
   margin-bottom: 14px;

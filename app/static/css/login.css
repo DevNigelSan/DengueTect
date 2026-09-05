@@ -255,7 +255,7 @@
 
 .form-header h1 {
   font-family: 'DM Sans', sans-serif;
-  font-size: 26px;
+  font-size: 30px;
   font-weight: 700;
   color: var(--blue-deep);
   letter-spacing: -0.4px;
@@ -263,7 +263,7 @@
 }
 
 .form-header p {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--gray-600);
   line-height: 1.5;
 }
@@ -273,7 +273,7 @@
 
 label {
   display: block;
-  font-size: 13px;
+  font-size: 14.5px;
   font-weight: 500;
   color: var(--gray-800);
   margin-bottom: 7px;
@@ -295,10 +295,10 @@ label {
 input[type="email"],
 input[type="password"] {
   width: 100%;
-  padding: 11px 14px 11px 40px;
+  padding: 13px 14px 13px 40px;
   border: 1.5px solid var(--gray-200);
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--gray-800);
   background: var(--gray-100);
   transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
@@ -371,8 +371,8 @@ input.error { border-color: var(--red-alert); }
 .role-card input[type="radio"] { display: none; }
 .role-icon { color: var(--gray-400); flex-shrink: 0; }
 .role-info { display: flex; flex-direction: column; }
-.role-name { font-size: 13px; font-weight: 600; color: var(--gray-800); }
-.role-desc { font-size: 11px; color: var(--gray-400); margin-top: 1px; }
+.role-name { font-size: 14.5px; font-weight: 600; color: var(--gray-800); }
+.role-desc { font-size: 12.5px; color: var(--gray-400); margin-top: 1px; }
 .role-card.selected .role-name { color: var(--blue-deep); }
 .role-card.selected .role-icon { color: var(--blue-primary); }
 
@@ -409,12 +409,12 @@ input.error { border-color: var(--red-alert); }
 /* ── SUBMIT ── */
 .btn-login {
   width: 100%;
-  padding: 13px;
+  padding: 15px;
   background: var(--blue-primary);
   color: var(--white);
   border: none;
   border-radius: 8px;
-  font-size: 14.5px;
+  font-size: 16px;
   font-family: 'DM Sans', sans-serif;
   font-weight: 600;
   cursor: pointer;

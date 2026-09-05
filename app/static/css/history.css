@@ -69,7 +69,7 @@
 }
 
 .filter-group label {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--gray-600);
   letter-spacing: 0.2px;
@@ -77,10 +77,10 @@
 
 .filter-group select,
 .filter-group input[type="date"] {
-  padding: 8px 12px;
+  padding: 10px 14px;
   border: 1.5px solid var(--gray-200);
   border-radius: 7px;
-  font-size: 13px;
+  font-size: 14.5px;
   color: var(--gray-800);
   background: var(--gray-100);
   outline: none;
@@ -95,32 +95,32 @@
 }
 
 .btn-filter {
-  padding: 9px 18px;
+  padding: 11px 20px;
   background: var(--blue-primary);
   color: white;
   border: none;
   border-radius: 7px;
-  font-size: 13px;
+  font-size: 14.5px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
   align-self: flex-end;
 }
 
-.btn-filter:hover { background: var(--blue-deep); }
-
 .btn-clear-filter {
-  padding: 9px 14px;
+  padding: 11px 16px;
   background: var(--white);
   color: var(--gray-600);
   border: 1.5px solid var(--gray-200);
   border-radius: 7px;
-  font-size: 13px;
+  font-size: 14.5px;
   font-weight: 500;
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s;
   align-self: flex-end;
 }
+
+.btn-filter:hover { background: var(--blue-deep); }
 
 .btn-clear-filter:hover {
   border-color: var(--gray-400);
@@ -145,7 +145,7 @@
 
 .summary-num {
   font-family: 'DM Sans', sans-serif;
-  font-size: 32px;
+  font-size: 38px;
   font-weight: 700;
   color: var(--blue-deep);
   letter-spacing: -1px;
@@ -153,15 +153,16 @@
   margin-bottom: 6px;
 }
 
-.summary-num.red    { color: var(--red-alert); }
-.summary-num.yellow { color: var(--yellow-warn); }
-.summary-num.green  { color: var(--green-safe); }
-
 .summary-label {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--gray-400);
   font-weight: 500;
 }
+
+
+.summary-num.red    { color: var(--red-alert); }
+.summary-num.yellow { color: var(--yellow-warn); }
+.summary-num.green  { color: var(--green-safe); }
 
 /* ── TABLE PANEL ── */
 .table-panel {
@@ -204,9 +205,9 @@
 }
 
 .forecast-table th {
-  padding: 10px 14px;
+  padding: 13px 16px;
   text-align: left;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.6px;
@@ -215,8 +216,8 @@
 }
 
 .forecast-table td {
-  padding: 11px 14px;
-  font-size: 13px;
+  padding: 14px 16px;
+  font-size: 15px;
   color: var(--gray-800);
   border-bottom: 1px solid var(--gray-200);
   white-space: nowrap;
