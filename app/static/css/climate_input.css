@@ -594,3 +594,17 @@ input::placeholder { color: var(--gray-400); }
   font-size: 11px;
   color: var(--gray-400);
 }
+
+/* ── CASE VALIDATION ── */
+.case-warn {
+  font-size: 11.5px;
+  color: var(--yellow-warn);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cases-row input.over-limit {
+  border-color: var(--yellow-warn);
+}

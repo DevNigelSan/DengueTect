@@ -176,8 +176,51 @@ document.getElementById('submitBtn').addEventListener('click', function(e) {
   });
 
   if (!valid) return;
+
+  // Check for case values over 100
+  const highCases = Array.from(document.querySelectorAll('input[name^="cases_"]'))
+    .filter(i => parseInt(i.value) > 100);
+
+  if (highCases.length > 0) {
+    const vals = highCases.map(i => `${i.name}: ${i.value} cases`).join(', ');
+    const confirmed = confirm(
+      `⚠️ High Case Count Detected\n\nYou entered unusually high values:\n${vals}\n\nThis significantly exceeds the historical average for this barangay.\n\nAre you sure these values are correct?`
+    );
+    if (!confirmed) return;
+  }
+
   document.querySelector('form') && document.querySelector('form').submit();
 });
+
+// Case count validation
+const caseInputs = document.querySelectorAll('input[name^="cases_"]');
+
+caseInputs.forEach(input => {
+  input.addEventListener('blur', () => {
+    validateCaseInput(input);
+  });
+});
+
+function validateCaseInput(input) {
+  const val = parseInt(input.value);
+  const existingWarn = input.parentElement.querySelector('.case-warn');
+  if (existingWarn) existingWarn.remove();
+
+  if (isNaN(val) || val <= 50) return;
+
+  if (val > 50 && val <= 100) {
+    const warn = document.createElement('div');
+    warn.className = 'case-warn';
+    warn.innerHTML = `⚠️ Unusually high case count. Please verify.`;
+    warn.style.cssText = 'font-size:11.5px;color:#D97706;margin-top:4px;';
+    input.parentElement.appendChild(warn);
+  }
+}
+
+function hasCaseWarning() {
+  return document.querySelectorAll('input[name^="cases_"]').length > 0 &&
+    Array.from(document.querySelectorAll('input[name^="cases_"]')).some(i => parseInt(i.value) > 100);
+}
 
 // Clear red border on focus
 document.querySelectorAll('input[type="number"]').forEach(input => {
