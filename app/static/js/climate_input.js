@@ -4,6 +4,14 @@
 const LAT = 14.6507;
 const LON = 121.1029;
 
+// Week labels for user-friendly display
+const WEEK_LABELS = {
+  'cases_w4': 'Week −4 (oldest)',
+  'cases_w3': 'Week −3',
+  'cases_w2': 'Week −2',
+  'cases_w1': 'Week −1 (most recent)'
+};
+
 // Clear all form fields
 function clearForm() {
   document.querySelectorAll('input[type="number"]').forEach(input => {
@@ -14,6 +22,8 @@ function clearForm() {
   document.getElementById('fetchStatus').innerHTML = '';
   document.getElementById('logCard').style.display = 'none';
   document.getElementById('logContent').innerHTML = '';
+  document.querySelector('.cases-row').classList.remove('has-warning');
+  document.querySelectorAll('.case-warn').forEach(w => w.remove());
 }
 
 // Set default date to today
@@ -23,7 +33,88 @@ if (dateInput) {
   dateInput.value = today;
 }
 
-// Fetch climate data from Open-Meteo
+// ── CASE COUNT VALIDATION ──
+function validateCaseInput(input) {
+  const val = parseInt(input.value);
+  const existingWarn = input.parentElement.querySelector('.case-warn');
+  if (existingWarn) existingWarn.remove();
+
+  const casesRow = document.querySelector('.cases-row');
+
+  // Check if any case input is over 50
+  const anyOver50 = Array.from(
+    document.querySelectorAll('input[name^="cases_"]')
+  ).some(i => parseInt(i.value) > 50);
+
+  if (anyOver50) {
+    casesRow.classList.add('has-warning');
+  } else {
+    casesRow.classList.remove('has-warning');
+  }
+
+  if (isNaN(val) || val <= 50) return;
+
+  if (val > 50 && val <= 100) {
+    const warn = document.createElement('div');
+    warn.className = 'case-warn';
+    warn.textContent = '⚠️ Unusually high — please verify this value.';
+    input.parentElement.appendChild(warn);
+  }
+}
+
+document.querySelectorAll('input[name^="cases_"]').forEach(input => {
+  input.addEventListener('blur', () => validateCaseInput(input));
+});
+
+// ── CUSTOM MODAL ──
+function showCaseModal(highCases, onConfirm) {
+  const overlay = document.createElement('div');
+  overlay.className = 'case-modal-overlay';
+
+  const entries = highCases.map(i => `
+    <div class="case-modal-entry">
+      <span class="case-modal-entry-label">${WEEK_LABELS[i.name] || i.name}</span>
+      <span class="case-modal-entry-val">${i.value} cases</span>
+    </div>
+  `).join('');
+
+  overlay.innerHTML = `
+    <div class="case-modal">
+      <div class="case-modal-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="case-modal-title">High Case Count Detected</div>
+      <div class="case-modal-desc">
+        The following weeks have unusually high dengue case counts. Please double-check your records before proceeding.
+      </div>
+      <div class="case-modal-entries">${entries}</div>
+      <div class="case-modal-note">
+        If these numbers are correct based on your official CHO records, you may proceed. Otherwise, click <strong>Go Back</strong> to correct the values.
+      </div>
+      <div class="case-modal-actions">
+        <button class="case-modal-cancel" id="modalCancel">Go Back</button>
+        <button class="case-modal-confirm" id="modalConfirm">Yes, Proceed</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  document.getElementById('modalCancel').addEventListener('click', () => {
+    overlay.remove();
+  });
+
+  document.getElementById('modalConfirm').addEventListener('click', () => {
+    overlay.remove();
+    onConfirm();
+  });
+}
+
+// ── OPEN METEO FETCH ──
 async function fetchClimateData() {
   const weekDate = document.getElementById('week_date').value;
   if (!weekDate) {
@@ -41,7 +132,6 @@ async function fetchClimateData() {
     Fetching...`;
 
   try {
-    // Calculate 4-week date range ending at selected date
     const endDate   = new Date(weekDate);
     const startDate = new Date(weekDate);
     startDate.setDate(startDate.getDate() - 28);
@@ -64,19 +154,16 @@ async function fetchClimateData() {
     const temp     = data.daily.temperature_2m_mean;
     const humidity = data.daily.relative_humidity_2m_mean;
 
-    // Split into 4 weekly chunks
     const weeks = [[], [], [], []];
     dates.forEach((d, i) => {
       const weekIdx = Math.min(Math.floor(i / 7), 3);
       weeks[weekIdx].push({ date: d, rainfall: rainfall[i], temp: temp[i], humidity: humidity[i] });
     });
 
-    // Calculate weekly aggregates
     const weeklyRain  = weeks.map(w => w.reduce((s, d) => s + (d.rainfall || 0), 0).toFixed(1));
     const weeklyTemp  = weeks.map(w => (w.reduce((s, d) => s + (d.temp || 0), 0) / w.length).toFixed(1));
     const weeklyHumid = weeks.map(w => (w.reduce((s, d) => s + (d.humidity || 0), 0) / w.length).toFixed(1));
 
-    // Fill form fields (w4=oldest, w1=most recent)
     ['rain_w4','rain_w3','rain_w2','rain_w1'].forEach((name, i) => {
       document.querySelector(`input[name="${name}"]`).value = weeklyRain[i];
     });
@@ -87,7 +174,6 @@ async function fetchClimateData() {
       document.querySelector(`input[name="${name}"]`).value = weeklyHumid[i];
     });
 
-    // Build data log
     buildLog(weeks, weeklyRain, weeklyTemp, weeklyHumid, start, end);
     showStatus('success', `Data fetched successfully for ${start} to ${end}.`);
 
@@ -153,7 +239,7 @@ function showStatus(type, msg) {
   el.textContent = msg;
 }
 
-// Validate fields before submit
+// ── FORM SUBMIT ──
 document.getElementById('submitBtn').addEventListener('click', function(e) {
   e.preventDefault();
 
@@ -182,45 +268,14 @@ document.getElementById('submitBtn').addEventListener('click', function(e) {
     .filter(i => parseInt(i.value) > 100);
 
   if (highCases.length > 0) {
-    const vals = highCases.map(i => `${i.name}: ${i.value} cases`).join(', ');
-    const confirmed = confirm(
-      `⚠️ High Case Count Detected\n\nYou entered unusually high values:\n${vals}\n\nThis significantly exceeds the historical average for this barangay.\n\nAre you sure these values are correct?`
-    );
-    if (!confirmed) return;
+    showCaseModal(highCases, () => {
+      document.querySelector('form').submit();
+    });
+    return;
   }
 
   document.querySelector('form') && document.querySelector('form').submit();
 });
-
-// Case count validation
-const caseInputs = document.querySelectorAll('input[name^="cases_"]');
-
-caseInputs.forEach(input => {
-  input.addEventListener('blur', () => {
-    validateCaseInput(input);
-  });
-});
-
-function validateCaseInput(input) {
-  const val = parseInt(input.value);
-  const existingWarn = input.parentElement.querySelector('.case-warn');
-  if (existingWarn) existingWarn.remove();
-
-  if (isNaN(val) || val <= 50) return;
-
-  if (val > 50 && val <= 100) {
-    const warn = document.createElement('div');
-    warn.className = 'case-warn';
-    warn.innerHTML = `⚠️ Unusually high case count. Please verify.`;
-    warn.style.cssText = 'font-size:11.5px;color:#D97706;margin-top:4px;';
-    input.parentElement.appendChild(warn);
-  }
-}
-
-function hasCaseWarning() {
-  return document.querySelectorAll('input[name^="cases_"]').length > 0 &&
-    Array.from(document.querySelectorAll('input[name^="cases_"]')).some(i => parseInt(i.value) > 100);
-}
 
 // Clear red border on focus
 document.querySelectorAll('input[type="number"]').forEach(input => {
