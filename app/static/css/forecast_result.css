@@ -505,3 +505,106 @@
   .verdict-block { flex-direction: column; gap: 16px; }
   .report-header { flex-direction: column; gap: 16px; }
 }
+
+/* ── SUMMARY INFO CARDS ── */
+.summary-cards-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.summary-info-card {
+  background: var(--gray-100);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sic-icon {
+  width: 44px;
+  height: 44px;
+  background: var(--blue-light);
+  color: var(--blue-primary);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sic-num {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--blue-deep);
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.sic-num span { font-size: 18px; color: var(--gray-400); }
+
+.sic-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-800);
+  margin-bottom: 2px;
+}
+
+.sic-sub {
+  font-size: 12px;
+  color: var(--gray-400);
+}
+
+/* ── RECOMMENDATION BLOCK ── */
+.recommendation-block {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1.5px solid transparent;
+}
+
+.recommendation-block.high {
+  border-color: #FECACA;
+  background: #FEF2F2;
+}
+
+.recommendation-block.moderate {
+  border-color: #FDE68A;
+  background: #FFFBEB;
+}
+
+.recommendation-block.low {
+  border-color: #BBF7D0;
+  background: #F0FDF4;
+}
+
+.rec-risk-label {
+  padding: 12px 20px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.rec-risk-label.high     { background: var(--red-alert); color: white; }
+.rec-risk-label.moderate { background: var(--yellow-warn); color: white; }
+.rec-risk-label.low      { background: var(--green-safe); color: white; }
+
+.rec-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rec-body p {
+  font-size: 15px;
+  color: var(--gray-800);
+  line-height: 1.8;
+  margin: 0;
+}
+
+.rec-body strong { color: var(--blue-deep); }

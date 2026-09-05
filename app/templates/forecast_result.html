@@ -61,10 +61,10 @@
     <!-- PAGE HEADER -->
     <div class="page-header">
       <div>
-        <h1 class="page-title">Forecast Result</h1>
+        <h1 class="page-title">Forecast Report</h1>
         <p class="page-sub">
           {% if forecast %}
-            Generated report · Barangay {{ forecast.barangay }} · Week of {{ forecast.week_date }}
+            Barangay {{ forecast.barangay }} · Week of {{ forecast.week_date }}
           {% else %}
             No forecast generated yet
           {% endif %}
@@ -100,8 +100,8 @@
             </svg>
           </div>
           <div>
-            <div class="report-system-name">DengueTect Forecasting System</div>
-            <div class="report-org">Marikina City Health Office · EARIST</div>
+            <div class="report-system-name">DengueTect Dengue Outbreak Forecasting System</div>
+            <div class="report-org">Marikina City Health Office · EARIST Group 10</div>
           </div>
         </div>
         <div class="report-header-right">
@@ -110,8 +110,12 @@
             <span class="report-meta-val">{{ forecast.barangay if forecast else '—' }}</span>
           </div>
           <div class="report-meta-row">
-            <span class="report-meta-label">Week</span>
+            <span class="report-meta-label">Forecast Week</span>
             <span class="report-meta-val">{{ forecast.week_date if forecast else '—' }}</span>
+          </div>
+          <div class="report-meta-row">
+            <span class="report-meta-label">Prepared by</span>
+            <span class="report-meta-val">{{ session.user_name if session.user_name else 'Health Officer' }}</span>
           </div>
           <div class="report-meta-row">
             <span class="report-meta-label">Generated</span>
@@ -120,8 +124,9 @@
         </div>
       </div>
 
-      <!-- RISK VERDICT -->
       {% if forecast %}
+
+      <!-- RISK VERDICT -->
       <div class="verdict-block {{ forecast.risk_level }}">
         <div class="verdict-left">
           <div class="verdict-icon">
@@ -132,16 +137,158 @@
             </svg>
           </div>
           <div>
-            <div class="verdict-label">OUTBREAK RISK LEVEL</div>
+            <div class="verdict-label">DENGUE OUTBREAK RISK ASSESSMENT</div>
             <div class="verdict-level">{{ forecast.risk_level | upper }} RISK</div>
-            <div class="verdict-brgy">Barangay {{ forecast.barangay }} · {{ forecast.week_date }}</div>
+            <div class="verdict-brgy">Barangay {{ forecast.barangay }} · Week of {{ forecast.week_date }}</div>
           </div>
         </div>
         <div class="verdict-score">
           <div class="verdict-score-num">{{ forecast.outbreak_proba }}<span>%</span></div>
-          <div class="verdict-score-label">Outbreak Probability</div>
+          <div class="verdict-score-label">Outbreak Likelihood</div>
         </div>
       </div>
+
+      <!-- FORECAST SUMMARY -->
+      <div class="report-section">
+        <div class="report-section-title">Forecast Summary</div>
+        <div class="summary-cards-row">
+          <div class="summary-info-card">
+            <div class="sic-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <div class="sic-body">
+              <div class="sic-num">{{ forecast.predicted_cases }}</div>
+              <div class="sic-label">Projected Cases</div>
+              <div class="sic-sub">Expected in the next 2 weeks</div>
+            </div>
+          </div>
+
+          <div class="summary-info-card">
+            <div class="sic-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </div>
+            <div class="sic-body">
+              <div class="sic-num">{{ forecast.outbreak_proba }}<span>%</span></div>
+              <div class="sic-label">Outbreak Likelihood</div>
+              <div class="sic-sub">Based on climate and case trends</div>
+            </div>
+          </div>
+
+          <div class="summary-info-card">
+            <div class="sic-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div class="sic-body">
+              <div class="sic-num">2–4<span style="font-size:18px">wks</span></div>
+              <div class="sic-label">Forecast Lead Time</div>
+              <div class="sic-sub">Advance warning period</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECOMMENDED ACTIONS — PARAGRAPH FORM -->
+      <div class="report-section">
+        <div class="report-section-title">Health Response Recommendations</div>
+
+        {% if forecast.risk_level == 'high' %}
+        <div class="recommendation-block high">
+          <div class="rec-risk-label high">HIGH RISK — Immediate Action Required</div>
+          <div class="rec-body">
+            <p>Based on the current dengue outlook for Barangay {{ forecast.barangay }}, the forecasting system has detected a <strong>high probability of a dengue outbreak</strong> in the coming weeks, with an estimated {{ forecast.predicted_cases }} projected cases. The outbreak likelihood stands at {{ forecast.outbreak_proba }}%, driven by elevated rainfall, high humidity levels, and recent case trends in the area. Immediate and coordinated public health action is strongly advised.</p>
+
+            <p>The barangay health response team should be activated without delay and coordinated with the Marikina City Health Office for the deployment of health workers to Barangay {{ forecast.barangay }}. Emergency fogging operations must be prioritized, particularly in flood-prone zones and areas with standing water near the Marikina River, where Aedes aegypti mosquito breeding is most likely to occur under current climate conditions.</p>
+
+            <p>A community health advisory should be issued immediately to inform residents of the elevated dengue risk. Information materials on dengue prevention — including proper disposal of water-collecting containers, use of mosquito repellents, and early symptom recognition — should be distributed across the barangay. Health workers should be instructed to shift from weekly to daily case reporting for the next two weeks to allow for real-time monitoring of the situation and timely escalation if case counts continue to rise.</p>
+          </div>
+        </div>
+
+        {% elif forecast.risk_level == 'moderate' %}
+        <div class="recommendation-block moderate">
+          <div class="rec-risk-label moderate">MODERATE RISK — Increased Vigilance Advised</div>
+          <div class="rec-body">
+            <p>The dengue forecast for Barangay {{ forecast.barangay }} indicates a <strong>moderate level of outbreak risk</strong> for the coming weeks, with an estimated {{ forecast.predicted_cases }} projected cases and an outbreak likelihood of {{ forecast.outbreak_proba }}%. While this does not yet constitute an emergency, the current climate and case conditions warrant heightened surveillance and preventive action to avoid escalation to a high-risk situation.</p>
+
+            <p>Surveillance activities in Barangay {{ forecast.barangay }} and surrounding areas should be stepped up immediately. Health workers are advised to conduct more frequent monitoring visits and to actively screen for early dengue symptoms among community members. Preventive fogging operations should be scheduled for high-risk zones within the barangay, focusing on areas prone to waterlogging and poor drainage.</p>
+
+            <p>A community awareness campaign should be launched to remind residents of proper dengue prevention practices, including the elimination of standing water in and around their homes, the use of mosquito repellents and protective clothing, and the importance of seeking early medical attention when dengue symptoms such as fever, rash, or joint pain appear. Health officers should maintain close coordination with the Marikina CHO and remain on alert for any sudden increase in case counts that may signal a shift to high-risk status.</p>
+          </div>
+        </div>
+
+        {% else %}
+        <div class="recommendation-block low">
+          <div class="rec-risk-label low">LOW RISK — Routine Monitoring</div>
+          <div class="rec-body">
+            <p>The dengue forecast for Barangay {{ forecast.barangay }} currently indicates a <strong>low level of outbreak risk</strong> for the coming weeks, with an estimated {{ forecast.predicted_cases }} projected cases and an outbreak likelihood of {{ forecast.outbreak_proba }}%. Present climate conditions and recent case trends do not suggest an imminent outbreak; however, continued vigilance and routine surveillance remain essential to detect any early signs of increased transmission.</p>
+
+            <p>Health officers are advised to maintain regular weekly surveillance activities in Barangay {{ forecast.barangay }} in accordance with standard CHO monitoring protocols. Case reporting should continue on its regular schedule, with health workers remaining attentive to any unusual clustering of dengue symptoms among residents. Routine environmental health activities, including community clean-up drives and inspection of potential breeding sites, should be sustained.</p>
+
+            <p>Community members should continue to be reminded of basic dengue prevention measures as part of the barangay's ongoing public health education efforts. While the current risk level is low, residents and health workers should remain aware that dengue risk can change rapidly with shifts in rainfall and environmental conditions, particularly during the rainy season. The next forecast should be generated on schedule to ensure continuous monitoring of the situation.</p>
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+
+      <!-- CLIMATE INPUTS USED -->
+      <div class="report-section">
+        <div class="report-section-title">Climate Data Used in This Forecast</div>
+        <p style="font-size:14px;color:var(--gray-600);margin-bottom:16px;line-height:1.6;">
+          The following climate readings were used as inputs to generate this forecast. Values represent weekly totals for rainfall and weekly averages for temperature and humidity, with a 4-week lag applied to account for the mosquito breeding cycle.
+        </p>
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Climate Variable</th>
+              <th>4 Weeks Ago</th>
+              <th>3 Weeks Ago</th>
+              <th>2 Weeks Ago</th>
+              <th>Last Week</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Rainfall (mm)</strong></td>
+              <td>{{ forecast.rain_w4 if forecast.rain_w4 else '—' }}</td>
+              <td>{{ forecast.rain_w3 if forecast.rain_w3 else '—' }}</td>
+              <td>{{ forecast.rain_w2 if forecast.rain_w2 else '—' }}</td>
+              <td>{{ forecast.rain_w1 if forecast.rain_w1 else '—' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Temperature (°C)</strong></td>
+              <td>{{ forecast.temp_w4 if forecast.temp_w4 else '—' }}</td>
+              <td>{{ forecast.temp_w3 if forecast.temp_w3 else '—' }}</td>
+              <td>{{ forecast.temp_w2 if forecast.temp_w2 else '—' }}</td>
+              <td>{{ forecast.temp_w1 if forecast.temp_w1 else '—' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Humidity (%)</strong></td>
+              <td>{{ forecast.humid_w4 if forecast.humid_w4 else '—' }}</td>
+              <td>{{ forecast.humid_w3 if forecast.humid_w3 else '—' }}</td>
+              <td>{{ forecast.humid_w2 if forecast.humid_w2 else '—' }}</td>
+              <td>{{ forecast.humid_w1 if forecast.humid_w1 else '—' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Dengue Cases (count)</strong></td>
+              <td>{{ forecast.cases_w4 if forecast.cases_w4 else '—' }}</td>
+              <td>{{ forecast.cases_w3 if forecast.cases_w3 else '—' }}</td>
+              <td>{{ forecast.cases_w2 if forecast.cases_w2 else '—' }}</td>
+              <td>{{ forecast.cases_w1 if forecast.cases_w1 else '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       {% else %}
       <div class="verdict-block low">
         <div class="verdict-left">
@@ -161,148 +308,15 @@
       </div>
       {% endif %}
 
-      <!-- TWO COLUMN RESULTS -->
-      <div class="report-results-grid">
-
-        <!-- Random Forest -->
-        <div class="result-card">
-          <div class="result-card-header">
-            <div class="result-model-badge rf">Random Forest</div>
-            <div class="result-type">Case Count Prediction</div>
-          </div>
-          <div class="result-main">
-            <div class="result-number">{{ forecast.predicted_cases if forecast else '—' }}</div>
-            <div class="result-unit">projected cases</div>
-          </div>
-          <div class="result-detail-row">
-            <div class="result-detail">
-              <div class="rd-label">Forecast window</div>
-              <div class="rd-val">2 weeks</div>
-            </div>
-            <div class="result-detail">
-              <div class="rd-label">Model metric</div>
-              <div class="rd-val">R² = 0.37</div>
-            </div>
-            <div class="result-detail">
-              <div class="rd-label">RMSE</div>
-              <div class="rd-val">2.35</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Logistic Regression -->
-        <div class="result-card">
-          <div class="result-card-header">
-            <div class="result-model-badge lr">Logistic Regression</div>
-            <div class="result-type">Outbreak Classification</div>
-          </div>
-          <div class="result-main">
-            <div class="result-number">
-              {{ forecast.outbreak_proba if forecast else '—' }}<span class="result-pct">%</span>
-            </div>
-            <div class="result-unit">outbreak probability</div>
-          </div>
-          <div class="prob-bar-wrap">
-            <div class="prob-bar">
-              <div class="prob-fill {{ forecast.risk_level if forecast else 'low' }}"
-                   style="width:{{ forecast.outbreak_proba if forecast else 0 }}%"></div>
-            </div>
-            <span class="prob-label {{ forecast.risk_level if forecast else 'low' }}">
-              {{ forecast.risk_level | title if forecast else '—' }} likelihood
-            </span>
-          </div>
-          <div class="result-detail-row" style="margin-top:12px">
-            <div class="result-detail">
-              <div class="rd-label">Classification</div>
-              <div class="rd-val">{{ 'Outbreak' if forecast and forecast.outbreak_proba >= 50 else 'No Outbreak' }}</div>
-            </div>
-            <div class="result-detail">
-              <div class="rd-label">Threshold</div>
-              <div class="rd-val">≥ 50%</div>
-            </div>
-            <div class="result-detail">
-              <div class="rd-label">Accuracy</div>
-              <div class="rd-val">79%</div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- RECOMMENDED ACTIONS -->
-      <div class="report-section">
-        <div class="report-section-title">Recommended Actions</div>
-        <div class="action-list">
-          {% if forecast and forecast.risk_level == 'high' %}
-          <div class="action-item high">
-            <div class="action-num">1</div>
-            <div class="action-text">
-              <strong>Activate barangay health response team</strong> — coordinate with Marikina CHO for immediate deployment of health workers to Barangay {{ forecast.barangay }}.
-            </div>
-          </div>
-          <div class="action-item high">
-            <div class="action-num">2</div>
-            <div class="action-text">
-              <strong>Conduct emergency fogging operations</strong> — prioritize flood-prone zones and areas with standing water near the Marikina River.
-            </div>
-          </div>
-          <div class="action-item high">
-            <div class="action-num">3</div>
-            <div class="action-text">
-              <strong>Issue community health advisory</strong> — distribute information materials on dengue prevention and early symptom recognition.
-            </div>
-          </div>
-          <div class="action-item moderate">
-            <div class="action-num">4</div>
-            <div class="action-text">
-              <strong>Increase case surveillance frequency</strong> — shift from weekly to daily case reporting for the next two weeks.
-            </div>
-          </div>
-          {% elif forecast and forecast.risk_level == 'moderate' %}
-          <div class="action-item moderate">
-            <div class="action-num">1</div>
-            <div class="action-text">
-              <strong>Increase surveillance activities</strong> — step up monitoring in Barangay {{ forecast.barangay }} and surrounding areas.
-            </div>
-          </div>
-          <div class="action-item moderate">
-            <div class="action-num">2</div>
-            <div class="action-text">
-              <strong>Schedule preventive fogging</strong> — conduct fogging operations in high-risk zones within the barangay.
-            </div>
-          </div>
-          <div class="action-item moderate">
-            <div class="action-num">3</div>
-            <div class="action-text">
-              <strong>Community awareness campaign</strong> — remind residents to eliminate standing water and use mosquito repellent.
-            </div>
-          </div>
-          {% else %}
-          <div class="action-item moderate">
-            <div class="action-num">1</div>
-            <div class="action-text">
-              <strong>Continue routine monitoring</strong> — maintain regular weekly surveillance in Barangay {{ forecast.barangay if forecast else 'target barangays' }}.
-            </div>
-          </div>
-          <div class="action-item moderate">
-            <div class="action-num">2</div>
-            <div class="action-text">
-              <strong>Maintain community education</strong> — keep residents informed about dengue prevention best practices.
-            </div>
-          </div>
-          {% endif %}
-        </div>
-      </div>
-
       <!-- REPORT FOOTER -->
       <div class="report-footer">
-        <p>This forecast was generated automatically by DengueTect v1.0 using Random Forest and Logistic Regression models trained on 2022–2026 epidemiological and climate data. Results are intended to support — not replace — professional public health judgment.</p>
+        <p>This forecast report was automatically generated by the DengueTect Dengue Outbreak Forecasting System using machine learning models trained on historical epidemiological and climate data from Marikina City (2022–2026). The projections contained in this report are intended to support — and not replace — the professional judgment of authorized public health personnel. All recommended actions should be implemented in accordance with existing Marikina City Health Office protocols and Department of Health guidelines.</p>
         <div class="report-footer-meta">
           <span>DengueTect v1.0</span>
           <span>·</span>
           <span>EARIST — Group 10</span>
           <span>·</span>
-          <span>Confidential — For authorized personnel only</span>
+          <span>For authorized Marikina CHO personnel only</span>
         </div>
       </div>
 
