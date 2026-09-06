@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from app.ml.predict import run_forecast
-from app.ml.storage import save_forecast, get_latest_forecast, get_all_forecasts
+from app.ml.storage import save_forecast, get_latest_forecast, get_all_forecasts, delete_forecast_by_id
 from app.ml.auth import verify_password
 from functools import wraps
 
@@ -68,6 +68,7 @@ def climate_input():
     if request.method == 'POST':
         barangay  = request.form.get('barangay')
         week_date = request.form.get('week_date')
+
         climate_inputs = {
             'rain_w1':   request.form.get('rain_w1'),
             'rain_w2':   request.form.get('rain_w2'),
@@ -85,11 +86,15 @@ def climate_input():
             'cases_w2':  request.form.get('cases_w2'),
             'cases_w3':  request.form.get('cases_w3'),
             'cases_w4':  request.form.get('cases_w4'),
+            'generated_by': session.get('user_name'),
         }
+
         result = run_forecast(barangay, week_date, climate_inputs)
+        result.update(climate_inputs)
         save_forecast(result)
         session['last_forecast'] = result
         return redirect(url_for('main.forecast_result'))
+
     return render_template('climate_input.html')
 
 @main.route('/result')
@@ -101,29 +106,20 @@ def forecast_result():
 @main.route('/history')
 @login_required
 def history():
-    all_forecasts = get_all_forecasts()
-    rows = []
-    for brgy, entries in all_forecasts.items():
-        for entry in entries:
-            rows.append(entry)
-    rows.sort(key=lambda x: x.get('generated_at', ''), reverse=True)
+    rows = get_all_forecasts()
     return render_template('history.html', rows=rows)
 
 @main.route('/admin')
 @admin_required
 def admin():
-    return render_template('admin.html')
+    from app.ml.auth import get_all_users
+    users = get_all_users()
+    return render_template('admin.html', users=users)
 
 @main.route('/delete-forecast', methods=['POST'])
 @login_required
 def delete_forecast():
-    barangay = request.form.get('barangay')
-    index    = int(request.form.get('index', 0))
-    forecasts = get_all_forecasts()
-    if barangay in forecasts and index < len(forecasts[barangay]):
-        forecasts[barangay].pop(index)
-        from app.ml.storage import FORECAST_FILE
-        import json
-        with open(FORECAST_FILE, 'w') as f:
-            json.dump(forecasts, f, indent=2)
+    forecast_id = request.form.get('forecast_id')
+    if forecast_id:
+        delete_forecast_by_id(int(forecast_id))
     return redirect(url_for('main.dashboard'))

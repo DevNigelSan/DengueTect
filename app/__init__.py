@@ -11,8 +11,10 @@ def create_app():
     def page_not_found(e):
         return render_template('404.html'), 404
 
+    # Initialize database and default users on startup
+    from app.ml.database import init_db
     from app.ml.auth import init_default_users
+    init_db()
     init_default_users()
 
     return app
-
