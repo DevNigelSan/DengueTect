@@ -1,0 +1,221 @@
+/* ── Model Evaluation Styles ── */
+
+.nav-links {
+  display: flex;
+  gap: 4px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 9px;
+  padding: 4px;
+}
+
+.nav-link {
+  padding: 7px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.55);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-link:hover {
+  color: var(--white);
+  background: rgba(255,255,255,0.08);
+  text-decoration: none;
+}
+
+.nav-link.active {
+  background: var(--white);
+  color: var(--blue-deep);
+  font-weight: 600;
+}
+
+/* ── SUMMARY CARDS ── */
+.eval-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.eval-summary-card {
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 14px;
+  padding: 22px 24px;
+}
+
+.eval-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.eval-brgy-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--blue-deep);
+}
+
+.eval-accuracy-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--blue-light);
+  color: var(--blue-primary);
+}
+
+.eval-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.eval-metric { text-align: center; }
+
+.eval-metric-num {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--blue-deep);
+  letter-spacing: -0.5px;
+}
+
+.eval-metric-label {
+  font-size: 11.5px;
+  color: var(--gray-400);
+  margin-top: 2px;
+}
+
+.eval-accuracy-bar {
+  height: 6px;
+  background: var(--gray-200);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.eval-accuracy-fill {
+  height: 100%;
+  background: var(--blue-primary);
+  border-radius: 999px;
+}
+
+/* ── CHART SECTION ── */
+.eval-section {
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.eval-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.eval-tab {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-600);
+  background: var(--gray-100);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.eval-tab:hover { background: var(--blue-light); color: var(--blue-primary); }
+.eval-tab.active { background: var(--blue-primary); color: white; }
+
+.eval-chart-wrap {
+  padding: 20px 24px;
+  height: 320px;
+}
+
+.eval-chart-wrap canvas { max-height: 280px; }
+
+.chart-legend {
+  display: flex;
+  gap: 24px;
+  padding: 12px 24px;
+  border-top: 1px solid var(--gray-200);
+  background: var(--gray-100);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+.legend-dot {
+  width: 24px;
+  height: 3px;
+  border-radius: 999px;
+}
+
+.legend-dot.actual    { background: #1A56A0; }
+.legend-dot.predicted { background: #DC2626; border-top: 2px dashed #DC2626; height: 0; }
+
+/* ── CONFUSION MATRIX ── */
+.eval-lower-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.confusion-wrap { margin-bottom: 0; }
+
+.confusion-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--gray-200);
+  margin: 16px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.confusion-cell {
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.confusion-cell.correct { background: #F0FDF4; }
+.confusion-cell.warning { background: #FFFBEB; }
+
+.confusion-num {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--blue-deep);
+  letter-spacing: -1px;
+}
+
+.confusion-cell.correct .confusion-num { color: var(--green-safe); }
+.confusion-cell.warning .confusion-num { color: var(--yellow-warn); }
+
+.confusion-label {
+  font-size: 12px;
+  color: var(--gray-600);
+  line-height: 1.4;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1024px) {
+  .eval-summary-grid { grid-template-columns: 1fr; }
+  .eval-lower-grid   { grid-template-columns: 1fr; }
+}

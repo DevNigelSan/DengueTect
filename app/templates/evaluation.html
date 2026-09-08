@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Model Evaluation{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/evaluation.css') }}"/>
+{% endblock %}
+
+{% block content %}
+<div class="app-shell">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+      <div class="nav-brand-text">
+        <span class="nav-title">DengueTect</span>
+        <span class="nav-sub">Marikina City Health Office</span>
+      </div>
+    </div>
+
+    <div class="nav-center">
+      <div class="nav-links">
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/input" class="nav-link">Climate Input</a>
+        <a href="/history" class="nav-link">History</a>
+        <a href="/evaluation" class="nav-link active">Model Evaluation</a>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <div class="nav-status">
+        <span class="status-pulse"></span>
+        <span class="status-text">Live</span>
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-user">
+        <div class="user-avatar">{{ session.user_name[:2].upper() if session.user_name else 'HO' }}</div>
+        <div class="user-info">
+          <span class="user-name">{{ session.user_name if session.user_name else 'Health Officer' }}</span>
+          <span class="user-role">{{ 'IT Admin' if session.user_role == 'admin' else 'Marikina CHO' }}</span>
+        </div>
+      </div>
+      <a href="/login" class="btn-logout">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Sign out
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Model Evaluation</h1>
+        <p class="page-sub">Predicted vs Actual case counts · Outbreak detection performance · Per barangay</p>
+      </div>
+    </div>
+
+    <!-- PERFORMANCE SUMMARY CARDS -->
+    <div class="eval-summary-grid">
+      {% for brgy, data in eval_data.items() %}
+      <div class="eval-summary-card">
+        <div class="eval-card-header">
+          <div class="eval-brgy-name">Barangay {{ brgy }}</div>
+          <div class="eval-accuracy-badge">{{ data.accuracy }}% accurate</div>
+        </div>
+        <div class="eval-metrics-row">
+          <div class="eval-metric">
+            <div class="eval-metric-num">±{{ data.avg_error }}</div>
+            <div class="eval-metric-label">Avg. Case Error</div>
+          </div>
+          <div class="eval-metric">
+            <div class="eval-metric-num">{{ data.accuracy }}%</div>
+            <div class="eval-metric-label">Outbreak Detection</div>
+          </div>
+          <div class="eval-metric">
+            <div class="eval-metric-num">{{ data.precision }}%</div>
+            <div class="eval-metric-label">Alert Precision</div>
+          </div>
+        </div>
+        <div class="eval-accuracy-bar">
+          <div class="eval-accuracy-fill" style="width:{{ data.accuracy }}%"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- PREDICTED VS ACTUAL CHART -->
+    <div class="eval-section">
+      <div class="panel-header">
+        <div class="panel-title">Predicted vs Actual Case Counts</div>
+        <div class="eval-tabs">
+          {% for brgy in eval_data.keys() %}
+          <button class="eval-tab {% if loop.first %}active{% endif %}"
+                  onclick="showChart('{{ brgy }}')">{{ brgy }}</button>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% for brgy, data in eval_data.items() %}
+      <div class="eval-chart-wrap" id="chart-{{ brgy }}"
+           style="{% if not loop.first %}display:none{% endif %}">
+        <canvas id="canvas-{{ brgy }}"></canvas>
+      </div>
+      {% endfor %}
+
+      <div class="chart-legend">
+        <div class="legend-item">
+          <div class="legend-dot actual"></div>
+          <span>Actual Cases (from CHO records)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot predicted"></div>
+          <span>Predicted Cases (model output)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFUSION MATRIX -->
+    <div class="eval-lower-grid">
+      {% for brgy, data in eval_data.items() %}
+      <div class="eval-section confusion-wrap">
+        <div class="panel-header">
+          <div class="panel-title">Outbreak Detection — {{ brgy }}</div>
+          <div class="panel-sub">{{ data.total }} weeks evaluated</div>
+        </div>
+        <div class="confusion-grid">
+          <div class="confusion-cell correct">
+            <div class="confusion-num">{{ data.tn }}</div>
+            <div class="confusion-label">Correctly identified<br>as safe weeks</div>
+          </div>
+          <div class="confusion-cell warning">
+            <div class="confusion-num">{{ data.fp }}</div>
+            <div class="confusion-label">False alerts<br>(safe flagged as risk)</div>
+          </div>
+          <div class="confusion-cell warning">
+            <div class="confusion-num">{{ data.fn }}</div>
+            <div class="confusion-label">Missed outbreaks<br>(risk flagged as safe)</div>
+          </div>
+          <div class="confusion-cell correct">
+            <div class="confusion-num">{{ data.tp }}</div>
+            <div class="confusion-label">Correctly detected<br>outbreak weeks</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const evalData = {{ eval_data | tojson }};
+
+  function showChart(brgy) {
+    document.querySelectorAll('.eval-chart-wrap').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.eval-tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('chart-' + brgy).style.display = 'block';
+    event.target.classList.add('active');
+  }
+
+  // Build charts
+  Object.entries(evalData).forEach(([brgy, data]) => {
+    const ctx = document.getElementById('canvas-' + brgy).getContext('2d');
+    
+    // Show every 4th week label to avoid crowding
+    const labels = data.weeks.map((w, i) => i % 4 === 0 ? w : '');
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: data.weeks,
+        datasets: [
+          {
+            label: 'Actual Cases',
+            data: data.actual,
+            borderColor: '#1A56A0',
+            backgroundColor: 'rgba(26,86,160,0.08)',
+            borderWidth: 2,
+            pointRadius: 2,
+            tension: 0.3,
+            fill: true
+          },
+          {
+            label: 'Predicted Cases',
+            data: data.predicted,
+            borderColor: '#DC2626',
+            backgroundColor: 'rgba(220,38,38,0.05)',
+            borderWidth: 2,
+            pointRadius: 2,
+            tension: 0.3,
+            borderDash: [5, 3],
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (items) => 'Week of ' + items[0].label,
+              label: (item) => item.dataset.label + ': ' + item.parsed.y + ' cases'
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              maxRotation: 45,
+              callback: function(val, idx) {
+                return idx % 8 === 0 ? this.getLabelForValue(val) : '';
+              },
+              font: { size: 11 }
+            },
+            grid: { display: false }
+          },
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: 'Case Count' },
+            ticks: { font: { size: 12 } }
+          }
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}
