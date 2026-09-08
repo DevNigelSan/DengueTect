@@ -3,6 +3,8 @@ from app.ml.predict import run_forecast
 from app.ml.storage import save_forecast, get_latest_forecast, get_all_forecasts, delete_forecast_by_id
 from app.ml.auth import verify_password
 from functools import wraps
+import json
+from pathlib import Path
 
 main = Blueprint('main', __name__)
 
@@ -123,3 +125,11 @@ def delete_forecast():
     if forecast_id:
         delete_forecast_by_id(int(forecast_id))
     return redirect(url_for('main.dashboard'))
+
+@main.route('/evaluation')
+@login_required
+def evaluation():
+    eval_path = Path(__file__).resolve().parent.parent / 'data' / 'evaluation.json'
+    with open(eval_path, 'r') as f:
+        eval_data = json.load(f)
+    return render_template('evaluation.html', eval_data=eval_data)
