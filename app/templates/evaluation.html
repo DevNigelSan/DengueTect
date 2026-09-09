@@ -215,14 +215,21 @@
       options: {
         responsive: false,
         animation: false,
-        plugins: {
+                plugins: {
           legend: { display: false },
           tooltip: {
+            enabled: true,
+            mode: 'index',
+            intersect: false,
             callbacks: {
               title: (items) => 'Week of ' + items[0].label,
               label: (item) => item.dataset.label + ': ' + item.parsed.y + ' cases'
             }
           }
+        },
+        interaction: {
+          mode: 'index',
+          intersect: false
         },
         scales: {
           x: {
@@ -289,17 +296,22 @@
     charts[brgy] = new Chart(canvas.getContext('2d'), buildChartConfig(data, expanded[brgy]));
   }
 
-  // Initialize all charts
-  Object.entries(evalData).forEach(([brgy, data]) => {
-    expanded[brgy] = false;
-    const wrap   = document.getElementById('chart-' + brgy);
-    const canvas = document.getElementById('canvas-' + brgy);
-    const w = wrap.clientWidth - 48 || 800;
-    canvas.style.width  = w + 'px';
-    canvas.style.height = '280px';
-    canvas.width  = w * window.devicePixelRatio;
-    canvas.height = 280 * window.devicePixelRatio;
-    charts[brgy] = new Chart(canvas.getContext('2d'), buildChartConfig(data, false));
+    // Initialize all charts after page fully loads
+  window.addEventListener('load', () => {
+    // Show all wraps briefly to get correct width
+    const firstBrgy = Object.keys(evalData)[0];
+    const refWrap = document.getElementById('chart-' + firstBrgy);
+    const w = refWrap.clientWidth - 48 || 900;
+
+    Object.entries(evalData).forEach(([brgy, data]) => {
+      expanded[brgy] = false;
+      const canvas = document.getElementById('canvas-' + brgy);
+      canvas.style.width  = w + 'px';
+      canvas.style.height = '280px';
+      canvas.width  = w * window.devicePixelRatio;
+      canvas.height = 280 * window.devicePixelRatio;
+      charts[brgy] = new Chart(canvas.getContext('2d'), buildChartConfig(data, false));
+    });
   });
 </script>
 {% endblock %}
