@@ -261,3 +261,54 @@
   overflow-x: hidden;
   position: relative;
 }
+
+/* ── DATE SEARCH ── */
+.chart-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--gray-100);
+  flex-wrap: wrap;
+}
+
+.search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 7px;
+  padding: 8px 12px;
+  color: var(--gray-400);
+}
+
+.search-wrap input[type="date"] {
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: var(--gray-800);
+  background: transparent;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-search {
+  padding: 9px 18px;
+  background: var(--blue-primary);
+  color: white;
+  border: none;
+  border-radius: 7px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-search:hover { background: var(--blue-deep); }
+
+.search-result {
+  font-size: 13px;
+  color: var(--blue-primary);
+  font-weight: 500;
+}
