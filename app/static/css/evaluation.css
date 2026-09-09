@@ -219,3 +219,53 @@
   .eval-summary-grid { grid-template-columns: 1fr; }
   .eval-lower-grid   { grid-template-columns: 1fr; }
 }
+
+/* ── CHART ZOOM ── */
+.chart-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.btn-zoom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 7px;
+  background: var(--white);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.btn-zoom:hover {
+  border-color: var(--blue-primary);
+  color: var(--blue-primary);
+}
+
+.btn-zoom.active {
+  background: var(--blue-light);
+  border-color: var(--blue-primary);
+  color: var(--blue-primary);
+}
+
+.eval-chart-wrap {
+  padding: 20px 24px;
+  height: 320px;
+  overflow-x: auto;
+}
+
+.eval-chart-wrap.expanded {
+  height: 340px;
+}
+
+.eval-chart-wrap.expanded canvas {
+  min-width: 2400px !important;
+  max-height: 300px;
+}
