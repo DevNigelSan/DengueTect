@@ -258,14 +258,10 @@
 .eval-chart-wrap {
   padding: 20px 24px;
   height: 320px;
-  overflow-x: auto;
+  overflow-x: hidden;
 }
 
 .eval-chart-wrap.expanded {
   height: 340px;
-}
-
-.eval-chart-wrap.expanded canvas {
-  min-width: 2400px !important;
-  max-height: 300px;
+  overflow-x: auto;
 }
