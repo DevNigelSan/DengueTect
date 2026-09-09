@@ -4,6 +4,7 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 {% endblock %}
 
 {% block content %}
@@ -44,7 +45,7 @@
           <span class="user-role">{{ 'IT Admin' if session.user_role == 'admin' else 'Marikina CHO' }}</span>
         </div>
       </div>
-      <a href="/login" class="btn-logout">
+      <a href="/logout" class="btn-logout">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
           <polyline points="16 17 21 12 16 7"/>
@@ -145,7 +146,6 @@
 
     <!-- BARANGAY CARDS -->
     <div class="brgy-cards-grid">
-
       {% for label, f in [('Nangka', nangka), ('Tumana', tumana), ('Malanday', malanday)] %}
       <div class="brgy-card {{ f.risk_level if f else 'none' }}">
         <div class="brgy-card-header">
@@ -189,7 +189,6 @@
         <div class="brgy-card-accent {{ f.risk_level if f else 'none' }}"></div>
       </div>
       {% endfor %}
-
     </div>
 
     <!-- BOTTOM PANELS -->
@@ -199,7 +198,7 @@
       <div class="table-panel">
         <div class="panel-header">
           <div class="panel-title">Recent Forecast Log</div>
-          <div class="panel-sub">Latest 5 entries · all barangays</div>
+          <div class="panel-sub">Latest entries · all barangays</div>
         </div>
         <div class="table-wrap">
           <table class="forecast-table">
@@ -228,7 +227,7 @@
                 <td><span class="badge {{ f.risk_level }}">{{ f.risk_level | title }}</span></td>
                 <td class="td-done">{{ f.generated_at }}</td>
                 <td>
-                   <form action="/delete-forecast" method="POST" onsubmit="return confirm('Remove this forecast?')">
+                  <form action="/delete-forecast" method="POST" onsubmit="return confirm('Remove this forecast?')">
                     <input type="hidden" name="forecast_id" value="{{ f.id }}"/>
                     <button type="submit" class="btn-delete">Remove</button>
                   </form>
@@ -310,15 +309,125 @@
             </div>
             <div class="climate-val" style="font-size:22px">2–4 wks</div>
           </div>
-
         </div>
       </div>
 
     </div>
+
+    <!-- GIS MAP -->
+    <div class="section-title" style="margin-top:24px;">
+      Risk Map <span>· Barangays along Marikina River</span>
+    </div>
+    <div class="map-panel">
+      <div id="dengue-map"></div>
+      <div class="map-legend">
+        <div class="map-legend-title">Risk Level</div>
+        <div class="map-legend-item">
+          <div class="map-legend-dot" style="background:#DC2626"></div>
+          <span>High Risk</span>
+        </div>
+        <div class="map-legend-item">
+          <div class="map-legend-dot" style="background:#D97706"></div>
+          <span>Moderate Risk</span>
+        </div>
+        <div class="map-legend-item">
+          <div class="map-legend-dot" style="background:#16A34A"></div>
+          <span>Low Risk</span>
+        </div>
+        <div class="map-legend-item">
+          <div class="map-legend-dot" style="background:#94A3B8"></div>
+          <span>No Data</span>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const barangayData = [
+    {
+      name: 'Nangka',
+      lat: 14.6734,
+      lng: 121.1087,
+      risk: '{{ nangka.risk_level if nangka else "none" }}',
+      cases: {{ nangka.predicted_cases if nangka else 0 }},
+      proba: {{ nangka.outbreak_proba if nangka else 0 }},
+      week: '{{ nangka.week_date if nangka else "No data" }}'
+    },
+    {
+      name: 'Tumana',
+      lat: 14.6607,
+      lng: 121.1004,
+      risk: '{{ tumana.risk_level if tumana else "none" }}',
+      cases: {{ tumana.predicted_cases if tumana else 0 }},
+      proba: {{ tumana.outbreak_proba if tumana else 0 }},
+      week: '{{ tumana.week_date if tumana else "No data" }}'
+    },
+    {
+      name: 'Malanday',
+      lat: 14.6502,
+      lng: 121.0938,
+      risk: '{{ malanday.risk_level if malanday else "none" }}',
+      cases: {{ malanday.predicted_cases if malanday else 0 }},
+      proba: {{ malanday.outbreak_proba if malanday else 0 }},
+      week: '{{ malanday.week_date if malanday else "No data" }}'
+    }
+  ];
+
+  const riskColors  = { high:'#DC2626', moderate:'#D97706', low:'#16A34A', none:'#94A3B8' };
+  const riskLabels  = { high:'HIGH RISK', moderate:'MODERATE RISK', low:'LOW RISK', none:'No Data' };
+
+  const map = L.map('dengue-map', { zoomControl: true }).setView([14.661, 121.098], 14);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 18
+  }).addTo(map);
+
+  const riverCoords = [
+    [14.682, 121.112],[14.673, 121.109],
+    [14.661, 121.100],[14.650, 121.094],[14.638, 121.088]
+  ];
+  L.polyline(riverCoords, { color:'#3B82F6', weight:3, opacity:0.6, dashArray:'6, 4' })
+   .addTo(map).bindTooltip('Marikina River');
+
+  barangayData.forEach(brgy => {
+    const color = riskColors[brgy.risk] || riskColors.none;
+    const label = riskLabels[brgy.risk] || 'No Data';
+
+    const circle = L.circleMarker([brgy.lat, brgy.lng], {
+      radius: 28, fillColor: color, color: 'white',
+      weight: 3, opacity: 1, fillOpacity: 0.85
+    }).addTo(map);
+
+    circle.bindPopup(`
+      <div style="font-family:'Inter',sans-serif;min-width:180px;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#0D3B7A;margin-bottom:6px;">
+          Barangay ${brgy.name}
+        </div>
+        <div style="display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;
+                    background:${color};color:white;margin-bottom:10px;">${label}</div>
+        <div style="font-size:13px;color:#475569;margin-bottom:4px;">📅 Week of ${brgy.week}</div>
+        <div style="font-size:13px;color:#475569;margin-bottom:4px;">🦟 Projected cases: <strong>${brgy.cases}</strong></div>
+        <div style="font-size:13px;color:#475569;">📊 Outbreak probability: <strong>${brgy.proba}%</strong></div>
+      </div>
+    `, { maxWidth: 220 });
+
+    L.marker([brgy.lat, brgy.lng], {
+      icon: L.divIcon({
+        className: '',
+        html: `<div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;
+                           color:white;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,0.5);">
+                 ${brgy.name}</div>`,
+        iconSize: [60, 20],
+        iconAnchor: [30, -18]
+      })
+    }).addTo(map);
+  });
+</script>
 {% endblock %}
