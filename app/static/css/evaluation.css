@@ -259,9 +259,5 @@
   padding: 20px 24px;
   height: 320px;
   overflow-x: hidden;
-}
-
-.eval-chart-wrap.expanded {
-  height: 340px;
-  overflow-x: auto;
+  position: relative;
 }
