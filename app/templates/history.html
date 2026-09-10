@@ -131,8 +131,7 @@
           <option value="low">Low</option>
         </select>
       </div>
-      <button class="btn-filter" onclick="filterHistory()">Apply</button>
-      <button class="btn-clear-filter" onclick="clearFilters()">Clear</button>
+            <button class="btn-clear-filter" onclick="clearFilters()">Reset Filters</button>
     </div>
 
     <!-- HISTORY TABLE -->
@@ -153,7 +152,8 @@
               <th>Probability</th>
               <th>Risk Level</th>
               <th>Generated</th>
-              <th>Action</th>
+              <th>View</th>
+              <th>Remove</th>
             </tr>
           </thead>
           <tbody id="historyBody">
@@ -165,7 +165,12 @@
               <td>{{ f.outbreak_proba }}%</td>
               <td><span class="badge {{ f.risk_level }}">{{ f.risk_level | title }}</span></td>
               <td class="td-done">{{ f.generated_at }}</td>
-              <td><a href="/result" class="tbl-link">View</a></td>
+                            <td>
+                <form action="/delete-forecast" method="POST" onsubmit="return confirm('Remove this forecast?')" style="display:inline">
+                  <input type="hidden" name="forecast_id" value="{{ f.id }}"/>
+                  <button type="submit" class="btn-delete">Remove</button>
+                </form>
+              </td>
             </tr>
             {% else %}
             <tr>

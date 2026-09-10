@@ -22,7 +22,7 @@ def admin_required(f):
         if 'user_email' not in session:
             return redirect(url_for('main.login'))
         if session.get('user_role') != 'admin':
-            return redirect(url_for('main.dashboard'))
+             return redirect(url_for('main.history'))
         return f(*args, **kwargs)
     return decorated
 
