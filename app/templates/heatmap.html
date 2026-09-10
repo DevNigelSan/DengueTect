@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Dengue Heatmap{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/heatmap.css') }}"/>
+{% endblock %}
+
+{% block content %}
+<div class="app-shell">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+      <div class="nav-brand-text">
+        <span class="nav-title">DengueTect</span>
+        <span class="nav-sub">Marikina City Health Office</span>
+      </div>
+    </div>
+
+    <div class="nav-center">
+      <div class="nav-links">
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/input" class="nav-link">Climate Input</a>
+        <a href="/history" class="nav-link">History</a>
+        <a href="/evaluation" class="nav-link">Model Evaluation</a>
+        <a href="/heatmap" class="nav-link active">Heatmap</a>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <div class="nav-status">
+        <span class="status-pulse"></span>
+        <span class="status-text">Live</span>
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-user">
+        <div class="user-avatar">{{ session.user_name[:2].upper() if session.user_name else 'HO' }}</div>
+        <div class="user-info">
+          <span class="user-name">{{ session.user_name if session.user_name else 'Health Officer' }}</span>
+          <span class="user-role">{{ 'IT Admin' if session.user_role == 'admin' else 'Marikina CHO' }}</span>
+        </div>
+      </div>
+      <a href="/logout" class="btn-logout">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Sign out
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Dengue Case Heatmap</h1>
+        <p class="page-sub">Weekly case intensity across barangays · 2022–2026 · Hover a cell for details</p>
+      </div>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="heatmap-legend-wrap">
+      <span class="heatmap-legend-label">No cases</span>
+      <div class="heatmap-legend-bar">
+        <div class="heatmap-legend-gradient"></div>
+      </div>
+      <span class="heatmap-legend-label">Peak ({{ heatmap_data.max_cases }} cases)</span>
+    </div>
+
+    <!-- HEATMAP -->
+    <div class="heatmap-panel">
+      <div class="heatmap-scroll">
+        <div class="heatmap-grid" id="heatmapGrid">
+
+          {% for brgy, weeks in heatmap_data.barangays.items() %}
+          <div class="heatmap-row">
+            <div class="heatmap-row-label">{{ brgy }}</div>
+            <div class="heatmap-cells">
+              {% for entry in weeks %}
+              <div class="heatmap-cell"
+                   data-week="{{ entry.week }}"
+                   data-cases="{{ entry.cases }}"
+                   data-brgy="{{ brgy }}"
+                   style="background: {{ 'rgba(220,38,38,' ~ [entry.cases / heatmap_data.max_cases, 0.08] | max ~ ')' if entry.cases > 0 else '#F0FDF4' }}">
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+
+          <!-- X-axis labels -->
+          <div class="heatmap-row">
+            <div class="heatmap-row-label"></div>
+            <div class="heatmap-cells heatmap-axis">
+              {% for brgy, weeks in heatmap_data.barangays.items() %}
+                {% if loop.first %}
+                  {% for entry in weeks %}
+                    {% if loop.index0 % 13 == 0 %}
+                    <div class="heatmap-axis-label" style="left:{{ loop.index0 * 7 }}px">
+                      {{ entry.week[:7] }}
+                    </div>
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- TOOLTIP -->
+    <div class="heatmap-tooltip" id="heatmapTooltip"></div>
+
+    <!-- YEAR SUMMARY -->
+    <div class="heatmap-summary-grid">
+      {% set years = [2022, 2023, 2024, 2025] %}
+      {% for year in years %}
+      <div class="heatmap-summary-card">
+        <div class="heatmap-summary-year">{{ year }}</div>
+        {% for brgy, weeks in heatmap_data.barangays.items() %}
+        <div class="heatmap-summary-row">
+          <span class="heatmap-summary-brgy">{{ brgy }}</span>
+          <span class="heatmap-summary-count">
+            {% set ns = namespace(total=0) %}
+            {% for entry in weeks %}
+              {% if entry.week[:4] == year|string %}
+                {% set ns.total = ns.total + entry.cases %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.total }} cases
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const maxCases = {{ heatmap_data.max_cases }};
+  const tooltip  = document.getElementById('heatmapTooltip');
+
+  document.querySelectorAll('.heatmap-cell').forEach(cell => {
+    cell.addEventListener('mouseenter', (e) => {
+      const cases = parseInt(cell.dataset.cases);
+      const week  = cell.dataset.week;
+      const brgy  = cell.dataset.brgy;
+      const risk  = cases >= 5 ? 'High' : cases >= 2 ? 'Moderate' : cases > 0 ? 'Low' : 'None';
+      const color = cases >= 5 ? '#DC2626' : cases >= 2 ? '#D97706' : cases > 0 ? '#16A34A' : '#94A3B8';
+
+      tooltip.innerHTML = `
+        <div class="tt-brgy">${brgy}</div>
+        <div class="tt-week">Week of ${week}</div>
+        <div class="tt-cases">${cases} case${cases !== 1 ? 's' : ''}</div>
+        <div class="tt-risk" style="color:${color}">${risk} Risk</div>
+      `;
+      tooltip.style.display = 'block';
+    });
+
+    cell.addEventListener('mousemove', (e) => {
+      tooltip.style.left = (e.pageX + 12) + 'px';
+      tooltip.style.top  = (e.pageY - 40) + 'px';
+    });
+
+    cell.addEventListener('mouseleave', () => {
+      tooltip.style.display = 'none';
+    });
+  });
+</script>
+{% endblock %}
