@@ -92,7 +92,7 @@
                    data-week="{{ entry.week }}"
                    data-cases="{{ entry.cases }}"
                    data-brgy="{{ brgy }}"
-                   style="background: {{ 'rgba(220,38,38,' ~ [entry.cases / heatmap_data.max_cases, 0.08] | max ~ ')' if entry.cases > 0 else '#F0FDF4' }}">
+                                      style="background: {% if entry.cases == 0 %}#DCFCE7{% elif entry.cases <= 2 %}#86EFAC{% elif entry.cases <= 5 %}#FDE047{% elif entry.cases <= 10 %}#FB923C{% elif entry.cases <= 20 %}#EF4444{% else %}#991B1B{% endif %}">
               </div>
               {% endfor %}
             </div>
