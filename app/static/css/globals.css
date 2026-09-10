@@ -53,3 +53,36 @@ button {
 input, select, textarea {
   font-family: 'Inter', sans-serif;
 }
+
+/* ── NAV LINKS (global) ── */
+.nav-links {
+  display: flex;
+  gap: 4px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 9px;
+  padding: 4px;
+}
+
+.nav-link {
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.75);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  letter-spacing: 0.2px;
+}
+
+.nav-link:hover {
+  color: var(--white);
+  background: rgba(255,255,255,0.12);
+  text-decoration: none;
+}
+
+.nav-link.active {
+  background: var(--white);
+  color: var(--blue-deep);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
