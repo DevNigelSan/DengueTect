@@ -168,7 +168,7 @@
               <td><span class="badge {{ f.risk_level }}">{{ f.risk_level | title }}</span></td>
               <td class="td-done">{{ f.generated_at }}</td>
                             <td>
-                <form action="/delete-forecast" method="POST" onsubmit="return confirm('Remove this forecast?')" style="display:inline">
+                <form action="/delete-forecast" method="POST" onsubmit="return false" onclick="showDeleteConfirm(event, this)">
                   <input type="hidden" name="forecast_id" value="{{ f.id }}"/>
                   <button type="submit" class="btn-delete">Remove</button>
                 </form>

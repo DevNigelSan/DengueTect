@@ -229,7 +229,7 @@
                 <td><span class="badge {{ f.risk_level }}">{{ f.risk_level | title }}</span></td>
                 <td class="td-done">{{ f.generated_at }}</td>
                 <td>
-                  <form action="/delete-forecast" method="POST" onsubmit="return confirm('Remove this forecast?')">
+                  <form action="/delete-forecast" method="POST" onsubmit="return false" onclick="showDeleteConfirm(event, this)">
                     <input type="hidden" name="forecast_id" value="{{ f.id }}"/>
                     <button type="submit" class="btn-delete">Remove</button>
                   </form>
@@ -346,6 +346,26 @@
   </main>
 </div>
 {% endblock %}
+
+<!-- Delete Confirmation Modal -->
+<div class="delete-modal-overlay" id="deleteOverlay" style="display:none;">
+  <div class="delete-modal">
+    <div class="delete-modal-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        <path d="M10 11v6"/><path d="M14 11v6"/>
+        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+      </svg>
+    </div>
+    <div class="delete-modal-title">Remove Forecast</div>
+    <div class="delete-modal-desc">Are you sure you want to remove this forecast record? This action cannot be undone.</div>
+    <div class="delete-modal-actions">
+      <button class="delete-modal-cancel" onclick="hideDeleteConfirm()">Cancel</button>
+      <button class="delete-modal-confirm" id="deleteConfirmBtn">Yes, Remove</button>
+    </div>
+  </div>
+</div>
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>

@@ -86,3 +86,89 @@ input, select, textarea {
   font-weight: 700;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
+
+/* ── DELETE CONFIRMATION MODAL ── */
+.delete-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13,59,122,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.delete-modal {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(13,59,122,0.2);
+  animation: slideUp 0.2s ease;
+}
+
+.delete-modal-icon {
+  width: 52px;
+  height: 52px;
+  background: #FEE2E2;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: var(--red-alert);
+}
+
+.delete-modal-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--blue-deep);
+  margin-bottom: 8px;
+}
+
+.delete-modal-desc {
+  font-size: 14px;
+  color: var(--gray-600);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.delete-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.delete-modal-cancel {
+  flex: 1;
+  padding: 11px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 8px;
+  background: var(--white);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.delete-modal-cancel:hover { border-color: var(--gray-400); }
+
+.delete-modal-confirm {
+  flex: 1;
+  padding: 11px;
+  border: none;
+  border-radius: 8px;
+  background: var(--red-alert);
+  color: white;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.delete-modal-confirm:hover { background: #B91C1C; }
