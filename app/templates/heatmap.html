@@ -149,20 +149,30 @@
       {% endfor %}
     </div>
 
-        <!-- CHOROPLETH MAP -->
+           <!-- CHOROPLETH MAP -->
     <div class="section-title" style="margin-top:32px;">
-      Geographic Risk Map <span>· Barangay-level dengue intensity</span>
+      Geographic Risk Map <span>· Select a week to see barangay risk levels</span>
     </div>
     <div class="map-panel" style="margin-bottom:24px;">
+      <div class="choropleth-controls">
+        <div class="choropleth-week-label">
+          Week: <strong id="selectedWeek">Latest</strong>
+        </div>
+        <div class="choropleth-slider-wrap">
+          <input type="range" id="weekSlider" min="0" max="211" value="211" class="week-slider"/>
+        </div>
+        <div class="choropleth-week-nav">
+          <button onclick="changeWeek(-1)">◀</button>
+          <button onclick="changeWeek(1)">▶</button>
+        </div>
+      </div>
       <div id="choropleth-map" style="height:420px;width:100%;z-index:1;"></div>
       <div class="map-legend">
-        <div class="map-legend-title">Case Intensity</div>
-        <div class="map-legend-item"><div class="map-legend-dot" style="background:#DCFCE7"></div><span>0 cases</span></div>
-        <div class="map-legend-item"><div class="map-legend-dot" style="background:#86EFAC"></div><span>1–2 cases</span></div>
-        <div class="map-legend-item"><div class="map-legend-dot" style="background:#FDE047"></div><span>3–5 cases</span></div>
-        <div class="map-legend-item"><div class="map-legend-dot" style="background:#FB923C"></div><span>6–10 cases</span></div>
-        <div class="map-legend-item"><div class="map-legend-dot" style="background:#EF4444"></div><span>11–20 cases</span></div>
-        <div class="map-legend-item"><div class="map-legend-dot" style="background:#991B1B"></div><span>21+ cases</span></div>
+        <div class="map-legend-title">Risk Level</div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#16A34A"></div><span>Low Risk</span></div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#D97706"></div><span>Moderate Risk</span></div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#DC2626"></div><span>High Risk</span></div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#E2E8F0"></div><span>No Cases</span></div>
       </div>
     </div>
 
@@ -203,100 +213,117 @@
     });
   });
 
-  // ── CHOROPLETH MAP ──
+    // ── CHOROPLETH MAP ──
   const heatmapData = {{ heatmap_data | tojson }};
+  const barangays   = ['Nangka', 'Tumana', 'Malanday'];
 
-  // Get latest week's case count per barangay
-  function getLatestCases(brgy) {
-    const weeks = heatmapData.barangays[brgy];
-    if (!weeks || weeks.length === 0) return 0;
-    // Get last non-zero or just last
-    for (let i = weeks.length - 1; i >= 0; i--) {
-      if (weeks[i].cases > 0) return weeks[i].cases;
-    }
-    return 0;
-  }
+  const riskColors = {
+    high:     '#DC2626',
+    moderate: '#D97706',
+    low:      '#16A34A',
+    none:     '#E2E8F0'
+  };
 
-  function getCaseColor(cases) {
-    if (cases === 0) return '#DCFCE7';
-    if (cases <= 2)  return '#86EFAC';
-    if (cases <= 5)  return '#FDE047';
-    if (cases <= 10) return '#FB923C';
-    if (cases <= 20) return '#EF4444';
-    return '#991B1B';
-  }
-
-  // Approximate barangay polygons along Marikina River
   const barangayPolygons = {
     'Nangka': [
-      [14.681, 121.102], [14.683, 121.108], [14.679, 121.116],
-      [14.672, 121.118], [14.668, 121.112], [14.666, 121.105],
-      [14.670, 121.100], [14.676, 121.099], [14.681, 121.102]
+      [14.681,121.102],[14.683,121.108],[14.679,121.116],
+      [14.672,121.118],[14.668,121.112],[14.666,121.105],
+      [14.670,121.100],[14.676,121.099],[14.681,121.102]
     ],
     'Tumana': [
-      [14.664, 121.097], [14.666, 121.104], [14.663, 121.110],
-      [14.657, 121.111], [14.653, 121.106], [14.652, 121.099],
-      [14.656, 121.095], [14.661, 121.094], [14.664, 121.097]
+      [14.664,121.097],[14.666,121.104],[14.663,121.110],
+      [14.657,121.111],[14.653,121.106],[14.652,121.099],
+      [14.656,121.095],[14.661,121.094],[14.664,121.097]
     ],
     'Malanday': [
-      [14.652, 121.094], [14.654, 121.100], [14.651, 121.106],
-      [14.645, 121.107], [14.641, 121.102], [14.640, 121.095],
-      [14.644, 121.090], [14.649, 121.089], [14.652, 121.094]
+      [14.652,121.094],[14.654,121.100],[14.651,121.106],
+      [14.645,121.107],[14.641,121.102],[14.640,121.095],
+      [14.644,121.090],[14.649,121.089],[14.652,121.094]
     ]
   };
 
   const cmap = L.map('choropleth-map').setView([14.661, 121.100], 14);
-
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors', maxZoom: 18
   }).addTo(cmap);
 
-  // Marikina River
   L.polyline([
     [14.682,121.112],[14.673,121.109],[14.661,121.100],[14.650,121.094],[14.638,121.088]
   ], { color:'#3B82F6', weight:3, opacity:0.6, dashArray:'6,4' })
    .addTo(cmap).bindTooltip('Marikina River');
 
-  // Draw barangay polygons
-  Object.entries(barangayPolygons).forEach(([brgy, coords]) => {
-    const cases = getLatestCases(brgy);
-    const color = getCaseColor(cases);
+  const polygonLayers = {};
+  const labelLayers   = {};
 
-    const polygon = L.polygon(coords, {
-      fillColor: color,
-      fillOpacity: 0.75,
-      color: 'white',
-      weight: 2
+  barangays.forEach(brgy => {
+    const coords = barangayPolygons[brgy];
+    polygonLayers[brgy] = L.polygon(coords, {
+      fillColor: '#E2E8F0', fillOpacity: 0.75,
+      color: 'white', weight: 2
     }).addTo(cmap);
 
-    polygon.bindPopup(`
-      <div style="font-family:'Inter',sans-serif;min-width:160px;">
-        <div style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#0D3B7A;margin-bottom:6px;">
-          Barangay ${brgy}
-        </div>
-        <div style="font-size:13px;color:#475569;margin-bottom:4px;">
-          🦟 Latest recorded: <strong>${cases} cases</strong>
-        </div>
-        <div style="display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;
-                    background:${color};color:${cases <= 2 ? '#166534' : 'white'};">
-          ${cases === 0 ? 'No Cases' : cases <= 2 ? 'Low' : cases <= 5 ? 'Moderate' : cases <= 10 ? 'High' : 'Very High'}
-        </div>
-      </div>
-    `, { maxWidth: 200 });
-
-    // Label
-    const center = coords.reduce((acc, c) => [acc[0] + c[0]/coords.length, acc[1] + c[1]/coords.length], [0,0]);
-    L.marker(center, {
+    const center = coords.reduce(
+      (acc, c) => [acc[0] + c[0]/coords.length, acc[1] + c[1]/coords.length], [0,0]
+    );
+    labelLayers[brgy] = L.marker(center, {
       icon: L.divIcon({
         className: '',
-        html: `<div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;
-                           color:white;text-shadow:0 1px 3px rgba(0,0,0,0.6);text-align:center;">
+        html: `<div style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;
+                           color:white;text-shadow:0 1px 3px rgba(0,0,0,0.7);text-align:center;">
                  ${brgy}</div>`,
-        iconSize: [60, 20],
-        iconAnchor: [30, 10]
+        iconSize: [70, 20], iconAnchor: [35, 10]
       })
     }).addTo(cmap);
   });
+
+  function updateChoropleth(weekIdx) {
+    barangays.forEach(brgy => {
+      const weeks = heatmapData.barangays[brgy];
+      const entry = weeks[weekIdx] || weeks[weeks.length - 1];
+      const color = riskColors[entry.risk] || riskColors.none;
+
+      polygonLayers[brgy].setStyle({ fillColor: color });
+      polygonLayers[brgy].unbindPopup();
+      polygonLayers[brgy].bindPopup(`
+        <div style="font-family:'Inter',sans-serif;min-width:160px;">
+          <div style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;
+                      color:#0D3B7A;margin-bottom:6px;">Barangay ${brgy}</div>
+          <div style="font-size:13px;color:#475569;margin-bottom:4px;">
+            📅 Week of ${entry.week}
+          </div>
+          <div style="font-size:13px;color:#475569;margin-bottom:6px;">
+            🦟 Cases: <strong>${entry.cases}</strong>
+          </div>
+          <div style="display:inline-block;padding:3px 10px;border-radius:999px;
+                      font-size:11px;font-weight:700;background:${color};
+                      color:${entry.risk === 'none' ? '#475569' : 'white'};">
+            ${entry.risk === 'none' ? 'No Cases' : entry.risk.charAt(0).toUpperCase() + entry.risk.slice(1) + ' Risk'}
+          </div>
+        </div>
+      `, { maxWidth: 200 });
+    });
+
+    const weeks = heatmapData.barangays['Nangka'];
+    const weekLabel = weeks[weekIdx] ? weeks[weekIdx].week : weeks[weeks.length-1].week;
+    document.getElementById('selectedWeek').textContent = weekLabel;
+  }
+
+  // Initialize at latest week
+  const totalWeeks = heatmapData.barangays['Nangka'].length;
+  const slider = document.getElementById('weekSlider');
+  slider.max = totalWeeks - 1;
+  slider.value = totalWeeks - 1;
+  updateChoropleth(totalWeeks - 1);
+
+  slider.addEventListener('input', () => updateChoropleth(parseInt(slider.value)));
+
+  function changeWeek(dir) {
+    const val = parseInt(slider.value) + dir;
+    if (val >= 0 && val <= totalWeeks - 1) {
+      slider.value = val;
+      updateChoropleth(val);
+    }
+  }
 
 </script>
 {% endblock %}
