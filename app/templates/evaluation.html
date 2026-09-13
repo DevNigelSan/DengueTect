@@ -200,14 +200,14 @@
       data: {
         labels: data.weeks,
         datasets: [
-          {
+                    {
             label: 'Actual Cases',
             data: data.actual,
             borderColor: '#1A56A0',
             backgroundColor: 'rgba(26,86,160,0.08)',
-            borderWidth: 2,
-            pointRadius: 3,
-            pointHoverRadius: 7,
+            borderWidth: 3,
+            pointRadius: 4,
+            pointHoverRadius: 8,
             tension: 0.3,
             fill: true
           },
@@ -216,9 +216,9 @@
             data: data.predicted,
             borderColor: '#DC2626',
             backgroundColor: 'rgba(220,38,38,0.05)',
-            borderWidth: 2,
-            pointRadius: 3,
-            pointHoverRadius: 7,
+            borderWidth: 3,
+            pointRadius: 4,
+            pointHoverRadius: 8,
             tension: 0.3,
             borderDash: [5, 3],
             fill: false
