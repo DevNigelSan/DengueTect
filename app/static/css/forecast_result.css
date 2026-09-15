@@ -509,10 +509,9 @@
 /* ── SUMMARY INFO CARDS ── */
 .summary-cards-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
-
 .summary-info-card {
   background: var(--gray-100);
   border: 1.5px solid var(--gray-200);
