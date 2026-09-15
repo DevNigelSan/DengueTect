@@ -10,6 +10,7 @@ MODEL_DIR  = BASE_DIR / 'models'
 # Load models once at startup
 rf_model      = joblib.load(MODEL_DIR / 'rf_model.pkl')
 lr_model      = joblib.load(MODEL_DIR / 'lr_model.pkl')
+xgb_model     = joblib.load(MODEL_DIR / 'xgb_model.pkl')
 label_encoder = joblib.load(MODEL_DIR / 'label_encoder.pkl')
 feature_cols  = joblib.load(MODEL_DIR / 'feature_columns.pkl')
 
@@ -78,15 +79,17 @@ def run_forecast(barangay, week_date, climate_inputs):
         'cases_roll4':      cases_roll4,
     }])[feature_cols]
 
-    # Run predictions
-    predicted_cases = int(round(max(0, rf_model.predict(features)[0])))
-    outbreak_proba  = float(lr_model.predict_proba(features)[0][1])
-    risk_level      = get_risk_level(outbreak_proba)
+      # Run predictions
+    predicted_cases     = int(round(max(0, rf_model.predict(features)[0])))
+    xgb_predicted_cases = int(round(max(0, xgb_model.predict(features)[0])))
+    outbreak_proba      = float(lr_model.predict_proba(features)[0][1])
+    risk_level          = get_risk_level(outbreak_proba)
 
     return {
-        'barangay':        barangay.capitalize(),
-        'week_date':       week_date,
-        'predicted_cases': predicted_cases,
-        'outbreak_proba':  round(outbreak_proba * 100, 1),
-        'risk_level':      risk_level,
+        'barangay':             barangay.capitalize(),
+        'week_date':            week_date,
+        'predicted_cases':      predicted_cases,
+        'xgb_predicted_cases':  xgb_predicted_cases,
+        'outbreak_proba':       round(outbreak_proba * 100, 1),
+        'risk_level':           risk_level,
     }
