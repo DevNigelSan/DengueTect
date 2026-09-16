@@ -198,7 +198,7 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  const evalData = {{ eval_data | tojson }};
+  const evalData = {{ eval_data | tojson | safe }};
   const charts   = {};
   const expanded  = {};
 
@@ -230,10 +230,10 @@
             tension: 0.3,
             borderDash: [5, 3],
             fill: false
-          }
-          {
+          },
+                    {
             label: 'XGBoost Predicted',
-            data: data.xgb || [],
+            data: Array.isArray(data.xgb) ? data.xgb : [],
             borderColor: '#7C3AED',
             backgroundColor: 'rgba(124,58,237,0.05)',
             borderWidth: 3,
@@ -249,19 +249,27 @@
         responsive: true,
         maintainAspectRatio: false,
         animation: false,
-        plugins: {
+                plugins: {
           legend: { display: false },
           tooltip: {
             enabled: true,
-            mode: 'index',
-            intersect: false,
+            mode: 'nearest',
+            intersect: true,
+            position: 'nearest',
+            backgroundColor: 'rgba(13,59,122,0.95)',
+            titleColor: 'white',
+            bodyColor: 'rgba(255,255,255,0.85)',
+            titleFont: { size: 13, weight: 'bold', family: 'DM Sans' },
+            bodyFont: { size: 12, family: 'Inter' },
+            padding: 10,
+            cornerRadius: 8,
             callbacks: {
               title: (items) => 'Week of ' + items[0].label,
               label: (item) => item.dataset.label + ': ' + item.parsed.y + ' cases'
             }
           }
         },
-        interaction: { mode: 'index', intersect: false },
+        interaction: { mode: 'nearest', intersect: true },
         scales: {
           x: {
             ticks: {
