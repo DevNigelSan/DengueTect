@@ -79,17 +79,23 @@ def run_forecast(barangay, week_date, climate_inputs):
         'cases_roll4':      cases_roll4,
     }])[feature_cols]
 
-      # Run predictions
+         # Run predictions
     predicted_cases     = int(round(max(0, rf_model.predict(features)[0])))
     xgb_predicted_cases = int(round(max(0, xgb_model.predict(features)[0])))
     outbreak_proba      = float(lr_model.predict_proba(features)[0][1])
     risk_level          = get_risk_level(outbreak_proba)
+
+    # Weighted ensemble — RF gets higher weight since it outperforms XGBoost
+    rf_raw  = max(0, rf_model.predict(features)[0])
+    xgb_raw = max(0, xgb_model.predict(features)[0])
+    ensemble_cases = int(round((rf_raw * 0.6) + (xgb_raw * 0.4)))
 
     return {
         'barangay':             barangay.capitalize(),
         'week_date':            week_date,
         'predicted_cases':      predicted_cases,
         'xgb_predicted_cases':  xgb_predicted_cases,
+        'ensemble_cases':       ensemble_cases,
         'outbreak_proba':       round(outbreak_proba * 100, 1),
         'risk_level':           risk_level,
     }

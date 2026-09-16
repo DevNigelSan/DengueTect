@@ -183,6 +183,20 @@
               <div class="sic-sub">XGBoost estimate</div>
             </div>
           </div>
+                    <div class="summary-info-card" style="border-color: var(--blue-primary);">
+            <div class="sic-icon" style="background: var(--blue-light); color: var(--blue-primary);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="16"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
+              </svg>
+            </div>
+            <div class="sic-body">
+              <div class="sic-num">{{ forecast.ensemble_cases if forecast.ensemble_cases is not none else '—' }}</div>
+              <div class="sic-label">Ensemble Estimate</div>
+              <div class="sic-sub">RF + XGBoost combined</div>
+            </div>
+          </div>
 
           <div class="summary-info-card">
             <div class="sic-icon">

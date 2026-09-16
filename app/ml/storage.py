@@ -5,20 +5,21 @@ def save_forecast(forecast):
     conn = get_db()
     cursor = conn.cursor()
 
-        cursor.execute('''
+    cursor.execute('''
         INSERT INTO forecasts (
-            barangay, week_date, predicted_cases, xgb_predicted_cases, outbreak_proba, risk_level,
+            barangay, week_date, predicted_cases, xgb_predicted_cases, ensemble_cases, outbreak_proba, risk_level,
             rain_w1, rain_w2, rain_w3, rain_w4,
             temp_w1, temp_w2, temp_w3, temp_w4,
             humid_w1, humid_w2, humid_w3, humid_w4,
             cases_w1, cases_w2, cases_w3, cases_w4,
             generated_at, generated_by
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     ''', (
         forecast.get('barangay'),
         forecast.get('week_date'),
-        forecast.get('predicted_cases'),
+                forecast.get('predicted_cases'),
         forecast.get('xgb_predicted_cases', 0),
+        forecast.get('ensemble_cases', 0),
         forecast.get('outbreak_proba'),
         forecast.get('risk_level'),
         forecast.get('rain_w1'), forecast.get('rain_w2'),
