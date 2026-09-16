@@ -78,9 +78,13 @@
           <div class="eval-accuracy-badge">{{ data.accuracy }}% accurate</div>
         </div>
         <div class="eval-metrics-row">
-          <div class="eval-metric">
+                    <div class="eval-metric">
             <div class="eval-metric-num">±{{ data.avg_error }}</div>
-            <div class="eval-metric-label">Avg. Case Error</div>
+            <div class="eval-metric-label">RF Avg. Error</div>
+          </div>
+          <div class="eval-metric">
+            <div class="eval-metric-num">±{{ data.xgb_avg_error }}</div>
+            <div class="eval-metric-label">XGB Avg. Error</div>
           </div>
           <div class="eval-metric">
             <div class="eval-metric-num">{{ data.accuracy }}%</div>
@@ -141,14 +145,18 @@
       </div>
       {% endfor %}
 
-      <div class="chart-legend">
+                 <div class="chart-legend">
         <div class="legend-item">
           <div class="legend-dot actual"></div>
-          <span>Actual Cases (from CHO records)</span>
+          <span>Actual Cases (CHO records)</span>
         </div>
         <div class="legend-item">
           <div class="legend-dot predicted"></div>
-          <span>Predicted Cases (model output)</span>
+          <span>Random Forest Predicted</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot xgb"></div>
+          <span>XGBoost Predicted</span>
         </div>
       </div>
     </div>
@@ -212,15 +220,27 @@
             fill: true
           },
           {
-            label: 'Predicted Cases',
+            label: 'RF Predicted',
             data: data.predicted,
             borderColor: '#DC2626',
             backgroundColor: 'rgba(220,38,38,0.05)',
             borderWidth: 3,
             pointRadius: 4,
-            pointHoverRadius: 8,
+            pointHoverRadius: 7,
             tension: 0.3,
             borderDash: [5, 3],
+            fill: false
+          }
+          {
+            label: 'XGBoost Predicted',
+            data: data.xgb || [],
+            borderColor: '#7C3AED',
+            backgroundColor: 'rgba(124,58,237,0.05)',
+            borderWidth: 3,
+            pointRadius: 4,
+            pointHoverRadius: 7,
+            tension: 0.3,
+            borderDash: [8, 4],
             fill: false
           }
         ]
