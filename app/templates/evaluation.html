@@ -86,6 +86,10 @@
             <div class="eval-metric-num">±{{ data.xgb_avg_error }}</div>
             <div class="eval-metric-label">XGB Avg. Error</div>
           </div>
+                    <div class="eval-metric">
+            <div class="eval-metric-num">±{{ data.ensemble_avg_error }}</div>
+            <div class="eval-metric-label">Ensemble Avg. Error</div>
+          </div>
           <div class="eval-metric">
             <div class="eval-metric-num">{{ data.accuracy }}%</div>
             <div class="eval-metric-label">Outbreak Detection</div>
@@ -157,6 +161,10 @@
         <div class="legend-item">
           <div class="legend-dot xgb"></div>
           <span>XGBoost Predicted</span>
+        </div>
+                <div class="legend-item">
+          <div class="legend-dot ensemble"></div>
+          <span>Ensemble Predicted</span>
         </div>
       </div>
     </div>
@@ -241,6 +249,18 @@
             pointHoverRadius: 7,
             tension: 0.3,
             borderDash: [8, 4],
+            fill: false
+          },
+                    {
+            label: 'Ensemble Predicted',
+            data: Array.isArray(data.ensemble) ? data.ensemble : [],
+            borderColor: '#059669',
+            backgroundColor: 'rgba(5,150,105,0.05)',
+            borderWidth: 3,
+            pointRadius: 4,
+            pointHoverRadius: 7,
+            tension: 0.3,
+            borderDash: [3, 3],
             fill: false
           }
         ]

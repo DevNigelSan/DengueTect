@@ -70,8 +70,8 @@
 
 .eval-metrics-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
   margin-bottom: 14px;
 }
 
@@ -165,6 +165,7 @@
 .legend-dot.actual    { background: #1A56A0; height: 4px; }
 .legend-dot.predicted { border-top: 3px dashed #DC2626; height: 0; background: transparent; }
 .legend-dot.xgb       { border-top: 3px dashed #7C3AED; height: 0; background: transparent; }
+.legend-dot.ensemble { border-top: 3px dashed #059669; height: 0; background: transparent; }
 
 /* ── CONFUSION MATRIX ── */
 .eval-lower-grid {
