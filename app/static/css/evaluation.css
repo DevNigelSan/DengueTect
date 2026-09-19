@@ -333,10 +333,18 @@
 }
 
 .eval-plain-icon {
-  font-size: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  margin-top: 1px;
 }
+
+.eval-plain-icon.blue  { background: #EFF6FF; color: var(--blue-primary); }
+.eval-plain-icon.green { background: #F0FDF4; color: var(--green-safe); }
+.eval-plain-icon.red   { background: #FEF2F2; color: var(--red-alert); }
 
 .eval-plain-text strong {
   color: var(--blue-deep);
