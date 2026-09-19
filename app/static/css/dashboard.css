@@ -735,6 +735,26 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  transition: box-shadow 0.3s ease;
+}
+
+.brgy-card.high {
+  border-color: #FECACA;
+  box-shadow: 0 0 24px rgba(220,38,38,0.25), 0 0 48px rgba(220,38,38,0.1);
+}
+
+.brgy-card.moderate {
+  border-color: #FDE68A;
+  box-shadow: 0 0 24px rgba(217,119,6,0.25), 0 0 48px rgba(217,119,6,0.1);
+}
+
+.brgy-card.low {
+  border-color: #BBF7D0;
+  box-shadow: 0 0 24px rgba(22,163,74,0.25), 0 0 48px rgba(22,163,74,0.1);
+}
+
+.brgy-card.none {
+  box-shadow: 0 0 12px rgba(148,163,184,0.15);
 }
 
 .brgy-card-header {
