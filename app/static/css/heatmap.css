@@ -1,5 +1,55 @@
 /* ── Heatmap Styles ── */
 
+/* ── GUIDE BANNER ── */
+.heatmap-guide {
+  display: flex;
+  gap: 16px;
+  background: #EFF6FF;
+  border: 1.5px solid #BFDBFE;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.heatmap-guide-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--blue-primary);
+  color: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.heatmap-guide-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--blue-deep);
+  margin-bottom: 12px;
+}
+
+.heatmap-guide-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.heatmap-guide-item {
+  font-size: 13.5px;
+  color: var(--gray-700);
+  line-height: 1.6;
+}
+
+.heatmap-guide-label {
+  font-weight: 700;
+  color: var(--blue-primary);
+  margin-right: 6px;
+}
+
 /* ── LEGEND ── */
 .heatmap-legend-wrap {
   display: flex;

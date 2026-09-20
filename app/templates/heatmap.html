@@ -62,11 +62,39 @@
   <!-- MAIN CONTENT -->
   <main class="main-content">
 
-    <!-- PAGE HEADER -->
+        <!-- PAGE HEADER -->
     <div class="page-header">
       <div>
         <h1 class="page-title">Dengue Case Heatmap</h1>
         <p class="page-sub">Weekly case intensity across barangays · 2022–2026 · Hover a cell for details</p>
+      </div>
+    </div>
+
+    <!-- GUIDE BANNER -->
+    <div class="heatmap-guide">
+      <div class="heatmap-guide-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <div class="heatmap-guide-content">
+        <div class="heatmap-guide-title">How to read this page</div>
+        <div class="heatmap-guide-body">
+          <div class="heatmap-guide-item">
+            <span class="heatmap-guide-label">Color Grid</span>
+            Each column represents one week from 2022 to 2026. Each row is a barangay. The color of each cell shows how many dengue cases were recorded that week — green means few or no cases, red means a high number of cases. Hover over any cell to see the exact week and case count.
+          </div>
+          <div class="heatmap-guide-item">
+            <span class="heatmap-guide-label">Geographic Map</span>
+            The map below shows the same data geographically. Each barangay polygon is colored based on its dengue case count for the selected week. Use the slider or arrow buttons to move through the weeks and observe how risk shifts across barangays over time.
+          </div>
+          <div class="heatmap-guide-item">
+            <span class="heatmap-guide-label">Year Summary</span>
+            The cards at the bottom show the total recorded dengue cases per barangay for each year, giving a quick overview of which years and barangays were most affected.
+          </div>
+        </div>
       </div>
     </div>
 
