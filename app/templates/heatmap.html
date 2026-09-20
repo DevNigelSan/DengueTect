@@ -99,12 +99,19 @@
     </div>
 
     <!-- LEGEND -->
-    <div class="heatmap-legend-wrap">
-      <span class="heatmap-legend-label">No cases</span>
+        <div class="heatmap-legend-wrap">
+      <span class="heatmap-legend-label">0 cases</span>
       <div class="heatmap-legend-bar">
         <div class="heatmap-legend-gradient"></div>
       </div>
-      <span class="heatmap-legend-label">Peak ({{ heatmap_data.max_cases }} cases)</span>
+      <span class="heatmap-legend-label">{{ heatmap_data.max_cases }}+ cases</span>
+    </div>
+    <div class="heatmap-legend-steps">
+      <span style="color:#86EFAC">1–2</span>
+      <span style="color:#ca8a04">3–5</span>
+      <span style="color:#FB923C">6–10</span>
+      <span style="color:#EF4444">11–20</span>
+      <span style="color:#991B1B">21+</span>
     </div>
 
     <!-- HEATMAP -->

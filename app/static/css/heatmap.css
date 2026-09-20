@@ -85,7 +85,7 @@
 .heatmap-legend-gradient {
   width: 100%;
   height: 100%;
-  background: linear-gradient(to right, #DCFCE7, #FEF08A, #FB923C, #EF4444, #991B1B);
+  background: linear-gradient(to right, #DCFCE7 0%, #86EFAC 20%, #FDE047 40%, #FB923C 60%, #EF4444 80%, #991B1B 100%);
 }
 
 /* ── HEATMAP PANEL ── */
@@ -295,4 +295,13 @@
 .choropleth-week-nav button:hover {
   border-color: var(--blue-primary);
   color: var(--blue-primary);
+}
+
+.heatmap-legend-steps {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  padding-left: 8px;
 }
