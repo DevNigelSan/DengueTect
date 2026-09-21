@@ -281,3 +281,18 @@ document.getElementById('submitBtn').addEventListener('click', function(e) {
 document.querySelectorAll('input[type="number"]').forEach(input => {
   input.addEventListener('focus', () => { input.style.borderColor = ''; });
 });
+
+// Cases info popup
+function toggleCasesInfo(event) {
+  event.stopPropagation();
+  const popup = document.getElementById('casesInfoPopup');
+  popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+}
+
+document.addEventListener('click', function(e) {
+  const popup = document.getElementById('casesInfoPopup');
+  const btn   = document.getElementById('casesInfoBtn');
+  if (popup && !popup.contains(e.target) && e.target !== btn) {
+    popup.style.display = 'none';
+  }
+});

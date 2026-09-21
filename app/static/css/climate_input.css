@@ -288,6 +288,7 @@ input::placeholder { color: var(--gray-400); }
   border-width: 2px;
   background: #F0FDF4;
   transition: box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+  position: relative;
 }
 
 .cases-row.has-warning {
@@ -771,3 +772,101 @@ input::placeholder { color: var(--gray-400); }
 }
 
 .case-modal-confirm:hover { background: #B45309; }
+
+/* ── CASES INFO BUTTON & POPUP ── */
+.cases-info-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--blue-primary);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 6px;
+  transition: background 0.15s;
+  user-select: none;
+}
+
+.cases-info-btn:hover { background: var(--blue-deep); }
+
+.cases-info-popup {
+  position: absolute;
+  left: 0;
+  width: 360px;
+  top: calc(100% + 8px);
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 12px;
+  padding: 18px 20px;
+  z-index: 500;
+  box-shadow: 0 8px 32px rgba(13,59,122,0.15);
+}
+
+.cases-info-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue-deep);
+  margin-bottom: 10px;
+}
+
+.cases-info-body p {
+  font-size: 13px;
+  color: var(--gray-600);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.cases-info-threshold {
+  margin-bottom: 12px;
+}
+
+.cases-threshold-badge {
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+
+.cases-threshold-badge.yellow {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.cases-threshold-badge.red {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+
+.cases-info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.cases-info-title { margin-bottom: 0; }
+
+.cases-info-close {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.cases-info-close:hover { background: var(--gray-200); }

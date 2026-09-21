@@ -143,7 +143,7 @@
           </div>
 
           <!-- Rainfall row -->
-          <div class="climate-input-row">
+                    <div class="climate-input-row rain-row">
             <div class="cir-label">
               <div class="cir-icon rain">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -161,7 +161,7 @@
           </div>
 
           <!-- Temperature row -->
-          <div class="climate-input-row">
+                    <div class="climate-input-row temp-row">
             <div class="cir-label">
               <div class="cir-icon temp">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -177,7 +177,7 @@
           </div>
 
           <!-- Humidity row -->
-          <div class="climate-input-row">
+                    <div class="climate-input-row humid-row">
             <div class="cir-label">
               <div class="cir-icon humid">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -202,12 +202,30 @@
                   <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
               </div>
-              <span>Dengue Cases <em>(count)</em></span>
+                            <span>Dengue Cases <em>(count)</em></span>
+              <div class="cases-info-btn" id="casesInfoBtn" onclick="toggleCasesInfo(event)">?</div>
             </div>
             <input type="number" name="cases_w4" placeholder="0" step="1" min="0" required/>
             <input type="number" name="cases_w3" placeholder="0" step="1" min="0" required/>
             <input type="number" name="cases_w2" placeholder="0" step="1" min="0" required/>
-            <input type="number" name="cases_w1" placeholder="0" step="1" min="0" required/>
+                        <input type="number" name="cases_w1" placeholder="0" step="1" min="0" required/>
+          </div>
+          <div class="cases-info-popup" id="casesInfoPopup" style="display:none;">
+                        <div class="cases-info-header">
+              <div class="cases-info-title">About the case count thresholds</div>
+              <div class="cases-info-close" onclick="document.getElementById('casesInfoPopup').style.display='none'">✕</div>
+            </div>
+            <div class="cases-info-body">
+              <p>The case count thresholds used in this system are based on the statistical analysis of actual dengue surveillance records from Barangay Nangka, Tumana, and Malanday from 2022 to 2026.</p>
+              <div class="cases-info-threshold">
+                <div class="cases-threshold-badge yellow">⚠ Warning at 7+ cases</div>
+                <p>This threshold represents the mean plus one standard deviation of weekly case counts across the target barangays. Values above this level are statistically unusual and warrant verification before submitting.</p>
+              </div>
+              <div class="cases-info-threshold">
+                <div class="cases-threshold-badge red">🔴 Confirmation required at 9+ cases</div>
+                <p>This threshold represents the mean plus two standard deviations. Values at this level are rare in the historical dataset and require explicit confirmation to ensure the entry is not a typographical error.</p>
+              </div>
+            </div>
           </div>
         </div>
 
