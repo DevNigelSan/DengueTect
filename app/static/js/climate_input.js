@@ -42,9 +42,9 @@ function validateCaseInput(input) {
   const casesRow = document.querySelector('.cases-row');
 
   // Check if any case input is over 50
-  const anyOver50 = Array.from(
+    const anyOver50 = Array.from(
     document.querySelectorAll('input[name^="cases_"]')
-  ).some(i => parseInt(i.value) > 50);
+  ).some(i => parseInt(i.value) > 6);
 
   if (anyOver50) {
     casesRow.classList.add('has-warning');
@@ -54,10 +54,10 @@ function validateCaseInput(input) {
 
   if (isNaN(val) || val <= 50) return;
 
-  if (val > 50 && val <= 100) {
+    if (val > 6 && val <= 9) {
     const warn = document.createElement('div');
     warn.className = 'case-warn';
-    warn.textContent = '⚠️ Unusually high — please verify this value.';
+    warn.textContent = 'Unusually high — please verify this value.';
     input.parentElement.appendChild(warn);
   }
 }
@@ -139,7 +139,7 @@ async function fetchClimateData() {
     const start = startDate.toISOString().split('T')[0];
     const end   = endDate.toISOString().split('T')[0];
 
-    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${LAT}&longitude=${LON}&start_date=${start}&end_date=${end}&daily=precipitation_sum,temperature_2m_mean,relative_humidity_2m_mean&timezone=Asia/Manila`;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&past_days=28&daily=precipitation_sum,temperature_2m_mean,relative_humidity_2m_mean&timezone=Asia/Manila`;
 
     const resp = await fetch(url);
     const data = await resp.json();
@@ -264,8 +264,8 @@ document.getElementById('submitBtn').addEventListener('click', function(e) {
   if (!valid) return;
 
   // Check for case values over 100
-  const highCases = Array.from(document.querySelectorAll('input[name^="cases_"]'))
-    .filter(i => parseInt(i.value) > 100);
+    const highCases = Array.from(document.querySelectorAll('input[name^="cases_"]'))
+    .filter(i => parseInt(i.value) > 9);
 
   if (highCases.length > 0) {
     showCaseModal(highCases, () => {
