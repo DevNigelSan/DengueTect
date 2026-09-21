@@ -261,7 +261,41 @@ input::placeholder { color: var(--gray-400); }
 .cir-icon.rain  { background: #EFF6FF; color: var(--blue-primary); }
 .cir-icon.temp  { background: #FEF2F2; color: var(--red-alert); }
 .cir-icon.humid { background: #F0FDF4; color: var(--green-safe); }
-.cir-icon.cases { background: #FEF3C7; color: var(--yellow-warn); }
+.cir-icon.cases { background: #F0FDF4; color: var(--green-safe); }
+
+/* ── ROW GLOW EFFECTS ── */
+.climate-input-row.rain-row {
+  box-shadow: 0 0 20px rgba(26,86,160,0.35), 0 0 40px rgba(26,86,160,0.15);
+  border-color: #93C5FD;
+  border-width: 2px;
+}
+
+.climate-input-row.temp-row {
+  box-shadow: 0 0 20px rgba(220,38,38,0.35), 0 0 40px rgba(220,38,38,0.15);
+  border-color: #FCA5A5;
+  border-width: 2px;
+}
+
+.climate-input-row.humid-row {
+  box-shadow: 0 0 20px rgba(22,163,74,0.35), 0 0 40px rgba(22,163,74,0.15);
+  border-color: #86EFAC;
+  border-width: 2px;
+}
+
+.cases-row {
+  box-shadow: 0 0 20px rgba(22,163,74,0.4), 0 0 40px rgba(22,163,74,0.18);
+  border-color: var(--green-safe);
+  border-width: 2px;
+  background: #F0FDF4;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+}
+
+.cases-row.has-warning {
+  box-shadow: 0 0 24px rgba(217,119,6,0.5), 0 0 48px rgba(217,119,6,0.2);
+  border-color: var(--yellow-warn);
+  border-width: 2px;
+  background: #FFFBEB;
+}
 
 .cases-row { border-color: var(--green-safe); background: #F0FDF4; }  
 .cases-row.has-warning { border-color: var(--yellow-warn); background: #FFFBEB; }
