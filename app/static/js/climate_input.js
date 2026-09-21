@@ -285,14 +285,11 @@ document.querySelectorAll('input[type="number"]').forEach(input => {
 // Cases info popup
 function toggleCasesInfo(event) {
   event.stopPropagation();
-  const popup = document.getElementById('casesInfoPopup');
-  popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+  const overlay = document.getElementById('casesInfoOverlay');
+  overlay.style.display = overlay.style.display === 'none' ? 'flex' : 'none';
 }
 
-document.addEventListener('click', function(e) {
-  const popup = document.getElementById('casesInfoPopup');
-  const btn   = document.getElementById('casesInfoBtn');
-  if (popup && !popup.contains(e.target) && e.target !== btn) {
-    popup.style.display = 'none';
-  }
+// Close when clicking overlay background
+document.getElementById('casesInfoOverlay').addEventListener('click', function(e) {
+  if (e.target === this) this.style.display = 'none';
 });

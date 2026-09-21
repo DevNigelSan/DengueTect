@@ -794,17 +794,28 @@ input::placeholder { color: var(--gray-400); }
 
 .cases-info-btn:hover { background: var(--blue-deep); }
 
+.cases-info-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13,59,122,0.4);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
 .cases-info-popup {
-  position: absolute;
-  left: 0;
-  width: 360px;
-  top: calc(100% + 8px);
   background: var(--white);
   border: 1.5px solid var(--gray-200);
-  border-radius: 12px;
-  padding: 18px 20px;
-  z-index: 500;
-  box-shadow: 0 8px 32px rgba(13,59,122,0.15);
+  border-radius: 16px;
+  padding: 24px 26px;
+  width: 400px;
+  max-width: 90vw;
+  box-shadow: 0 20px 60px rgba(13,59,122,0.2);
+  animation: slideUp 0.2s ease;
+  position: relative;
 }
 
 .cases-info-title {
