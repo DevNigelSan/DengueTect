@@ -191,35 +191,7 @@
       </div>
     </div>
 
-    <!-- CONFUSION MATRIX -->
-    <div class="eval-lower-grid">
-      {% for brgy, data in eval_data.items() %}
-      <div class="eval-section confusion-wrap">
-        <div class="panel-header">
-          <div class="panel-title">Outbreak Detection — {{ brgy }}</div>
-          <div class="panel-sub">{{ data.total }} weeks evaluated</div>
-        </div>
-        <div class="confusion-grid">
-          <div class="confusion-cell correct">
-            <div class="confusion-num">{{ data.tn }}</div>
-            <div class="confusion-label">Correctly identified<br>as safe weeks</div>
-          </div>
-          <div class="confusion-cell warning">
-            <div class="confusion-num">{{ data.fp }}</div>
-            <div class="confusion-label">False alerts<br>(safe flagged as risk)</div>
-          </div>
-          <div class="confusion-cell warning">
-            <div class="confusion-num">{{ data.fn }}</div>
-            <div class="confusion-label">Missed outbreaks<br>(risk flagged as safe)</div>
-          </div>
-          <div class="confusion-cell correct">
-            <div class="confusion-num">{{ data.tp }}</div>
-            <div class="confusion-label">Correctly detected<br>outbreak weeks</div>
-          </div>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
+    
 
   </main>
 </div>
