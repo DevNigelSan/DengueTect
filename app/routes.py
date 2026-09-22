@@ -143,3 +143,14 @@ def heatmap():
     with open(heatmap_path, 'r') as f:
         heatmap_data = json.load(f)
     return render_template('heatmap.html', heatmap_data=heatmap_data)
+
+
+@main.route('/technical')
+@admin_required
+def technical():
+    import json
+    from pathlib import Path
+    eval_path = Path(__file__).resolve().parent.parent / 'data' / 'evaluation.json'
+    with open(eval_path, 'r') as f:
+        eval_data = json.load(f)
+    return render_template('technical.html', eval_data=eval_data)

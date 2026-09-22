@@ -1,0 +1,95 @@
+/* ── Technical Evaluation Page ── */
+
+.tech-admin-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--blue-primary);
+  background: var(--blue-light);
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1.5px solid #BFDBFE;
+}
+
+.tech-section {
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.tech-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tech-table th {
+  padding: 13px 18px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--gray-400);
+  background: var(--gray-100);
+  border-bottom: 1.5px solid var(--gray-200);
+  white-space: nowrap;
+}
+
+.tech-table td {
+  padding: 14px 18px;
+  font-size: 14px;
+  color: var(--gray-800);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.tech-table tr:last-child td { border-bottom: none; }
+.tech-table tr:hover td { background: var(--gray-100); }
+
+.tech-confusion-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.tech-derived {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--gray-200);
+}
+
+.tech-derived-item {
+  padding: 12px 16px;
+  border-right: 1px solid var(--gray-200);
+  text-align: center;
+}
+
+.tech-derived-item:last-child { border-right: none; }
+
+.tech-derived-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gray-400);
+  margin-bottom: 4px;
+}
+
+.tech-derived-val {
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--blue-deep);
+}
+
+@media (max-width: 1024px) {
+  .tech-confusion-grid { grid-template-columns: 1fr; }
+}

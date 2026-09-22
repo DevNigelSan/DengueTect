@@ -71,7 +71,7 @@
 
         <div class="eval-summary-grid">
       {% for brgy, data in eval_data.items() %}
-      <div class="eval-summary-card" onclick="toggleCardDetails('{{ brgy }}')" style="cursor:pointer;">
+      <div class="eval-summary-card">
         <div class="eval-card-header">
           <div class="eval-brgy-name">Barangay {{ brgy }}</div>
           <div class="eval-accuracy-badge">{{ data.accuracy }}% accurate</div>
@@ -116,36 +116,10 @@
               <strong>{{ data.precision }}%</strong> of the time
             </div>
           </div>
-          <div class="eval-card-toggle" id="toggle-{{ brgy }}">
-            ▾ See technical details
-          </div>
+          
         </div>
 
-        <!-- TECHNICAL DETAILS (hidden by default) -->
-        <div class="eval-card-details" id="details-{{ brgy }}" style="display:none;">
-          <div class="eval-metrics-row">
-            <div class="eval-metric">
-              <div class="eval-metric-num">±{{ data.avg_error }}</div>
-              <div class="eval-metric-label">RF Avg. Error</div>
-            </div>
-            <div class="eval-metric">
-              <div class="eval-metric-num">±{{ data.xgb_avg_error }}</div>
-              <div class="eval-metric-label">XGB Avg. Error</div>
-            </div>
-            <div class="eval-metric">
-              <div class="eval-metric-num">±{{ data.ensemble_avg_error }}</div>
-              <div class="eval-metric-label">Ensemble Avg. Error</div>
-            </div>
-            <div class="eval-metric">
-              <div class="eval-metric-num">{{ data.accuracy }}%</div>
-              <div class="eval-metric-label">Outbreak Detection</div>
-            </div>
-            <div class="eval-metric">
-              <div class="eval-metric-num">{{ data.precision }}%</div>
-              <div class="eval-metric-label">Alert Precision</div>
-            </div>
-          </div>
-        </div>
+       
 
         <div class="eval-accuracy-bar">
           <div class="eval-accuracy-fill" style="width:{{ data.accuracy }}%"></div>
@@ -253,13 +227,7 @@
 
 {% block scripts %}
 <script>
-  function toggleCardDetails(brgy) {
-    const details = document.getElementById('details-' + brgy);
-    const toggle  = document.getElementById('toggle-' + brgy);
-    const isHidden = details.style.display === 'none';
-    details.style.display = isHidden ? 'block' : 'none';
-    toggle.textContent = isHidden ? '▴ Hide technical details' : '▾ See technical details';
-  }
+  
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
