@@ -31,6 +31,10 @@
         <a href="/history" class="nav-link">History</a>
         <a href="/evaluation" class="nav-link active">Model Evaluation</a>
         <a href="/heatmap" class="nav-link">Heatmap</a>
+        {% if session.user_role == 'admin' %}
+        <a href="/technical" class="nav-link">Technical</a>
+        <a href="/admin" class="nav-link">Admin</a>
+        {% endif %}
       </div>
     </div>
 
