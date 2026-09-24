@@ -12,6 +12,111 @@ const WEEK_LABELS = {
   'cases_w1': 'Week −1 (most recent)'
 };
 
+// ── PARAMETER BASELINES ──
+const BASELINES = {
+  rain: {
+    moderate: 56,
+    high: 84,
+    alarming: 123,
+    max: 250,
+    unit: 'mm',
+    labels: { normal: '0–55mm Normal', moderate: '56–83mm Elevated', high: '84–122mm High', alarming: '123mm+ Alarming' }
+  },
+  temp: {
+    moderate: 27.4,
+    high: 28.7,
+    alarming: 31.7,
+    max: 35,
+    unit: '°C',
+    labels: { normal: 'Below 27.4°C Normal', moderate: '27.4–28.7°C Elevated', high: 'Above 28.7°C Alarming', alarming: 'Above 28.7°C Alarming' }
+  },
+  humid: {
+    moderate: 86.9,
+    high: 88.6,
+    alarming: 91.3,
+    max: 100,
+    unit: '%',
+    labels: { normal: 'Below 86.9% Normal', moderate: '86.9–88.6% Elevated', high: 'Above 88.6% Alarming', alarming: 'Above 88.6% Alarming' }
+  }
+};
+
+function getParamType(name) {
+  if (name.startsWith('rain')) return 'rain';
+  if (name.startsWith('temp')) return 'temp';
+  if (name.startsWith('humid')) return 'humid';
+  return null;
+}
+
+function updateParamIndicator(input) {
+  const type = getParamType(input.name);
+  if (!type) return;
+
+  const val      = parseFloat(input.value);
+  const base     = BASELINES[type];
+  const row      = input.closest('.climate-input-row');
+  if (!row || isNaN(val)) return;
+
+  let level, color, bgColor, borderColor, label;
+
+  if (type === 'rain') {
+    if (val >= base.alarming) {
+      level = 'alarming'; color = '#991B1B'; bgColor = '#FEE2E2'; borderColor = '#DC2626';
+      label = base.labels.alarming;
+    } else if (val >= base.high) {
+      level = 'high'; color = '#C2410C'; bgColor = '#FFEDD5'; borderColor = '#F97316';
+      label = base.labels.high;
+    } else if (val >= base.moderate) {
+      level = 'moderate'; color = '#92400E'; bgColor = '#FEF3C7'; borderColor = '#F59E0B';
+      label = base.labels.moderate;
+    } else {
+      level = 'normal'; color = '#166534'; bgColor = '#F0FDF4'; borderColor = '#86EFAC';
+      label = base.labels.normal;
+    }
+  } else {
+    if (val >= base.high) {
+      level = 'alarming'; color = '#991B1B'; bgColor = '#FEE2E2'; borderColor = '#DC2626';
+      label = base.labels.alarming;
+    } else if (val >= base.moderate) {
+      level = 'moderate'; color = '#92400E'; bgColor = '#FEF3C7'; borderColor = '#F59E0B';
+      label = base.labels.moderate;
+    } else {
+      level = 'normal'; color = '#166534'; bgColor = '#F0FDF4'; borderColor = '#86EFAC';
+      label = base.labels.normal;
+    }
+  }
+
+  // Update row styling
+  row.style.borderColor = borderColor;
+  row.style.background  = bgColor;
+  row.style.boxShadow   = `0 0 20px ${borderColor}55, 0 0 40px ${borderColor}22`;
+
+  // Update or create indicator label
+  let indicator = row.querySelector('.param-indicator');
+  if (!indicator) {
+    indicator = document.createElement('div');
+    indicator.className = 'param-indicator';
+    row.appendChild(indicator);
+  }
+  indicator.textContent = label;
+  indicator.style.color = color;
+  indicator.style.background = bgColor;
+  indicator.style.borderColor = borderColor;
+}
+
+// Attach listeners to climate inputs
+['rain', 'temp', 'humid'].forEach(type => {
+  ['w1','w2','w3','w4'].forEach(week => {
+    const input = document.querySelector(`input[name="${type}_${week}"]`);
+    if (input) {
+      input.addEventListener('input', () => updateParamIndicator(input));
+      input.addEventListener('blur',  () => updateParamIndicator(input));
+    }
+  });
+});
+
+// Also trigger on fetch
+const origBuildLog = window.buildLog;
+
 // Clear all form fields
 function clearForm() {
   document.querySelectorAll('input[type="number"]').forEach(input => {
@@ -176,6 +281,11 @@ async function fetchClimateData() {
 
     buildLog(weeks, weeklyRain, weeklyTemp, weeklyHumid, start, end);
     showStatus('success', `Data fetched successfully for ${start} to ${end}.`);
+
+        // Update parameter indicators after fetch
+    document.querySelectorAll('input[name^="rain_"], input[name^="temp_"], input[name^="humid_"]').forEach(input => {
+      updateParamIndicator(input);
+    });
 
   } catch (err) {
     showStatus('error', 'Network error. Check your connection and try again.');
