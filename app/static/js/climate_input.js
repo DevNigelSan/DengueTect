@@ -236,15 +236,13 @@ async function fetchClimateData() {
     </svg>
     Fetching...`;
 
-  try {
+    try {
     const endDate   = new Date(weekDate);
     const startDate = new Date(weekDate);
     startDate.setDate(startDate.getDate() - 28);
-
     const start = startDate.toISOString().split('T')[0];
     const end   = endDate.toISOString().split('T')[0];
-
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&past_days=28&daily=precipitation_sum,temperature_2m_mean,relative_humidity_2m_mean&timezone=Asia/Manila`;
+        const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${LAT}&longitude=${LON}&start_date=${start}&end_date=${end}&daily=precipitation_sum,temperature_2m_mean,relative_humidity_2m_mean&timezone=Asia/Manila`;
 
     const resp = await fetch(url);
     const data = await resp.json();
@@ -262,12 +260,17 @@ async function fetchClimateData() {
     const weeks = [[], [], [], []];
     dates.forEach((d, i) => {
       const weekIdx = Math.min(Math.floor(i / 7), 3);
-      weeks[weekIdx].push({ date: d, rainfall: rainfall[i], temp: temp[i], humidity: humidity[i] });
+      weeks[weekIdx].push({ 
+        date: d, 
+        rainfall: rainfall[i] !== null ? rainfall[i] : 0, 
+        temp: temp[i] !== null ? temp[i] : 0, 
+        humidity: humidity[i] !== null ? humidity[i] : 0 
+      });
     });
 
-    const weeklyRain  = weeks.map(w => w.reduce((s, d) => s + (d.rainfall || 0), 0).toFixed(1));
-    const weeklyTemp  = weeks.map(w => (w.reduce((s, d) => s + (d.temp || 0), 0) / w.length).toFixed(1));
-    const weeklyHumid = weeks.map(w => (w.reduce((s, d) => s + (d.humidity || 0), 0) / w.length).toFixed(1));
+    const weeklyRain  = weeks.map(w => w.length > 0 ? w.reduce((s, d) => s + (d.rainfall || 0), 0).toFixed(1) : '0.0');
+    const weeklyTemp  = weeks.map(w => w.length > 0 ? (w.reduce((s, d) => s + (d.temp || 0), 0) / w.length).toFixed(1) : '0.0');
+    const weeklyHumid = weeks.map(w => w.length > 0 ? (w.reduce((s, d) => s + (d.humidity || 0), 0) / w.length).toFixed(1) : '0.0');
 
     ['rain_w4','rain_w3','rain_w2','rain_w1'].forEach((name, i) => {
       document.querySelector(`input[name="${name}"]`).value = weeklyRain[i];
@@ -278,6 +281,15 @@ async function fetchClimateData() {
     ['humid_w4','humid_w3','humid_w2','humid_w1'].forEach((name, i) => {
       document.querySelector(`input[name="${name}"]`).value = weeklyHumid[i];
     });
+
+    console.log('Dates received:', dates.length, dates[0], dates[dates.length-1]);
+    console.log('Week 1:', weeks[0].map(d => d.date));
+    console.log('Week 2:', weeks[1].map(d => d.date));
+    console.log('Week 3:', weeks[2].map(d => d.date));
+    console.log('Week 4:', weeks[3].map(d => d.date));
+    console.log('Weekly rain:', weeklyRain);
+    console.log('Weekly temp:', weeklyTemp);
+    console.log('Weekly humid:', weeklyHumid);
 
     buildLog(weeks, weeklyRain, weeklyTemp, weeklyHumid, start, end);
     showStatus('success', `Data fetched successfully for ${start} to ${end}.`);
