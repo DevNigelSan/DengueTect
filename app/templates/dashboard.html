@@ -45,9 +45,9 @@
       </div>
       <div class="nav-divider"></div>
       <div class="nav-user">
-        <div class="user-avatar">{{ session.user_name[:2].upper() if session.user_name else 'HO' }}</div>
+                <div class="user-avatar">{{ 'AD' if session.user_role == 'admin' else 'HO' }}</div>
         <div class="user-info">
-          <span class="user-name">{{ session.user_name if session.user_name else 'Health Officer' }}</span>
+          <span class="user-name">{{ 'IT Admin' if session.user_role == 'admin' else 'Health Officer' }}</span>
           <span class="user-role">{{ 'IT Admin' if session.user_role == 'admin' else 'Marikina CHO' }}</span>
         </div>
       </div>
@@ -134,7 +134,6 @@
     <div class="page-header">
       <div>
         <h1 class="page-title">Outbreak Dashboard</h1>
-        <p class="page-sub">Latest forecast per barangay · ML-driven · 2–4 week lead time</p>
       </div>
       <div class="header-meta">
         <div class="meta-badge">
