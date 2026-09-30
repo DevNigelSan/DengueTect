@@ -663,10 +663,22 @@
 
 /* ── STATUS BAR ── */
 .status-bar { width: 100%; padding: 14px 36px; }
-.status-bar.high     { background: var(--red-alert); }
-.status-bar.moderate { background: var(--yellow-warn); }
-.status-bar.low      { background: var(--green-safe); }
-.status-bar.none     { background: var(--blue-primary); }
+.status-bar.high     { 
+  background: var(--red-alert); 
+  box-shadow: 0 4px 20px rgba(220,38,38,0.5), 0 0 40px rgba(220,38,38,0.2);
+}
+.status-bar.moderate { 
+  background: var(--yellow-warn); 
+  box-shadow: 0 4px 20px rgba(217,119,6,0.5), 0 0 40px rgba(217,119,6,0.2);
+}
+.status-bar.low      { 
+  background: var(--green-safe); 
+  box-shadow: 0 4px 20px rgba(22,163,74,0.5), 0 0 40px rgba(22,163,74,0.2);
+}
+.status-bar.none     { 
+  background: var(--blue-primary); 
+  box-shadow: 0 4px 20px rgba(26,86,160,0.4), 0 0 40px rgba(26,86,160,0.15);
+}
 
 .status-bar-inner {
   max-width: 1200px;
