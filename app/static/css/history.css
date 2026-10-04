@@ -160,9 +160,20 @@
 }
 
 
-.summary-num.red    { color: var(--red-alert); }
-.summary-num.yellow { color: var(--yellow-warn); }
-.summary-num.green  { color: var(--green-safe); }
+.summary-num.red    { color: var(--red-alert);   text-shadow: 0 0 14px rgba(220,38,38,0.45); }
+.summary-num.yellow { color: var(--yellow-warn); text-shadow: 0 0 14px rgba(245,158,11,0.45); }
+.summary-num.green  { color: var(--green-safe);  text-shadow: 0 0 14px rgba(22,163,74,0.45); }
+.summary-num:not(.red):not(.yellow):not(.green) { text-shadow: 0 0 14px rgba(26,86,160,0.35); }
+
+/* Card glow matching each number's color */
+.summary-card { transition: box-shadow 0.2s, transform 0.2s; }
+.summary-card:has(.summary-num.red)    { border-color: #FECACA; box-shadow: 0 0 20px rgba(220,38,38,0.18); }
+.summary-card:has(.summary-num.yellow) { border-color: #FDE68A; box-shadow: 0 0 20px rgba(245,158,11,0.18); }
+.summary-card:has(.summary-num.green)  { border-color: #BBF7D0; box-shadow: 0 0 20px rgba(22,163,74,0.18); }
+.summary-card:not(:has(.summary-num.red, .summary-num.yellow, .summary-num.green)) {
+  border-color: #BFD9F5; box-shadow: 0 0 20px rgba(26,86,160,0.15);
+}
+.summary-card:hover { transform: translateY(-2px); }
 
 /* ── TABLE PANEL ── */
 .table-panel {
