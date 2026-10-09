@@ -292,8 +292,7 @@ label {
   display: flex;
 }
 
-input[type="email"],
-input[type="password"] {
+.input-wrap input {
   width: 100%;
   padding: 13px 14px 13px 40px;
   border: 1.5px solid var(--gray-200);
@@ -305,8 +304,7 @@ input[type="password"] {
   outline: none;
 }
 
-input[type="email"]:focus,
-input[type="password"]:focus {
+.input-wrap input:focus {
   border-color: var(--blue-primary);
   background: var(--white);
   box-shadow: 0 0 0 3px rgba(26,86,160,0.1);
