@@ -116,6 +116,15 @@ def history():
 def faq():
     return render_template('faq.html')
 
+@main.route('/community')
+def community():
+    # Public, view-only page for residents. No login required.
+    return render_template('community.html',
+        nangka=get_latest_forecast('Nangka'),
+        tumana=get_latest_forecast('Tumana'),
+        malanday=get_latest_forecast('Malanday')
+    )
+
 @main.route('/admin')
 @admin_required
 def admin():

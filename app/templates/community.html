@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Community Dengue Alert{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/community.css') }}"/>
+{% endblock %}
+
+{% block content %}
+{% set barangays = [('Nangka', nangka), ('Tumana', tumana), ('Malanday', malanday)] %}
+{% set levels = [nangka, tumana, malanday] | select | map(attribute='risk_level') | list %}
+
+<div class="cm-shell">
+
+  <!-- TOP BAR -->
+  <header class="cm-topbar">
+    <div class="cm-brand">
+      <div class="cm-brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+      <div>
+        <div class="cm-brand-name">DengueTect</div>
+        <div class="cm-brand-sub">Community Dengue Alert</div>
+      </div>
+    </div>
+    <div class="cm-topbar-right">
+      <span class="cm-viewonly">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        View only
+      </span>
+      <a href="{{ url_for('main.login') }}" class="cm-staff-btn">CHO staff sign in</a>
+    </div>
+  </header>
+
+  <main class="cm-main">
+
+    <!-- HERO -->
+    <section class="cm-hero">
+      <p class="cm-eyebrow">For residents of Nangka, Tumana &amp; Malanday</p>
+      <h1 class="cm-title">Dengue alert for your barangay</h1>
+      <p class="cm-sub">
+        The Marikina City Health Office forecasts dengue risk every week using weather and case data.
+        Check your barangay below and see how to protect your household.
+      </p>
+
+      <div class="cm-summary">
+        {% if 'high' in levels %}
+          <span class="cm-summary-pill high"><span class="cm-pulse"></span>{{ levels | select('equalto', 'high') | list | length }} barangay{{ 's' if (levels | select('equalto', 'high') | list | length) != 1 else '' }} on HIGH alert</span>
+        {% elif 'moderate' in levels %}
+          <span class="cm-summary-pill moderate"><span class="cm-pulse"></span>Dengue risk is rising in some areas</span>
+        {% elif levels %}
+          <span class="cm-summary-pill low"><span class="cm-pulse"></span>Risk is low in all monitored barangays</span>
+        {% else %}
+          <span class="cm-summary-pill none">No forecasts published yet</span>
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- BARANGAY CARDS -->
+    <section class="cm-cards">
+      {% for name, f in barangays %}
+      {% set lvl = f.risk_level if f else 'none' %}
+      <article class="cm-card {{ lvl }}">
+        <div class="cm-card-top">
+          <div class="cm-card-brgy">Barangay {{ name }}</div>
+          <div class="cm-card-level">
+            {% if lvl == 'high' %}High Risk{% elif lvl == 'moderate' %}Moderate Risk{% elif lvl == 'low' %}Low Risk{% else %}No Forecast Yet{% endif %}
+          </div>
+          <div class="cm-card-meter">
+            <span class="{{ 'on' if lvl in ['low','moderate','high'] else '' }}"></span>
+            <span class="{{ 'on' if lvl in ['moderate','high'] else '' }}"></span>
+            <span class="{{ 'on' if lvl == 'high' else '' }}"></span>
+          </div>
+        </div>
+
+        <div class="cm-card-body">
+          {% if lvl == 'high' %}
+            <p class="cm-card-msg">There is a <strong>high chance of a dengue outbreak</strong> this week. Please take extra precautions now.</p>
+            <ul class="cm-card-todo">
+              <li>Empty or cover every container that holds water, today.</li>
+              <li>Use mosquito repellent, especially early morning and late afternoon.</li>
+              <li>Watch for fever in your family and seek a check-up early.</li>
+            </ul>
+          {% elif lvl == 'moderate' %}
+            <p class="cm-card-msg"><strong>Dengue risk is rising.</strong> Now is the time to clean up and protect yourself.</p>
+            <ul class="cm-card-todo">
+              <li>Check your home and yard for standing water.</li>
+              <li>Wear long sleeves and use repellent outdoors.</li>
+              <li>Cooperate with barangay clean-up drives and fogging.</li>
+            </ul>
+          {% elif lvl == 'low' %}
+            <p class="cm-card-msg"><strong>Risk is low right now.</strong> Keep up good habits so it stays that way.</p>
+            <ul class="cm-card-todo">
+              <li>Clean water containers once a week.</li>
+              <li>Keep gutters and drains clear after rain.</li>
+              <li>Stay alert during the rainy season.</li>
+            </ul>
+          {% else %}
+            <p class="cm-card-msg">The health office hasn't published a forecast for this barangay yet. Please check again soon.</p>
+          {% endif %}
+        </div>
+
+        {% if f %}
+        <div class="cm-card-foot">
+          <span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Week of {{ f.week_date }}
+          </span>
+          <span class="cm-card-cases">About <strong>{{ f.predicted_cases }}</strong> case{{ 's' if f.predicted_cases != 1 else '' }} expected</span>
+        </div>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </section>
+
+    <!-- PROTECT YOUR HOUSEHOLD -->
+    <section class="cm-section">
+      <div class="cm-section-head">
+        <h2>Protect your household</h2>
+        <p>Dengue spreads through the <em>Aedes</em> mosquito, which breeds in clean, standing water. These four habits make the biggest difference.</p>
+      </div>
+      <div class="cm-tips">
+        <div class="cm-tip">
+          <div class="cm-tip-icon blue">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <h3>Search &amp; destroy</h3>
+          <p>Empty, scrub, or cover anything that collects water: pails, old tires, flower vases, bottle caps, and roof gutters.</p>
+        </div>
+        <div class="cm-tip">
+          <div class="cm-tip-icon green">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Protect yourself</h3>
+          <p>Wear long sleeves and pants, use repellent, and sleep under a mosquito net or with screened windows.</p>
+        </div>
+        <div class="cm-tip">
+          <div class="cm-tip-icon amber">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+          </div>
+          <h3>Seek early check-up</h3>
+          <p>If someone has a fever for 2 days or more, visit your barangay health center right away. Early care saves lives.</p>
+        </div>
+        <div class="cm-tip">
+          <div class="cm-tip-icon violet">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3>Support community action</h3>
+          <p>Join clean-up drives and allow fogging or spraying when health workers announce it for your area.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- WARNING SIGNS -->
+    <section class="cm-warning">
+      <div class="cm-warning-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div class="cm-warning-body">
+        <h2>Go to a hospital right away if someone with dengue has:</h2>
+        <ul>
+          <li>Severe stomach pain</li>
+          <li>Vomiting that won't stop</li>
+          <li>Bleeding from the nose or gums</li>
+          <li>Blood in vomit or stool</li>
+          <li>Unusual sleepiness or restlessness</li>
+          <li>Fast or difficult breathing</li>
+        </ul>
+        <p>These can be signs of severe dengue, which needs emergency care, even after the fever goes down.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="cm-footer">
+    <p>Forecasts are estimates from weather and past case patterns, and may not be exact. Always follow official advisories from the Marikina City Health Office and your barangay.</p>
+    <p class="cm-footer-meta">DengueTect · Marikina City Health Office</p>
+  </footer>
+
+</div>
+{% endblock %}
