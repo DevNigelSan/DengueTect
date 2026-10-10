@@ -111,6 +111,11 @@ def history():
     rows = get_all_forecasts()
     return render_template('history.html', rows=rows)
 
+@main.route('/faq')
+@login_required
+def faq():
+    return render_template('faq.html')
+
 @main.route('/admin')
 @admin_required
 def admin():

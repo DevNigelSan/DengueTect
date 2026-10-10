@@ -1,0 +1,789 @@
+{% extends "base.html" %}
+
+{% block title %}Help Center{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/faq.css') }}"/>
+{% endblock %}
+
+{% block content %}
+<div class="app-shell">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+      <div class="nav-brand-text">
+        <span class="nav-title">DengueTect</span>
+        <span class="nav-sub">Help Center</span>
+      </div>
+    </div>
+
+    <div class="nav-center">
+      <div class="nav-links">
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/input" class="nav-link">Climate Input</a>
+        <a href="/history" class="nav-link">History</a>
+        <a href="/evaluation" class="nav-link">Model Evaluation</a>
+        <a href="/heatmap" class="nav-link">Heatmap</a>
+        {% if session.user_role == 'admin' %}
+        <a href="/technical" class="nav-link">Technical</a>
+        <a href="/admin" class="nav-link">Admin</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <div class="nav-status">
+        <span class="status-pulse"></span>
+        <span class="status-text">Live</span>
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-user">
+        <div class="user-avatar">{{ 'AD' if session.user_role == 'admin' else 'HO' }}</div>
+        <div class="user-info">
+          <span class="user-name">{{ 'IT Admin' if session.user_role == 'admin' else 'Health Officer' }}</span>
+          <span class="user-role">{{ 'IT Admin' if session.user_role == 'admin' else 'Marikina CHO' }}</span>
+        </div>
+      </div>
+      <a href="/logout" class="btn-logout">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Sign out
+      </a>
+    </div>
+  </nav>
+
+  <main class="main-content faq-main">
+
+    <!-- ═════════ HERO ═════════ -->
+    <section class="faq-hero">
+      <svg class="faq-hero-ekg" viewBox="0 0 520 80" preserveAspectRatio="none" aria-hidden="true">
+        <path class="faq-ekg-base" d="M0,40 L140,40 L150,40 L155,20 L160,60 L165,15 L172,55 L178,40 L260,40 L270,40 L275,22 L280,58 L285,17 L292,53 L298,40 L380,40 L390,40 L395,20 L400,60 L405,15 L412,55 L418,40 L520,40"/>
+        <path class="faq-ekg-live" d="M0,40 L140,40 L150,40 L155,20 L160,60 L165,15 L172,55 L178,40 L260,40 L270,40 L275,22 L280,58 L285,17 L292,53 L298,40 L380,40 L390,40 L395,20 L400,60 L405,15 L412,55 L418,40 L520,40"/>
+      </svg>
+
+      <div class="faq-hero-inner">
+        <p class="faq-eyebrow">
+          <span class="faq-eyebrow-dot"></span>
+          Help Center · Frequently Asked Questions
+        </p>
+        <h1 class="faq-hero-title">How can we <span>help you</span> today?</h1>
+        <p class="faq-hero-desc">
+          Plain-language answers on running forecasts, reading risk levels, and getting the most out of DengueTect.
+        </p>
+
+        <div class="faq-search" role="search">
+          <svg class="faq-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="search" id="faqSearch" placeholder="Search a question, e.g. &quot;fetch climate data&quot; or &quot;high risk&quot;" autocomplete="off" aria-label="Search help articles"/>
+          <button type="button" class="faq-search-clear" id="faqSearchClear" aria-label="Clear search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+          <kbd class="faq-kbd" id="faqKbd">/</kbd>
+        </div>
+
+        <div class="faq-popular">
+          <span class="faq-popular-label">Popular:</span>
+          <button type="button" class="faq-chip" data-goto="q-run-steps">Running a forecast</button>
+          <button type="button" class="faq-chip" data-goto="q-risk-levels">What risk levels mean</button>
+          <button type="button" class="faq-chip" data-goto="q-zero-values">Fetched values look wrong</button>
+          <button type="button" class="faq-chip" data-goto="q-case-source">Where to get case counts</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════ QUICK START ═════════ -->
+    <section class="faq-steps" aria-label="Quick start">
+      <a href="#q-run-steps" class="faq-step" data-goto="q-run-steps">
+        <span class="faq-step-num">1</span>
+        <span class="faq-step-icon blue">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        </span>
+        <span class="faq-step-title">Pick barangay &amp; week</span>
+        <span class="faq-step-desc">Open Climate Input and choose who and when.</span>
+      </a>
+      <a href="#q-fetch" class="faq-step" data-goto="q-fetch">
+        <span class="faq-step-num">2</span>
+        <span class="faq-step-icon sky">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 13v8"/><path d="M8 13v8"/><path d="M12 15v8"/><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/></svg>
+        </span>
+        <span class="faq-step-title">Fetch climate data</span>
+        <span class="faq-step-desc">One click fills 4 weeks of weather.</span>
+      </a>
+      <a href="#q-case-source" class="faq-step" data-goto="q-case-source">
+        <span class="faq-step-num">3</span>
+        <span class="faq-step-icon amber">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+        </span>
+        <span class="faq-step-title">Enter case counts</span>
+        <span class="faq-step-desc">Type the last 4 weeks from CHO records.</span>
+      </a>
+      <a href="#q-risk-levels" class="faq-step" data-goto="q-risk-levels">
+        <span class="faq-step-num">4</span>
+        <span class="faq-step-icon green">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </span>
+        <span class="faq-step-title">Read &amp; act on the report</span>
+        <span class="faq-step-desc">Follow the actions for the risk level shown.</span>
+      </a>
+    </section>
+
+    <!-- ═════════ BODY ═════════ -->
+    <div class="faq-layout">
+
+      <!-- SIDEBAR -->
+      <aside class="faq-sidebar">
+        <nav class="faq-nav" aria-label="Help topics">
+          <div class="faq-nav-title">Topics</div>
+          <a href="#start" class="faq-nav-link" data-cat="start">
+            <span class="faq-nav-icon" style="--cat:#1A56A0">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            </span>
+            <span class="faq-nav-label">Getting Started</span>
+            <span class="faq-nav-count" data-count-for="start"></span>
+          </a>
+          <a href="#running" class="faq-nav-link" data-cat="running">
+            <span class="faq-nav-icon" style="--cat:#0891B2">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 13v8"/><path d="M8 13v8"/><path d="M12 15v8"/><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/></svg>
+            </span>
+            <span class="faq-nav-label">Running a Forecast</span>
+            <span class="faq-nav-count" data-count-for="running"></span>
+          </a>
+          <a href="#results" class="faq-nav-link" data-cat="results">
+            <span class="faq-nav-icon" style="--cat:#DC2626">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </span>
+            <span class="faq-nav-label">Understanding Results</span>
+            <span class="faq-nav-count" data-count-for="results"></span>
+          </a>
+          <a href="#dashboard" class="faq-nav-link" data-cat="dashboard">
+            <span class="faq-nav-icon" style="--cat:#16A34A">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            </span>
+            <span class="faq-nav-label">Dashboard, History &amp; Maps</span>
+            <span class="faq-nav-count" data-count-for="dashboard"></span>
+          </a>
+          <a href="#data" class="faq-nav-link" data-cat="data">
+            <span class="faq-nav-icon" style="--cat:#7C3AED">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            </span>
+            <span class="faq-nav-label">Data &amp; Accuracy</span>
+            <span class="faq-nav-count" data-count-for="data"></span>
+          </a>
+          <a href="#account" class="faq-nav-link" data-cat="account">
+            <span class="faq-nav-icon" style="--cat:#D97706">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <span class="faq-nav-label">Account &amp; Access</span>
+            <span class="faq-nav-count" data-count-for="account"></span>
+          </a>
+          <a href="#glossary" class="faq-nav-link" data-cat="glossary">
+            <span class="faq-nav-icon" style="--cat:#0D3B7A">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            </span>
+            <span class="faq-nav-label">Terms Explained</span>
+            <span class="faq-nav-count" data-count-for="glossary"></span>
+          </a>
+        </nav>
+
+        <div class="faq-support-card">
+          <div class="faq-support-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div class="faq-support-title">Still stuck?</div>
+          <p class="faq-support-desc">Your IT Admin can help with accounts, errors, or anything not covered here.</p>
+          <a href="#q-forgot" class="faq-support-btn" data-goto="q-forgot">Contact IT Admin</a>
+        </div>
+      </aside>
+
+      <!-- CONTENT -->
+      <div class="faq-content">
+
+        <div class="faq-toolbar">
+          <div class="faq-result-text" id="faqResultText">Browse all topics</div>
+          <div class="faq-toolbar-actions">
+            <button type="button" class="faq-tool-btn" id="faqExpandAll">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg>
+              Expand all
+            </button>
+            <button type="button" class="faq-tool-btn" id="faqCollapseAll">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>
+              Collapse all
+            </button>
+            <button type="button" class="faq-tool-btn primary" onclick="window.print()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Print guide
+            </button>
+          </div>
+        </div>
+
+        <!-- ───── GETTING STARTED ───── -->
+        <section class="faq-cat" id="start" style="--cat:#1A56A0; --cat-soft:#E8F1FB;">
+          <header class="faq-cat-header">
+            <div class="faq-cat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            </div>
+            <div>
+              <h2 class="faq-cat-title">Getting Started</h2>
+              <p class="faq-cat-desc">What DengueTect is, who it's for, and how it fits into your weekly routine.</p>
+            </div>
+          </header>
+
+          <div class="faq-item" id="q-what">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">What is DengueTect?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>DengueTect is a dengue forecasting tool for the Marikina City Health Office. You give it the last four weeks of weather and dengue case counts for a barangay, and it estimates <strong>how many cases to expect</strong> and <strong>how likely an outbreak is</strong> for the week you choose.</p>
+              <p>It then shows a risk level (Low, Moderate, or High) with recommended health actions, so your team can prepare before cases peak.</p>
+              <div class="faq-callout tip">
+                <span class="faq-callout-label">Good to know</span>
+                DengueTect supports your professional judgment. It does not replace it. Always combine the forecast with what you see in the field.
+              </div>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-barangays">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">Which barangays does it cover?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>Three barangays along the Marikina River: <strong>Nangka</strong>, <strong>Tumana</strong>, and <strong>Malanday</strong>. These areas flood often, and standing water after heavy rain is where dengue mosquitoes breed.</p>
+              <p>Other barangays can't be forecast yet, because the models learned only from the case history of these three.</p>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-how-often">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">How often should I run a forecast?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>Once a week for each barangay, right after that week's case counts are finalized in your CHO records. Running all three barangays every week keeps the Dashboard and Risk Map up to date.</p>
+              <div class="faq-callout tip">
+                <span class="faq-callout-label">Tip</span>
+                Pick the same day each week (for example, every Monday morning) so forecasts are easy to compare over time.
+              </div>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-pages">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">What is each page in the menu for?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <div class="faq-pagegrid">
+                <a href="/dashboard" class="faq-page"><strong>Dashboard</strong><span>Latest risk for all three barangays, plus a map.</span></a>
+                <a href="/input" class="faq-page"><strong>Climate Input</strong><span>Where you enter data and run a new forecast.</span></a>
+                <a href="/history" class="faq-page"><strong>History</strong><span>Every forecast ever made, with filters.</span></a>
+                <a href="/evaluation" class="faq-page"><strong>Model Evaluation</strong><span>How close past predictions were to real cases.</span></a>
+                <a href="/heatmap" class="faq-page"><strong>Heatmap</strong><span>Week-by-week case history in colors and on a map.</span></a>
+                <div class="faq-page muted"><strong>Technical &amp; Admin</strong><span>For IT Admins only: detailed metrics and user accounts.</span></div>
+              </div>
+            </div></div>
+          </div>
+        </section>
+
+        <!-- ───── RUNNING A FORECAST ───── -->
+        <section class="faq-cat" id="running" style="--cat:#0891B2; --cat-soft:#ECFEFF;">
+          <header class="faq-cat-header">
+            <div class="faq-cat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 13v8"/><path d="M8 13v8"/><path d="M12 15v8"/><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/></svg>
+            </div>
+            <div>
+              <h2 class="faq-cat-title">Running a Forecast</h2>
+              <p class="faq-cat-desc">Entering climate and case data on the Climate Input page.</p>
+            </div>
+          </header>
+
+          <div class="faq-item" id="q-run-steps">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">How do I run a forecast, step by step?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <ol class="faq-steplist">
+                <li>Go to <strong>Climate Input</strong> in the menu.</li>
+                <li>Choose the <strong>Barangay</strong> and the <strong>Week Starting</strong> date you want a forecast for.</li>
+                <li>Click <strong>Fetch Climate Data</strong>. Rainfall, temperature, and humidity for the past 4 weeks fill in automatically.</li>
+                <li>Check the values in the <strong>Open-Meteo Data Log</strong> on the right.</li>
+                <li>Type the <strong>dengue case counts</strong> for the past 4 weeks from your CHO records.</li>
+                <li>Click <strong>Run Forecast</strong>. The Forecast Report opens when it's done.</li>
+              </ol>
+              <a href="/input" class="faq-action">Open Climate Input
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </a>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-fetch">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">What does "Fetch Climate Data" do?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>It downloads daily weather readings for Marikina City from <strong>Open-Meteo</strong>, a free public weather archive, for the 4 weeks before your chosen date. It then groups the days into weeks:</p>
+              <ul class="faq-bullets">
+                <li><strong>Rainfall</strong> is added up for the whole week (mm).</li>
+                <li><strong>Temperature</strong> and <strong>humidity</strong> are averaged over the week.</li>
+              </ul>
+              <p>The Data Log shows exactly which dates went into each week, so you can double-check them.</p>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-zero-values">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">The fetched values look wrong, or a field shows 0. What happened?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>The weather archive is usually a <strong>few days behind</strong>. If you pick today or a very recent date, the newest days may not be available yet, and the most recent week can come out too low or even 0.</p>
+              <div class="faq-callout warn">
+                <span class="faq-callout-label">What to do</span>
+                Pick a date at least a week in the past, then fetch again. You can also type in corrected values yourself. Every field can be edited before you run the forecast.
+              </div>
+              <p>If you see "Network error," check your internet connection and try again.</p>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-case-source">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">Where do I get the dengue case counts?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>From your <strong>official weekly CHO surveillance records</strong> for the barangay. The system can't fetch these automatically, so they always need to be typed in.</p>
+              <div class="faq-weekline">
+                <div class="faq-week"><span>Week −4</span><small>oldest</small></div>
+                <div class="faq-week"><span>Week −3</span></div>
+                <div class="faq-week"><span>Week −2</span></div>
+                <div class="faq-week now"><span>Week −1</span><small>most recent</small></div>
+                <div class="faq-week target"><span>Forecast</span><small>your chosen week</small></div>
+              </div>
+              <p>Enter <strong>0</strong> for any week with no cases. Don't leave a field empty.</p>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-why-4weeks">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">Why does it need data from the past 4 weeks?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>Weather doesn't cause dengue cases right away. Heavy rain creates breeding sites, mosquitoes take about 1–2 weeks to grow, and infected people show symptoms several days after being bitten. So the weather and cases from <strong>1 to 4 weeks ago</strong> are the best clues to what happens next.</p>
+              <div class="faq-chain">
+                <div class="faq-chain-step"><strong>Rain</strong><span>Water collects</span></div>
+                <div class="faq-chain-arrow">→</div>
+                <div class="faq-chain-step"><strong>Breeding</strong><span>~1–2 weeks</span></div>
+                <div class="faq-chain-arrow">→</div>
+                <div class="faq-chain-step"><strong>Bites</strong><span>Virus spreads</span></div>
+                <div class="faq-chain-arrow">→</div>
+                <div class="faq-chain-step"><strong>Cases</strong><span>Symptoms appear</span></div>
+              </div>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-row-colors">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">What do the colors on the climate rows mean?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>As values are filled in, each row lights up to show how it compares with typical Marikina weather. They're a quick heads-up. The forecast always uses the exact numbers.</p>
+              <table class="faq-table">
+                <thead><tr><th>Reading</th><th><span class="faq-dot normal"></span>Normal</th><th><span class="faq-dot elevated"></span>Elevated</th><th><span class="faq-dot alarming"></span>High / Alarming</th></tr></thead>
+                <tbody>
+                  <tr><td>Rainfall (weekly)</td><td>0–55 mm</td><td>56–83 mm</td><td>84 mm and up</td></tr>
+                  <tr><td>Temperature</td><td>below 27.4 °C</td><td>27.4–28.7 °C</td><td>above 28.7 °C</td></tr>
+                  <tr><td>Humidity</td><td>below 86.9%</td><td>86.9–88.6%</td><td>above 88.6%</td></tr>
+                </tbody>
+              </table>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-high-cases">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">Why did a "High Case Count Detected" warning appear?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>Weekly case counts in these barangays are usually low, so unusually high numbers are flagged in case of a typing mistake (for example, typing <strong>21</strong> instead of <strong>2</strong>).</p>
+              <ul class="faq-bullets">
+                <li>If the number matches your official records, click <strong>Yes, Proceed</strong>.</li>
+                <li>If it was a typo, click <strong>Go Back</strong> and fix it.</li>
+              </ul>
+              <p>Click the small <strong>?</strong> beside "Dengue Cases" on the form to see how the warning levels were set.</p>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-edit">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">Can I change values after fetching, or start over?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>Yes. Every field can be edited by hand before you click Run Forecast. To start fresh, click <strong>Clear all</strong> at the bottom of the form.</p>
+            </div></div>
+          </div>
+        </section>
+
+        <!-- ───── UNDERSTANDING RESULTS ───── -->
+        <section class="faq-cat" id="results" style="--cat:#DC2626; --cat-soft:#FEF2F2;">
+          <header class="faq-cat-header">
+            <div class="faq-cat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <div>
+              <h2 class="faq-cat-title">Understanding Results</h2>
+              <p class="faq-cat-desc">Reading the Forecast Report and deciding what to do next.</p>
+            </div>
+          </header>
+
+          <div class="faq-item" id="q-risk-levels">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">What do Low, Moderate, and High risk mean?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>The risk level comes from the <strong>Outbreak Likelihood</strong> percentage on the report:</p>
+              <div class="faq-risk-grid">
+                <div class="faq-risk low">
+                  <div class="faq-risk-top"><span class="faq-risk-name">Low</span><span class="faq-risk-range">below 50%</span></div>
+                  <div class="faq-risk-bar"><span style="width:50%"></span></div>
+                  <p>Keep routine weekly surveillance, clean-up drives, and breeding-site checks.</p>
+                </div>
+                <div class="faq-risk moderate">
+                  <div class="faq-risk-top"><span class="faq-risk-name">Moderate</span><span class="faq-risk-range">50–74%</span></div>
+                  <div class="faq-risk-bar"><span style="width:75%"></span></div>
+                  <p>Step up surveillance, schedule preventive fogging, and run awareness campaigns.</p>
+                </div>
+                <div class="faq-risk high">
+                  <div class="faq-risk-top"><span class="faq-risk-name">High</span><span class="faq-risk-range">75% and up</span></div>
+                  <div class="faq-risk-bar"><span style="width:100%"></span></div>
+                  <p>Activate the response team, prioritize fogging, issue an advisory, and switch to daily reporting.</p>
+                </div>
+              </div>
+              <p>The full recommended actions for each level are written out in the report's <strong>Health Response Recommendations</strong> section.</p>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-likelihood">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">What does "Outbreak Likelihood" actually measure?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>It's how strongly the current weather and case pattern looks like past <strong>outbreak weeks</strong> in that barangay. In DengueTect, an outbreak week is one where the case count was in the <strong>top 25%</strong> of all weeks on record for that barangay.</p>
+              <p>A higher percentage means conditions look more like past outbreaks. It is a warning signal, not a guarantee.</p>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-cases-vs-risk">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">Why can projected cases be low while the risk is High?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>They answer two different questions, and separate models handle each:</p>
+              <div class="faq-compare">
+                <div class="faq-compare-card"><span class="faq-compare-tag">Projected Cases</span><strong>"How many?"</strong><p>An estimate of the number of cases for the week.</p></div>
+                <div class="faq-compare-card"><span class="faq-compare-tag">Outbreak Likelihood</span><strong>"How unusual?"</strong><p>Whether that week looks abnormally high for this barangay.</p></div>
+              </div>
+              <p>In barangays where most weeks have 0–2 cases, even a few cases can be above normal. So a small number can still come with a High risk level.</p>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-three-estimates">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">Why are there three case estimates (Random Forest, XGBoost, Ensemble)?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>Two different prediction models each estimate the case count. The <strong>Ensemble</strong> combines them (60% Random Forest, 40% XGBoost), because Random Forest performed better in testing.</p>
+              <ul class="faq-bullets">
+                <li>When all three numbers are close, the models agree, and you can rely on the estimate more.</li>
+                <li>When they're far apart, treat the case number with extra caution.</li>
+              </ul>
+              <p>The Dashboard and History pages show the Random Forest estimate.</p>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-which-week">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">Which week is the forecast for?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>The week you selected as <strong>Week Starting</strong>. The forecast uses the four weeks before that date to estimate what happens in it.</p>
+              <div class="faq-callout tip">
+                <span class="faq-callout-label">Tip</span>
+                Run the forecast as soon as last week's counts are complete. That gives your team the most time to act.
+              </div>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-always-right">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">Is the forecast always right?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>No. It estimates from patterns in past data. Things the system can't see, like a sudden flood, a new dengue strain, or delays in case reporting, can change what actually happens.</p>
+              <p>Use it as an early warning, and check the <strong>Model Evaluation</strong> page to see how close past predictions were to real case counts.</p>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-print-report">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">How do I print or save a forecast report?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>Click <strong>Print Report</strong> at the top of the Forecast Report. To keep a digital copy, choose <strong>Save as PDF</strong> as the printer in the print window. The menu bar and buttons are left out of the printout automatically.</p>
+            </div></div>
+          </div>
+        </section>
+
+        <!-- ───── DASHBOARD, HISTORY & MAPS ───── -->
+        <section class="faq-cat" id="dashboard" style="--cat:#16A34A; --cat-soft:#F0FDF4;">
+          <header class="faq-cat-header">
+            <div class="faq-cat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            </div>
+            <div>
+              <h2 class="faq-cat-title">Dashboard, History &amp; Maps</h2>
+              <p class="faq-cat-desc">Finding past forecasts and reading the heatmap and risk maps.</p>
+            </div>
+          </header>
+
+          <div class="faq-item" id="q-dashboard">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">What does the Dashboard show?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>The <strong>latest forecast</strong> for each barangay. Each card is colored by risk level and shows projected cases and outbreak probability. Below the cards are a log of recent forecasts, quick totals, and a Risk Map.</p>
+              <p>A card that says <strong>No Data</strong> means no forecast has been run for that barangay yet. Click <strong>Generate</strong> to make one.</p>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-find-old">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">How do I find an older forecast?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>Open <strong>History</strong>. It lists every forecast, newest first. Use the <strong>Barangay</strong> and <strong>Risk Level</strong> filters to narrow the list. The cards at the top count how many forecasts fell into each risk level. <strong>Export</strong> prints the list.</p>
+              <a href="/history" class="faq-action">Open History
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </a>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-remove">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">Can I remove a forecast I made by mistake?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>Yes. Click <strong>Remove</strong> next to it on the Dashboard or History page, then confirm.</p>
+              <div class="faq-callout danger">
+                <span class="faq-callout-label">Careful</span>
+                Removing a forecast can't be undone. Only remove entries that were made in error, since past forecasts are part of the office's record.
+              </div>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-heatmap">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">How do I read the Heatmap?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>Each row is a barangay and each thin column is one week. The color shows how many cases were recorded that week:</p>
+              <div class="faq-scale">
+                <span style="background:#DCFCE7">0</span>
+                <span style="background:#86EFAC">1–2</span>
+                <span style="background:#FDE047">3–5</span>
+                <span style="background:#FB923C">6–10</span>
+                <span style="background:#EF4444;color:#fff">11–20</span>
+                <span style="background:#991B1B;color:#fff">21+</span>
+              </div>
+              <p>Hover over any column to see its exact week and count. On the map below it, drag the slider (or use the arrow buttons) to watch risk move across barangays week by week.</p>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-map-exact">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">Are the barangay boundaries on the maps exact?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>No. The shapes and markers are drawn approximately, to show roughly where each barangay sits along the river. Use them for a visual overview, not as official boundaries.</p>
+            </div></div>
+          </div>
+        </section>
+
+        <!-- ───── DATA & ACCURACY ───── -->
+        <section class="faq-cat" id="data" style="--cat:#7C3AED; --cat-soft:#F5F3FF;">
+          <header class="faq-cat-header">
+            <div class="faq-cat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            </div>
+            <div>
+              <h2 class="faq-cat-title">Data &amp; Accuracy</h2>
+              <p class="faq-cat-desc">Where the numbers come from and how much to trust them.</p>
+            </div>
+          </header>
+
+          <div class="faq-item" id="q-data-source">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">Where does the system's data come from?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <div class="faq-source-list">
+                <div class="faq-source"><span class="faq-source-tag sky">Weather</span><p>Open-Meteo's public weather archive, for a point in Marikina City.</p></div>
+                <div class="faq-source"><span class="faq-source-tag green">Cases 2022–2026</span><p>Department of Health dengue surveillance records for Nangka, Tumana, and Malanday.</p></div>
+                <div class="faq-source"><span class="faq-source-tag violet">Cases 2017–2021</span><p>Barangay-level records for these years don't exist; the Marikina City Health Office confirmed this. To give the models more history, the system uses <strong>estimated</strong> weekly counts built from the DOH's official yearly totals for Marikina.</p></div>
+              </div>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-evaluation">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">What does the Model Evaluation page show?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>It compares what the models predicted with the case counts actually recorded for past weeks, barangay by barangay. The top cards summarize it in plain words: the average error in cases per week, and how often outbreak weeks were correctly flagged.</p>
+              <p>On the chart, the solid blue line is the actual cases and the dashed lines are each model's predictions. The closer the lines are, the better the prediction. Use the barangay tabs, the date search, or the expand button to look closer.</p>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-learn">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">Does the system learn from the forecasts I run?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>Not automatically. The models were trained once on historical data. Your forecasts are saved to History, but they don't change how the models predict. Updating the models is done separately by the system's developers.</p>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-privacy">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">Do I enter any patient information?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>No. You only enter <strong>weekly totals</strong>, such as "3 cases in Week −1." No names, ages, or addresses are entered or stored. Weather data comes from a public source.</p>
+            </div></div>
+          </div>
+        </section>
+
+        <!-- ───── ACCOUNT & ACCESS ───── -->
+        <section class="faq-cat" id="account" style="--cat:#D97706; --cat-soft:#FFFBEB;">
+          <header class="faq-cat-header">
+            <div class="faq-cat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div>
+              <h2 class="faq-cat-title">Account &amp; Access</h2>
+              <p class="faq-cat-desc">Signing in, permissions, and keeping your account safe.</p>
+            </div>
+          </header>
+
+          <div class="faq-item" id="q-forgot">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">I forgot my password. What should I do?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>Contact your office's <strong>IT Admin</strong>. Accounts are managed by the IT Admin, who can help you regain access. The same goes for new accounts and any error you can't solve here.</p>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-no-admin">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">Why can't I see the Technical or Admin pages?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <p>Those pages are only for <strong>IT Admin</strong> accounts. Health Officer accounts have everything needed for forecasting: Dashboard, Climate Input, History, Model Evaluation, Heatmap, and this Help Center.</p>
+            </div></div>
+          </div>
+
+          <div class="faq-item" id="q-shared-pc">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span class="faq-q-text">I use a shared office computer. How do I keep my account safe?</span>
+              <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+            </button>
+            <div class="faq-a"><div class="faq-a-inner">
+              <ul class="faq-bullets">
+                <li>Click <strong>Sign out</strong> (top right) when you're done, then close the browser.</li>
+                <li>Don't tick <strong>Remember me</strong> on a shared computer.</li>
+                <li>Never share your password. Ask the IT Admin for your own account instead.</li>
+              </ul>
+            </div></div>
+          </div>
+        </section>
+
+        <!-- ───── GLOSSARY ───── -->
+        <section class="faq-cat glossary" id="glossary" style="--cat:#0D3B7A; --cat-soft:#E8F1FB;">
+          <header class="faq-cat-header">
+            <div class="faq-cat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            </div>
+            <div>
+              <h2 class="faq-cat-title">Terms Explained</h2>
+              <p class="faq-cat-desc">Words you'll see around the system, in plain language.</p>
+            </div>
+          </header>
+
+          <div class="faq-glossary">
+            <div class="faq-term"><div class="faq-term-name">Outbreak week</div><p>A week whose case count was in the top 25% of all recorded weeks for that barangay.</p></div>
+            <div class="faq-term"><div class="faq-term-name">Lag</div><p>Looking back in time. "Lag 2" means data from 2 weeks before the forecast week.</p></div>
+            <div class="faq-term"><div class="faq-term-name">Rolling average</div><p>The average of the last 4 weeks of cases. It smooths out one-off spikes.</p></div>
+            <div class="faq-term"><div class="faq-term-name">Random Forest</div><p>A model that asks many simple "decision trees" for a case estimate and averages their answers.</p></div>
+            <div class="faq-term"><div class="faq-term-name">XGBoost</div><p>A model that builds decision trees one after another, each fixing the last one's mistakes.</p></div>
+            <div class="faq-term"><div class="faq-term-name">Logistic Regression</div><p>The model that turns the data into the Outbreak Likelihood percentage.</p></div>
+            <div class="faq-term"><div class="faq-term-name">Ensemble</div><p>A combined estimate: 60% Random Forest + 40% XGBoost.</p></div>
+            <div class="faq-term"><div class="faq-term-name">Open-Meteo</div><p>A free, public weather archive the system uses for rainfall, temperature, and humidity.</p></div>
+            <div class="faq-term"><div class="faq-term-name"><em>Aedes aegypti</em></div><p>The mosquito that spreads dengue. It breeds in clean, standing water.</p></div>
+          </div>
+        </section>
+
+        <!-- EMPTY STATE -->
+        <div class="faq-empty" id="faqEmpty" hidden>
+          <div class="faq-empty-icon">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          </div>
+          <div class="faq-empty-title">No answers found for "<span id="faqEmptyTerm"></span>"</div>
+          <p class="faq-empty-desc">Try simpler words like "rain", "risk", or "password", or browse the topics on the left.</p>
+          <button type="button" class="faq-tool-btn primary" id="faqEmptyClear">Clear search</button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/faq.js') }}"></script>
+{% endblock %}
