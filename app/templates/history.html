@@ -158,7 +158,7 @@
               <th>Probability</th>
               <th>Risk Level</th>
               <th>Generated</th>
-              <th>View</th>
+              <th>Public</th>
               <th>Remove</th>
             </tr>
           </thead>
@@ -170,7 +170,21 @@
               <td>{{ f.predicted_cases }}</td>
               <td>{{ f.outbreak_proba }}%</td>
               <td><span class="badge {{ f.risk_level }}">{{ f.risk_level | title }}</span></td>
-              <td class="td-done">{{ f.generated_at }}</td>
+                            <td class="td-done">{{ f.generated_at }}</td>
+              <td>
+                <form action="{{ url_for('main.toggle_publish') }}" method="POST">
+                  <input type="hidden" name="forecast_id" value="{{ f.id }}"/>
+                  {% if f.published %}
+                  <button type="submit" class="btn-publish on" title="Residents can see this. Click to hide it.">
+                    <span class="publish-dot"></span>Published
+                  </button>
+                  {% else %}
+                  <button type="submit" class="btn-publish" title="Only staff can see this. Click to show it to residents.">
+                    Publish
+                  </button>
+                  {% endif %}
+                </form>
+              </td>
                             <td>
                 <form action="/delete-forecast" method="POST" onsubmit="return false" onclick="showDeleteConfirm(event, this)">
                   <input type="hidden" name="forecast_id" value="{{ f.id }}"/>
@@ -180,7 +194,7 @@
             </tr>
             {% else %}
             <tr>
-              <td colspan="7" style="text-align:center;color:var(--gray-400);padding:32px">
+              <td colspan="8"style="text-align:center;color:var(--gray-400);padding:32px">
                 No forecast history yet — <a href="/input">generate your first forecast</a>
               </td>
             </tr>
