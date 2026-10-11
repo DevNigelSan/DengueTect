@@ -41,5 +41,17 @@ def init_db():
         )
     ''')
 
+        # Add newer columns to databases created before they existed
+    cursor.execute('PRAGMA table_info(forecasts)')
+    existing = [row['name'] for row in cursor.fetchall()]
+    new_columns = {
+        'xgb_predicted_cases': 'INTEGER',
+        'ensemble_cases':      'INTEGER',
+        'published':           'INTEGER NOT NULL DEFAULT 0',
+    }
+    for name, col_type in new_columns.items():
+        if name not in existing:
+            cursor.execute(f'ALTER TABLE forecasts ADD COLUMN {name} {col_type}')
+
     conn.commit()
     conn.close()

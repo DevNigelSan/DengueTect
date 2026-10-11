@@ -43,11 +43,34 @@ def get_latest_forecast(barangay):
     cursor.execute('''
         SELECT * FROM forecasts
         WHERE barangay = ?
-        ORDER BY id DESC LIMIT 1
+        ORDER BY week_date DESC, id DESC LIMIT 1
     ''', (barangay,))
     row = cursor.fetchone()
     conn.close()
     return dict(row) if row else None
+
+def get_latest_published_forecast(barangay):
+    """Newest forecast week that staff have published to the community page."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT * FROM forecasts
+        WHERE barangay = ? AND published = 1
+        ORDER BY week_date DESC, id DESC LIMIT 1
+    ''', (barangay,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+def toggle_published(forecast_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        'UPDATE forecasts SET published = 1 - published WHERE id = ?',
+        (forecast_id,)
+    )
+    conn.commit()
+    conn.close()
 
 def get_all_forecasts():
     conn = get_db()

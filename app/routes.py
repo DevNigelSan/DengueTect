@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from app.ml.predict import run_forecast
-from app.ml.storage import save_forecast, get_latest_forecast, get_all_forecasts, delete_forecast_by_id
+from app.ml.storage import save_forecast, get_latest_forecast, get_all_forecasts, delete_forecast_by_id, get_latest_published_forecast, toggle_published
+from datetime import date
 from app.ml.auth import verify_password
 from functools import wraps
 import json
@@ -116,14 +117,32 @@ def history():
 def faq():
     return render_template('faq.html')
 
+def _with_age(forecast):
+    """Adds how many days old a forecast's week is, for the stale-alert notice."""
+    if not forecast:
+        return None
+    try:
+        forecast['age_days'] = (date.today() - date.fromisoformat(forecast['week_date'])).days
+    except (ValueError, TypeError):
+        forecast['age_days'] = None
+    return forecast
+
 @main.route('/community')
 def community():
-    # Public, view-only page for residents. No login required.
+    # Public, view-only page for residents. Shows only forecasts staff have published.
     return render_template('community.html',
-        nangka=get_latest_forecast('Nangka'),
-        tumana=get_latest_forecast('Tumana'),
-        malanday=get_latest_forecast('Malanday')
+        nangka=_with_age(get_latest_published_forecast('Nangka')),
+        tumana=_with_age(get_latest_published_forecast('Tumana')),
+        malanday=_with_age(get_latest_published_forecast('Malanday'))
     )
+
+@main.route('/toggle-publish', methods=['POST'])
+@login_required
+def toggle_publish():
+    forecast_id = request.form.get('forecast_id')
+    if forecast_id:
+        toggle_published(int(forecast_id))
+    return redirect(url_for('main.history'))
 
 @main.route('/admin')
 @admin_required
