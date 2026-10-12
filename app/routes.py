@@ -31,21 +31,32 @@ def admin_required(f):
 def index():
     return redirect(url_for('main.login'))
 
+ROLE_LABELS = {'health_officer': 'Health Officer', 'admin': 'IT Admin'}
+
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
+    error_hint = None
     if request.method == 'POST':
         email    = request.form.get('email')
         password = request.form.get('password')
+        role     = request.form.get('role', 'health_officer')
         user = verify_password(email, password)
-        if user:
+        if not user:
+            error = 'Invalid email or password. Please try again.'
+            error_hint = 'Check for typos and Caps Lock. Forgot your password? Contact your IT Admin.'
+        elif user['role'] != role:
+            error = (f"This account is registered as {ROLE_LABELS.get(user['role'], user['role'])}, "
+                     f"not {ROLE_LABELS.get(role, role)}.")
+            error_hint = 'Select the correct role under "Sign in as" and try again.'
+        else:
             session['user_email'] = user['email']
             session['user_name']  = user['name']
             session['user_role']  = user['role']
             return redirect(url_for('main.dashboard'))
-        else:
-            error = 'Invalid email or password. Please try again.'
-        return render_template('login.html', error=error, email=request.form.get('email', ''))
+    return render_template('login.html', error=error, error_hint=error_hint,
+                           email=request.form.get('email', ''),
+                           role=request.form.get('role', 'health_officer'))
 
 @main.route('/logout')
 def logout():
