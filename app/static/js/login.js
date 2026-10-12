@@ -31,6 +31,32 @@ pwToggle.addEventListener('click', () => {
        <circle cx="12" cy="12" r="3"/>`;
 });
 
+// Sign-in help window
+const helpOverlay = document.getElementById('helpOverlay');
+
+function openHelp(topic) {
+  helpOverlay.hidden = false;
+  helpOverlay.querySelectorAll('.help-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.item === topic);
+  });
+  document.getElementById('helpClose').focus();
+}
+
+function closeHelp() {
+  helpOverlay.hidden = true;
+}
+
+document.querySelectorAll('[data-help]').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    openHelp(link.dataset.help);
+  });
+});
+
+document.getElementById('helpClose').addEventListener('click', closeHelp);
+helpOverlay.addEventListener('click', (e) => { if (e.target === helpOverlay) closeHelp(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !helpOverlay.hidden) closeHelp(); });
+
 // Form validation
 document.getElementById('loginForm').addEventListener('submit', function(e) {
   e.preventDefault();

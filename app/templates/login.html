@@ -9,6 +9,62 @@
 {% block content %}
 <div class="page">
 
+  <!-- Sign-in help window -->
+  <div class="help-overlay" id="helpOverlay" hidden>
+    <div class="help-modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+      <div class="help-modal-head">
+        <div>
+          <div class="help-modal-title" id="helpTitle">Need help signing in?</div>
+          <div class="help-modal-sub">DengueTect accounts are managed by the IT Admin.</div>
+        </div>
+        <button type="button" class="help-modal-close" id="helpClose" aria-label="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="help-item" data-item="password">
+        <div class="help-item-icon red">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div>
+          <div class="help-item-title">Forgot your password?</div>
+          <p>For security, passwords are reset by the IT Admin. Contact them and they will set a new password for your account.</p>
+        </div>
+      </div>
+
+      <div class="help-item" data-item="access">
+        <div class="help-item-icon blue">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        </div>
+        <div>
+          <div class="help-item-title">Need an account?</div>
+          <p>Accounts are created by the IT Admin for Marikina City Health Office staff. Residents don't need an account and can view dengue alerts as a Community Member.</p>
+          <a href="{{ url_for('main.community') }}" class="help-item-link">View community alerts →</a>
+        </div>
+      </div>
+
+      <div class="help-item" data-item="support">
+        <div class="help-item-icon amber">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div>
+          <div class="help-item-title">Contact IT support</div>
+          <p>Email the DengueTect administrator at <a href="mailto:admin@marikina.gov.ph">admin@marikina.gov.ph</a> for account problems or errors in the system.</p>
+        </div>
+      </div>
+
+      <div class="help-item" data-item="guide">
+        <div class="help-item-icon green">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <div>
+          <div class="help-item-title">User guide</div>
+          <p>After signing in, click the round <strong>Help</strong> button at the bottom-right of any page to open the Help Center. It explains how to run forecasts, read risk levels, and more.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   {% if error %}
   <!-- Sign-in error toast -->
   <div class="login-toast" role="alert" aria-live="assertive">
@@ -194,7 +250,7 @@
           <label class="remember">
             <input type="checkbox" name="remember"/> Remember me
           </label>
-          <a href="#" class="forgot">Forgot password?</a>
+          <a href="#" class="forgot" data-help="password">Forgot password?</a>
         </div>
 
         <button type="submit" class="btn-login">Sign in to DengueTect</button>
@@ -207,9 +263,9 @@
       </div>
 
       <div class="help-row">
-        <a href="#" class="help-link">Request access</a>
-        <a href="#" class="help-link">Contact IT support</a>
-        <a href="#" class="help-link">User guide</a>
+                <a href="#" class="help-link" data-help="access">Request access</a>
+        <a href="#" class="help-link" data-help="support">Contact IT support</a>
+        <a href="#" class="help-link" data-help="guide">User guide</a>
       </div>
 
       <div class="right-footer">
