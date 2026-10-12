@@ -1,8 +1,10 @@
 from flask import Flask, render_template
+from datetime import timedelta
 
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'denguesense-dev-key-2024'
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)   # "Remember me" duration
 
     from .routes import main
     app.register_blueprint(main)

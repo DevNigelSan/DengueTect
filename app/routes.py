@@ -53,6 +53,7 @@ def login():
             session['user_email'] = user['email']
             session['user_name']  = user['name']
             session['user_role']  = user['role']
+            session.permanent = request.form.get('remember') == 'on'
             return redirect(url_for('main.dashboard'))
     return render_template('login.html', error=error, error_hint=error_hint,
                            email=request.form.get('email', ''),

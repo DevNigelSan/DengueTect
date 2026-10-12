@@ -248,7 +248,7 @@
 
         <div class="form-meta">
           <label class="remember">
-            <input type="checkbox" name="remember"/> Remember me
+            <input type="checkbox" name="remember" {{ 'checked' if request.form.get('remember') }}/> Remember me
           </label>
           <a href="#" class="forgot" data-help="password">Forgot password?</a>
         </div>
