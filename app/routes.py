@@ -45,7 +45,7 @@ def login():
             return redirect(url_for('main.dashboard'))
         else:
             error = 'Invalid email or password. Please try again.'
-    return render_template('login.html', error=error)
+        return render_template('login.html', error=error, email=request.form.get('email', ''))
 
 @main.route('/logout')
 def logout():

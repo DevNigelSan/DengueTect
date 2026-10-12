@@ -522,6 +522,124 @@ input.error { border-color: var(--red-alert); }
 .alert-banner { margin-bottom: 20px; }
 .form-header  { margin-bottom: 22px; }
 
+/* ── SIGN-IN ERROR TOAST ── */
+.login-toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 1000;
+  width: min(390px, calc(100vw - 32px));
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 14px 18px 16px;
+  background: var(--white);
+  border: 1px solid #FECACA;
+  border-left: 4px solid var(--red-alert);
+  border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(127,29,29,0.18), 0 4px 12px rgba(0,0,0,0.06);
+  overflow: hidden;
+  animation: toastIn 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both,
+             toastOut 0.4s ease 7s forwards;
+}
+
+.login-toast:hover,
+.login-toast:hover .login-toast-timer { animation-play-state: paused; }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(40px) scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes toastOut {
+  to { opacity: 0; transform: translateX(40px); visibility: hidden; }
+}
+
+.login-toast-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--red-alert);
+  background: var(--red-light);
+  box-shadow: 0 0 0 5px #FEF2F2;
+}
+
+.login-toast-body { flex: 1; min-width: 0; }
+
+.login-toast-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #991B1B;
+  margin-bottom: 2px;
+}
+
+.login-toast-msg {
+  font-size: 13.5px;
+  color: var(--gray-800);
+  line-height: 1.5;
+}
+
+.login-toast-hint {
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--gray-600);
+  line-height: 1.5;
+}
+
+.login-toast-close {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--gray-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.login-toast-close:hover { background: var(--red-light); color: var(--red-alert); }
+
+.login-toast-timer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 100%;
+  background: var(--red-alert);
+  opacity: 0.5;
+  transform-origin: left;
+  animation: toastTimer 7s linear forwards;
+}
+
+@keyframes toastTimer {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+/* shake the form once after a failed sign-in */
+.form-shell.shake { animation: formShake 0.45s ease 0.15s; }
+
+@keyframes formShake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-8px); }
+  40%      { transform: translateX(7px); }
+  60%      { transform: translateX(-5px); }
+  80%      { transform: translateX(3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-toast, .form-shell.shake { animation: none; }
+  .login-toast-timer { display: none; }
+}
+
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) {
   .page { grid-template-columns: 1fr; }

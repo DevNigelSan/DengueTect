@@ -9,6 +9,27 @@
 {% block content %}
 <div class="page">
 
+  {% if error %}
+  <!-- Sign-in error toast -->
+  <div class="login-toast" role="alert" aria-live="assertive">
+    <div class="login-toast-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </div>
+    <div class="login-toast-body">
+      <div class="login-toast-title">Sign-in failed</div>
+      <div class="login-toast-msg">{{ error }}</div>
+      <div class="login-toast-hint">Check for typos and Caps Lock. Forgot your password? Contact your IT Admin.</div>
+    </div>
+    <button type="button" class="login-toast-close" aria-label="Close" onclick="this.closest('.login-toast').remove()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="login-toast-timer"></div>
+  </div>
+  {% endif %}
+
   <!-- LEFT PANEL -->
   <aside class="left-panel">
     <div class="brand">
@@ -63,7 +84,7 @@
 
   <!-- RIGHT PANEL -->
   <main class="right-panel">
-    <div class="form-shell">
+    <div class="form-shell{{ ' shake' if error }}">
 
       <div class="alert-banner info">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A56A0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -143,7 +164,7 @@
                 <polyline points="22,6 12,13 2,6"/>
               </svg>
             </span>
-            <input type="email" id="email" name="email" placeholder="yourname@marikina.gov.ph" autocomplete="email"/>
+            <input type="email" id="email" name="email" placeholder="yourname@marikina.gov.ph" autocomplete="email" value="{{ email or '' }}" class="{{ 'error' if error }}"/>
           </div>
           <p class="field-error" id="email-err">Please enter a valid email address.</p>
         </div>
@@ -157,7 +178,7 @@
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
             </span>
-            <input type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password"/>
+            <input type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password" class="{{ 'error' if error }}" {{ 'autofocus' if error }}/>  
             <button type="button" class="pw-toggle" id="pwToggle" aria-label="Show password">
               <svg id="eyeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
