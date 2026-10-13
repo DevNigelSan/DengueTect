@@ -34,7 +34,7 @@
   </div>
 
     <!-- Floating Help button (signed-in pages only) -->
-  {% if session.user_email and request.endpoint != 'main.faq' %}
+  {% if session.user_email and request.endpoint not in ['main.faq', 'main.community'] %}
   {% set help_topics = {
     'main.dashboard': 'dashboard', 'main.history': 'dashboard', 'main.heatmap': 'dashboard',
     'main.climate_input': 'running', 'main.forecast_result': 'results',
