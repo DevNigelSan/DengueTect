@@ -220,6 +220,15 @@ function showCaseModal(highCases, onConfirm) {
 }
 
 // ── OPEN METEO FETCH ──
+
+// Local date → 'YYYY-MM-DD' (avoids time-zone shifts changing the day)
+function toISODate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 async function fetchClimateData() {
   const weekDate = document.getElementById('week_date').value;
   if (!weekDate) {
@@ -236,41 +245,52 @@ async function fetchClimateData() {
     </svg>
     Fetching...`;
 
-    try {
-    const endDate   = new Date(weekDate);
-    const startDate = new Date(weekDate);
-    startDate.setDate(startDate.getDate() - 28);
-    const start = startDate.toISOString().split('T')[0];
-    const end   = endDate.toISOString().split('T')[0];
-        const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${LAT}&longitude=${LON}&start_date=${start}&end_date=${end}&daily=precipitation_sum,temperature_2m_mean,relative_humidity_2m_mean&timezone=Asia/Manila`;
+  try {
+    // The 4 full weeks (28 days) BEFORE the selected week
+    const weekStart = new Date(weekDate + 'T00:00:00');
+    const dates = [];
+    for (let i = 28; i >= 1; i--) {
+      const d = new Date(weekStart);
+      d.setDate(d.getDate() - i);
+      dates.push(toISODate(d));
+    }
+    const start = dates[0];
+    const end   = dates[dates.length - 1];
+
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${LAT}&longitude=${LON}&start_date=${start}&end_date=${end}&daily=precipitation_sum,temperature_2m_mean,relative_humidity_2m_mean&timezone=Asia/Manila`;
 
     const resp = await fetch(url);
     const data = await resp.json();
 
     if (!data.daily) {
-      showStatus('error', 'Failed to fetch data. Try a different date.');
+      showStatus('error', data.reason
+        ? `The weather archive couldn't provide this range. Try an earlier date.`
+        : 'Failed to fetch data. Try a different date.');
       return;
     }
 
-    const dates    = data.daily.time;
-    const rainfall = data.daily.precipitation_sum;
-    const temp     = data.daily.temperature_2m_mean;
-    const humidity = data.daily.relative_humidity_2m_mean;
-
-    const weeks = [[], [], [], []];
-    dates.forEach((d, i) => {
-      const weekIdx = Math.min(Math.floor(i / 7), 3);
-      weeks[weekIdx].push({ 
-        date: d, 
-        rainfall: rainfall[i] !== null ? rainfall[i] : 0, 
-        temp: temp[i] !== null ? temp[i] : 0, 
-        humidity: humidity[i] !== null ? humidity[i] : 0 
-      });
+    // Look up each day's readings by date; days the archive doesn't have stay null
+    const byDate = {};
+    data.daily.time.forEach((d, i) => {
+      byDate[d] = {
+        rainfall: data.daily.precipitation_sum[i],
+        temp:     data.daily.temperature_2m_mean[i],
+        humidity: data.daily.relative_humidity_2m_mean[i]
+      };
     });
 
-    const weeklyRain  = weeks.map(w => w.length > 0 ? w.reduce((s, d) => s + (d.rainfall || 0), 0).toFixed(1) : '0.0');
-    const weeklyTemp  = weeks.map(w => w.length > 0 ? (w.reduce((s, d) => s + (d.temp || 0), 0) / w.length).toFixed(1) : '0.0');
-    const weeklyHumid = weeks.map(w => w.length > 0 ? (w.reduce((s, d) => s + (d.humidity || 0), 0) / w.length).toFixed(1) : '0.0');
+    // Exactly 7 days per week: index 0 = Week −4 (oldest) … 3 = Week −1 (most recent)
+    const weeks = [0, 1, 2, 3].map(w =>
+      dates.slice(w * 7, w * 7 + 7).map(d => ({ date: d, ...(byDate[d] || {}) }))
+    );
+
+    // Only real readings count — missing days are skipped, never treated as 0
+    const readings = (week, key) => week.map(d => d[key]).filter(v => v !== null && v !== undefined);
+    const total    = vals => vals.reduce((s, v) => s + v, 0);
+
+    const weeklyRain  = weeks.map(w => { const v = readings(w, 'rainfall'); return v.length ? total(v).toFixed(1) : ''; });
+    const weeklyTemp  = weeks.map(w => { const v = readings(w, 'temp');     return v.length ? (total(v) / v.length).toFixed(1) : ''; });
+    const weeklyHumid = weeks.map(w => { const v = readings(w, 'humidity'); return v.length ? (total(v) / v.length).toFixed(1) : ''; });
 
     ['rain_w4','rain_w3','rain_w2','rain_w1'].forEach((name, i) => {
       document.querySelector(`input[name="${name}"]`).value = weeklyRain[i];
@@ -282,19 +302,16 @@ async function fetchClimateData() {
       document.querySelector(`input[name="${name}"]`).value = weeklyHumid[i];
     });
 
-    console.log('Dates received:', dates.length, dates[0], dates[dates.length-1]);
-    console.log('Week 1:', weeks[0].map(d => d.date));
-    console.log('Week 2:', weeks[1].map(d => d.date));
-    console.log('Week 3:', weeks[2].map(d => d.date));
-    console.log('Week 4:', weeks[3].map(d => d.date));
-    console.log('Weekly rain:', weeklyRain);
-    console.log('Weekly temp:', weeklyTemp);
-    console.log('Weekly humid:', weeklyHumid);
-
     buildLog(weeks, weeklyRain, weeklyTemp, weeklyHumid, start, end);
-    showStatus('success', `Data fetched successfully for ${start} to ${end}.`);
 
-        // Update parameter indicators after fetch
+    const missingDays = weeks.reduce((s, w) => s + (7 - readings(w, 'temp').length), 0);
+    if (missingDays === 0) {
+      showStatus('success', `Data fetched for ${start} to ${end}.`);
+    } else {
+      showStatus('warning', `${missingDays} day${missingDays !== 1 ? 's' : ''} in this range ${missingDays !== 1 ? 'are' : 'is'} not in the weather archive yet. Check the marked weeks in the log, fill in any empty boxes, or pick an earlier date.`);
+    }
+
+    // Update parameter indicators after fetch
     document.querySelectorAll('input[name^="rain_"], input[name^="temp_"], input[name^="humid_"]').forEach(input => {
       updateParamIndicator(input);
     });
@@ -322,9 +339,10 @@ function buildLog(weeks, rain, temp, humid, start, end) {
 
   let html = '';
   weeks.forEach((week, i) => {
-    const dateRange = week.length > 0
-      ? `${week[0].date} → ${week[week.length-1].date}`
-      : '—';
+    const dateRange = `${week[0].date} → ${week[week.length - 1].date}`;
+    const days      = week.filter(d => d.temp !== null && d.temp !== undefined).length;
+    const noteClass = days < 7 ? 'log-val-note incomplete' : 'log-val-note';
+    const shown     = (v, unit) => v === '' ? '—' : `${v} ${unit}`;
 
     html += `
       <div class="log-week">
@@ -335,18 +353,18 @@ function buildLog(weeks, rain, temp, humid, start, end) {
         <div class="log-week-vals">
           <div class="log-val-item">
             <span class="log-val-label">Rainfall</span>
-            <span class="log-val-num rain">${rain[i]} mm</span>
-            <span class="log-val-note">sum of ${week.length} days</span>
+            <span class="log-val-num rain">${shown(rain[i], 'mm')}</span>
+            <span class="${noteClass}">sum of ${days} of 7 days</span>
           </div>
           <div class="log-val-item">
             <span class="log-val-label">Temperature</span>
-            <span class="log-val-num temp">${temp[i]} °C</span>
-            <span class="log-val-note">avg of ${week.length} days</span>
+            <span class="log-val-num temp">${shown(temp[i], '°C')}</span>
+            <span class="${noteClass}">avg of ${days} of 7 days</span>
           </div>
           <div class="log-val-item">
             <span class="log-val-label">Humidity</span>
-            <span class="log-val-num humid">${humid[i]} %</span>
-            <span class="log-val-note">avg of ${week.length} days</span>
+            <span class="log-val-num humid">${shown(humid[i], '%')}</span>
+            <span class="${noteClass}">avg of ${days} of 7 days</span>
           </div>
         </div>
       </div>`;

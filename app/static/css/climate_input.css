@@ -539,6 +539,19 @@ input::placeholder { color: var(--gray-400); }
   border: 1px solid #FECACA;
 }
 
+.fetch-status.warning {
+  display: block;
+  background: #FFFBEB;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+  line-height: 1.5;
+}
+
+.log-val-note.incomplete {
+  color: #B45309;
+  font-weight: 600;
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
