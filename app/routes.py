@@ -115,7 +115,12 @@ def climate_input():
 @main.route('/result')
 @login_required
 def forecast_result():
-    forecast = session.get('last_forecast', None)
+    forecast_id = request.args.get('id', type=int)
+    if forecast_id:
+        from app.ml.storage import get_forecast_by_id
+        forecast = get_forecast_by_id(forecast_id)
+    else:
+        forecast = session.get('last_forecast', None)
     return render_template('forecast_result.html', forecast=forecast)
 
 @main.route('/history')

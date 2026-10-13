@@ -83,6 +83,14 @@ def get_all_forecasts():
     conn.close()
     return rows
 
+def get_forecast_by_id(forecast_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM forecasts WHERE id = ?', (forecast_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
 def delete_forecast_by_id(forecast_id):
     conn = get_db()
     cursor = conn.cursor()

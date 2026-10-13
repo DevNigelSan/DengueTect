@@ -100,7 +100,7 @@
       <div class="status-bar-right">
         <span class="status-pill">{{ highest.risk | upper }}</span>
         <a href="/input" class="tier-btn">New Forecast</a>
-        <a href="/result" class="tier-btn">View Report</a>
+            <a href="/result?id={{ highest.forecast.id }}" class="tier-btn">View Report</a>
       </div>
     </div>
   </div>
@@ -182,7 +182,7 @@
 
         <div class="brgy-card-footer">
           <span class="brgy-week">Week of {{ f.week_date }}</span>
-          <a href="/result" class="brgy-view-btn">View Report →</a>
+              <a href="/result?id={{ f.id }}" class="brgy-view-btn">View Report →</a>
         </div>
 
         {% else %}
