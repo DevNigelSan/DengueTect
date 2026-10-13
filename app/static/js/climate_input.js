@@ -47,14 +47,28 @@ function getParamType(name) {
   return null;
 }
 
+function resetParamRow(row) {
+  row.style.borderColor = '';
+  row.style.background  = '';
+  row.style.boxShadow   = '';
+  const indicator = row.querySelector('.param-indicator');
+  if (indicator) indicator.remove();
+}
+
 function updateParamIndicator(input) {
   const type = getParamType(input.name);
   if (!type) return;
 
   const val      = parseFloat(input.value);
   const base     = BASELINES[type];
-  const row      = input.closest('.climate-input-row');
-  if (!row || isNaN(val)) return;
+    const row      = input.closest('.climate-input-row');
+  if (!row) return;
+  if (isNaN(val)) {
+    // Field was emptied: clear the colour only if the whole row is empty
+    const anyFilled = Array.from(row.querySelectorAll('input')).some(i => i.value !== '');
+    if (!anyFilled) resetParamRow(row);
+    return;
+  }
 
   let level, color, bgColor, borderColor, label;
 
@@ -124,11 +138,19 @@ function clearForm() {
   });
   document.getElementById('barangay').value = '';
   document.getElementById('week_date').value = '';
-  document.getElementById('fetchStatus').innerHTML = '';
+
+  const status = document.getElementById('fetchStatus');
+  status.innerHTML = '';
+  status.className = 'fetch-status';
+
   document.getElementById('logCard').style.display = 'none';
   document.getElementById('logContent').innerHTML = '';
+
+  // Remove the rainfall / temperature / humidity colour states
+  document.querySelectorAll('.climate-input-row').forEach(resetParamRow);
+
   document.querySelector('.cases-row').classList.remove('has-warning');
-    validateCases();
+  validateCases();
 }
 
 // Set default date to today
