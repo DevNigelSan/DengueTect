@@ -89,17 +89,25 @@
 .pulse-line-active {
   fill: none;
   stroke: #60C8FF;
-  stroke-width: 2px;
+  stroke-width: 2.2px;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-dasharray: 600;
-  stroke-dashoffset: 600;
-  animation: drawPulse 2.4s ease forwards 0.6s;
-  filter: drop-shadow(0 0 6px rgba(96,200,255,0.6));
+  /* a 220-unit glowing trace that sweeps along the 910-unit line */
+  stroke-dasharray: 220 910;
+  stroke-dashoffset: 220;
+  animation: ecgSweep 6s linear infinite 0.6s;
+  filter: drop-shadow(0 0 6px rgba(96,200,255,0.7));
 }
 
-@keyframes drawPulse {
-  to { stroke-dashoffset: 0; }
+/* sweep across in ~2.7s, then rest ~3.3s before the next beat */
+@keyframes ecgSweep {
+  0%   { stroke-dashoffset: 220; }
+  45%  { stroke-dashoffset: -910; }
+  100% { stroke-dashoffset: -910; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-line-active { animation: none; stroke-dasharray: none; }
 }
 
 /* ── HERO ── */
