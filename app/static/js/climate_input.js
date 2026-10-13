@@ -128,7 +128,7 @@ function clearForm() {
   document.getElementById('logCard').style.display = 'none';
   document.getElementById('logContent').innerHTML = '';
   document.querySelector('.cases-row').classList.remove('has-warning');
-  document.querySelectorAll('.case-warn').forEach(w => w.remove());
+    validateCases();
 }
 
 // Set default date to today
@@ -139,36 +139,49 @@ if (dateInput) {
 }
 
 // ── CASE COUNT VALIDATION ──
-function validateCaseInput(input) {
-  const val = parseInt(input.value);
-  const existingWarn = input.parentElement.querySelector('.case-warn');
-  if (existingWarn) existingWarn.remove();
+// Thresholds match the "?" popup: mean + 1 SD and mean + 2 SD of weekly cases (2022–2026)
+const CASE_WARN    = 7;   // unusually high → highlight and ask to verify
+const CASE_CONFIRM = 9;   // rare → must confirm before running the forecast
 
+function validateCases() {
   const casesRow = document.querySelector('.cases-row');
+  const inputs   = Array.from(document.querySelectorAll('input[name^="cases_"]'));
+  const flagged  = [];
 
-  // Check if any case input is over 50
-    const anyOver50 = Array.from(
-    document.querySelectorAll('input[name^="cases_"]')
-  ).some(i => parseInt(i.value) > 6);
+  inputs.forEach(input => {
+    const val = parseInt(input.value);
+    input.classList.remove('case-high', 'case-very-high');
+    if (isNaN(val)) return;
+    if (val >= CASE_CONFIRM) {
+      input.classList.add('case-very-high');
+      flagged.push(`${WEEK_LABELS[input.name]}: ${val}`);
+    } else if (val >= CASE_WARN) {
+      input.classList.add('case-high');
+      flagged.push(`${WEEK_LABELS[input.name]}: ${val}`);
+    }
+  });
 
-  if (anyOver50) {
-    casesRow.classList.add('has-warning');
-  } else {
-    casesRow.classList.remove('has-warning');
+  casesRow.classList.toggle('has-warning', flagged.length > 0);
+
+  let note = casesRow.querySelector('.case-note');
+  if (!flagged.length) {
+    if (note) note.remove();
+    return;
+  }
+  if (!note) {
+    note = document.createElement('div');
+    note.className = 'case-note';
+    casesRow.appendChild(note);
   }
 
-  if (isNaN(val) || val <= 50) return;
-
-    if (val > 6 && val <= 9) {
-    const warn = document.createElement('div');
-    warn.className = 'case-warn';
-    warn.textContent = 'Unusually high — please verify this value.';
-    input.parentElement.appendChild(warn);
-  }
+  const needsConfirm = inputs.some(i => parseInt(i.value) >= CASE_CONFIRM);
+  note.innerHTML = `<strong>Higher than usual</strong> (${flagged.join(' · ')}). Please double-check your CHO records.`
+    + (needsConfirm ? ` Values of ${CASE_CONFIRM} or more will need confirmation before the forecast runs.` : '');
 }
 
 document.querySelectorAll('input[name^="cases_"]').forEach(input => {
-  input.addEventListener('blur', () => validateCaseInput(input));
+  input.addEventListener('input', validateCases);
+  input.addEventListener('blur',  validateCases);
 });
 
 // ── CUSTOM MODAL ──
@@ -405,7 +418,7 @@ document.getElementById('submitBtn').addEventListener('click', function(e) {
 
   // Check for case values over 100
     const highCases = Array.from(document.querySelectorAll('input[name^="cases_"]'))
-    .filter(i => parseInt(i.value) > 9);
+    .filter(i => parseInt(i.value) >= CASE_CONFIRM);
 
   if (highCases.length > 0) {
     showCaseModal(highCases, () => {

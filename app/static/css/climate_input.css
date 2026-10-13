@@ -658,6 +658,33 @@ input::placeholder { color: var(--gray-400); }
   border-color: var(--yellow-warn);
 }
 
+.cases-row input.case-high {
+  border-color: var(--yellow-warn);
+  background: #FFFBEB;
+  box-shadow: 0 0 0 3px rgba(245,158,11,0.18);
+}
+
+.cases-row input.case-very-high {
+  border-color: var(--red-alert);
+  background: #FEF2F2;
+  color: #991B1B;
+  font-weight: 700;
+  box-shadow: 0 0 0 3px rgba(220,38,38,0.15);
+}
+
+.case-note {
+  grid-column: 1 / -1;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #92400E;
+  background: var(--white);
+  border: 1px solid #FDE68A;
+  border-radius: 8px;
+}
+
+.case-note strong { color: #B45309; }
+
 /* ── HIGH CASE MODAL ── */
 .case-modal-overlay {
   position: fixed;
