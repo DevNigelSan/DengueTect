@@ -2,6 +2,9 @@ from app.ml.database import get_db
 from datetime import datetime
 
 def save_forecast(forecast):
+    # Stamp the time once so the database and the result page show the same value
+    forecast['generated_at'] = forecast.get('generated_at') or datetime.now().strftime('%B %d, %Y · %I:%M %p')
+
     conn = get_db()
     cursor = conn.cursor()
 
@@ -30,7 +33,7 @@ def save_forecast(forecast):
         forecast.get('humid_w3'), forecast.get('humid_w4'),
         forecast.get('cases_w1'), forecast.get('cases_w2'),
         forecast.get('cases_w3'), forecast.get('cases_w4'),
-        datetime.now().strftime('%B %d, %Y · %I:%M %p'),
+        forecast['generated_at'],
         forecast.get('generated_by')
     ))
 
