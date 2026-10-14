@@ -45,9 +45,9 @@
       </div>
       <div class="nav-divider"></div>
       <div class="nav-user">
-                <div class="user-avatar">{{ 'AD' if session.user_role == 'admin' else 'HO' }}</div>
+        <div class="user-avatar">{{ 'AD' if session.user_role == 'admin' else 'HO' }}</div>
         <div class="user-info">
-                    <span class="user-name">{{ 'IT Admin' if session.user_role == 'admin' else 'Health Officer' }}</span>
+          <span class="user-name">{{ 'IT Admin' if session.user_role == 'admin' else 'Health Officer' }}</span>
           <span class="user-role">{{ 'IT Admin' if session.user_role == 'admin' else 'Marikina CHO' }}</span>
         </div>
       </div>
@@ -71,14 +71,24 @@
         <h1 class="page-title">Forecast History</h1>
         <p class="page-sub">Complete log of all past dengue outbreak forecasts</p>
       </div>
-      <button class="btn-print" onclick="window.print()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="6 9 6 2 18 2 18 9"/>
-          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-          <rect x="6" y="14" width="12" height="8"/>
-        </svg>
-        Export
-      </button>
+      <div class="header-actions">
+        <button class="btn-print btn-outline" onclick="window.print()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"/>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+            <rect x="6" y="14" width="12" height="8"/>
+          </svg>
+          Print
+        </button>
+        <a href="{{ url_for('main.export_history') }}" class="btn-print" download>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Export CSV
+        </a>
+      </div>
     </div>
 
     <!-- SUMMARY CARDS -->
@@ -137,7 +147,7 @@
           <option value="low">Low</option>
         </select>
       </div>
-            <button class="btn-clear-filter" onclick="clearFilters()">Reset Filters</button>
+      <button class="btn-clear-filter" onclick="clearFilters()">Reset Filters</button>
     </div>
 
     <!-- HISTORY TABLE -->
@@ -170,7 +180,7 @@
               <td>{{ f.predicted_cases }}</td>
               <td>{{ f.outbreak_proba }}%</td>
               <td><span class="badge {{ f.risk_level }}">{{ f.risk_level | title }}</span></td>
-                            <td class="td-done">{{ f.generated_at }}</td>
+              <td class="td-done">{{ f.generated_at }}</td>
               <td>
                 <form action="{{ url_for('main.toggle_publish') }}" method="POST">
                   <input type="hidden" name="forecast_id" value="{{ f.id }}"/>
@@ -185,16 +195,17 @@
                   {% endif %}
                 </form>
               </td>
-                            <td>
+              <td>
                 <form action="/delete-forecast" method="POST" onsubmit="return false" onclick="showDeleteConfirm(event, this)">
                   <input type="hidden" name="forecast_id" value="{{ f.id }}"/>
+                  <input type="hidden" name="next" value="history"/>
                   <button type="submit" class="btn-delete">Remove</button>
                 </form>
               </td>
             </tr>
             {% else %}
             <tr>
-              <td colspan="8"style="text-align:center;color:var(--gray-400);padding:32px">
+              <td colspan="8" style="text-align:center;color:var(--gray-400);padding:32px">
                 No forecast history yet — <a href="/input">generate your first forecast</a>
               </td>
             </tr>

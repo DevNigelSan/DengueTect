@@ -49,6 +49,25 @@
 
 .btn-print:hover { background: var(--blue-deep); }
 
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+a.btn-print { text-decoration: none; }
+
+.btn-print.btn-outline {
+  background: var(--white);
+  color: var(--blue-primary);
+  border: 1.5px solid var(--gray-200);
+}
+
+.btn-print.btn-outline:hover {
+  background: var(--gray-50, #f8fafc);
+  border-color: var(--blue-primary);
+}
+
 /* ── FILTER BAR ── */
 .filter-bar {
   display: flex;
