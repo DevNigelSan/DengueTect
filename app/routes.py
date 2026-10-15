@@ -228,7 +228,9 @@ def heatmap():
     heatmap_path = Path(__file__).resolve().parent.parent / 'data' / 'heatmap.json'
     with open(heatmap_path, 'r') as f:
         heatmap_data = json.load(f)
-    return render_template('heatmap.html', heatmap_data=heatmap_data)
+    first_brgy = next(iter(heatmap_data['barangays'].values()), [])
+    years = sorted({int(entry['week'][:4]) for entry in first_brgy}) or [date.today().year]
+    return render_template('heatmap.html', heatmap_data=heatmap_data, years=years)
 
 
 @main.route('/technical')

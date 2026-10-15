@@ -70,7 +70,7 @@
     <div class="page-header">
       <div>
         <h1 class="page-title">Dengue Case Heatmap</h1>
-        <p class="page-sub">Weekly case intensity across barangays · 2022–2026 · Hover a cell for details</p>
+        <p class="page-sub">Weekly case intensity across barangays · {{ years[0] }}–{{ years[-1] }} · Hover a cell for details</p>
       </div>
     </div>
 
@@ -88,7 +88,7 @@
         <div class="heatmap-guide-body">
           <div class="heatmap-guide-item">
             <span class="heatmap-guide-label">Color Grid</span>
-            Each column represents one week from 2022 to 2026. Each row is a barangay. The color of each cell shows how many dengue cases were recorded that week — green means few or no cases, red means a high number of cases. Hover over any cell to see the exact week and case count.
+            Each column represents one week from {{ years[0] }} to {{ years[-1] }} from 2022 to 2026. Each row is a barangay. The color of each cell shows how many dengue cases were recorded that week — green means few or no cases, red means a high number of cases. Hover over any cell to see the exact week and case count.
           </div>
           <div class="heatmap-guide-item">
             <span class="heatmap-guide-label">Geographic Map</span>
@@ -166,7 +166,6 @@
 
     <!-- YEAR SUMMARY -->
     <div class="heatmap-summary-grid">
-      {% set years = [2022, 2023, 2024, 2025] %}
       {% for year in years %}
       <div class="heatmap-summary-card">
         <div class="heatmap-summary-year">{{ year }}</div>
@@ -230,21 +229,27 @@
       const cases = parseInt(cell.dataset.cases);
       const week  = cell.dataset.week;
       const brgy  = cell.dataset.brgy;
-      const risk  = cases >= 5 ? 'High' : cases >= 2 ? 'Moderate' : cases > 0 ? 'Low' : 'None';
-      const color = cases >= 5 ? '#DC2626' : cases >= 2 ? '#D97706' : cases > 0 ? '#16A34A' : '#94A3B8';
+      const level = cases === 0 ? 'No cases'
+                  : cases <= 2  ? 'Low (1–2 cases)'
+                  : cases <= 5  ? 'Moderate (3–5 cases)'
+                  : cases <= 10 ? 'Elevated (6–10 cases)'
+                  : cases <= 20 ? 'High (11–20 cases)'
+                  : 'Very high (21+ cases)';
+      const swatch = cell.style.background;
 
       tooltip.innerHTML = `
         <div class="tt-brgy">${brgy}</div>
         <div class="tt-week">Week of ${week}</div>
         <div class="tt-cases">${cases} case${cases !== 1 ? 's' : ''}</div>
-        <div class="tt-risk" style="color:${color}">${risk} Risk</div>
+        <div class="tt-risk"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${swatch};margin-right:6px;vertical-align:middle;"></span>${level}</div>
       `;
       tooltip.style.display = 'block';
     });
 
     cell.addEventListener('mousemove', (e) => {
-      tooltip.style.left = (e.pageX + 12) + 'px';
-      tooltip.style.top  = (e.pageY - 40) + 'px';
+      const flip = e.clientX + tooltip.offsetWidth + 24 > window.innerWidth;
+      tooltip.style.left = (flip ? e.clientX - tooltip.offsetWidth - 12 : e.clientX + 12) + 'px';
+      tooltip.style.top  = (e.clientY - 40) + 'px';
     });
 
     cell.addEventListener('mouseleave', () => {
