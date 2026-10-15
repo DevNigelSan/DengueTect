@@ -76,11 +76,16 @@
       </div>
     </div>
 
+    {% set first   = eval_data.values() | first %}
+    {% set n_rows  = eval_data.values() | sum(attribute='total') %}
+    {% set n_test  = (n_rows * 0.2) | round(0, 'ceil') | int %}
+    {% set n_train = n_rows - n_test %}
+
     <!-- TECHNICAL METRICS TABLE -->
     <div class="tech-section">
       <div class="panel-header">
         <div class="panel-title">Model Performance Metrics</div>
-        <div class="panel-sub">Evaluated on full dataset · 212 weeks per barangay · 2022–2026</div>
+              <div class="panel-sub">Evaluated on full dataset · {{ first.total }} weeks per barangay · {{ first.weeks[0][:4] }}–{{ first.weeks[-1][:4] }}{% if first.weeks[0][:4] < '2022' %} · {{ first.weeks[0][:4] }}–2021 weeks are synthetic{% endif %}</div>
       </div>
       <table class="tech-table">
         <thead>
@@ -200,24 +205,24 @@
             <td>Regressor</td>
             <td>Case count prediction</td>
             <td>n_estimators=100, random_state=42</td>
-            <td>508 rows (80%)</td>
-            <td>128 rows (20%)</td>
+            <td>{{ '{:,}'.format(n_train) }} rows (80%)td>
+            <td>{{ '{:,}'.format(n_test) }} rows (20%)</td>
           </tr>
           <tr>
             <td><strong>Logistic Regression</strong></td>
             <td>Classifier</td>
             <td>Outbreak probability</td>
-            <td>max_iter=1000, random_state=42</td>
-            <td>508 rows (80%)</td>
-            <td>128 rows (20%)</td>
+            <td>max_iter=2000, random_state=42</td>
+            <td>{{ '{:,}'.format(n_train) }} rows (80%)td>
+            <td>{{ '{:,}'.format(n_test) }} rows (20%)td>
           </tr>
           <tr>
             <td><strong>XGBoost</strong></td>
             <td>Regressor</td>
             <td>Case count prediction</td>
-            <td>n_estimators=100, max_depth=6, lr=0.1</td>
-            <td>508 rows (80%)</td>
-            <td>128 rows (20%)</td>
+            <td>n_estimators=100, max_depth=6, lr=0.1, subsample=0.8, colsample_bytree=0.8</td>
+            <td>{{ '{:,}'.format(n_train) }} rows (80%)td>
+            <td>{{ '{:,}'.format(n_test) }} rows (20%)</td>
           </tr>
           <tr>
             <td><strong>Ensemble</strong></td>
