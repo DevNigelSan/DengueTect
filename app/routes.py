@@ -212,13 +212,79 @@ def delete_forecast():
         delete_forecast_by_id(int(forecast_id))
     return redirect(url_for('main.dashboard'))
 
+# ── Model Evaluation: separate synthetic and recorded weeks ──
+def _synthetic_lookup():
+    """Which weeks are synthetic. heatmap.json stores each week's source."""
+    path = Path(__file__).resolve().parent.parent / 'data' / 'heatmap.json'
+    try:
+        with open(path, 'r') as f:
+            hm = json.load(f)
+        return {(brgy, e['week']): e.get('source') == 'synthetic'
+                for brgy, weeks in hm['barangays'].items() for e in weeks}
+    except (OSError, ValueError, KeyError):
+        return {}
+
+def _mean_abs_error(actual, predicted, mask):
+    errs = [abs(a - p) for a, p, m in zip(actual, predicted, mask) if m]
+    return round(sum(errs) / len(errs), 2) if errs else None
+
+def _outbreak_scores(actual, predicted, mask):
+    pairs = [(a, p) for a, p, m in zip(actual, predicted, mask) if m]
+    if not pairs:
+        return None, None
+    tp = sum(1 for a, p in pairs if a == 1 and p == 1)
+    fp = sum(1 for a, p in pairs if a == 0 and p == 1)
+    correct = sum(1 for a, p in pairs if a == p)
+    accuracy  = round(correct / len(pairs) * 100, 1)
+    precision = round(tp / (tp + fp) * 100, 1) if (tp + fp) else None
+    return accuracy, precision
+
+def _split_evaluation(eval_data):
+    lookup = _synthetic_lookup()
+    split = {}
+    for brgy, data in eval_data.items():
+        weeks  = data.get('weeks', [])
+        actual = data.get('actual', [])
+        syn    = [lookup.get((brgy, w), int(w[:4]) < 2022) for w in weeks]
+        real   = [not s for s in syn]
+        part = {
+            'syn':        syn,
+            'first_real': real.index(True) if True in real else len(weeks),
+            'n_syn':      sum(syn),
+            'n_real':     sum(real),
+            'syn_years':  sorted({int(w[:4]) for w, s in zip(weeks, syn) if s}),
+            'real_years': sorted({int(w[:4]) for w, s in zip(weeks, syn) if not s}),
+        }
+        for key, series in (('rf', 'predicted'), ('xgb', 'xgb'), ('ens', 'ensemble')):
+            values = data.get(series) or []
+            part[key + '_real'] = _mean_abs_error(actual, values, real) if values else None
+            part[key + '_syn']  = _mean_abs_error(actual, values, syn) if values else None
+        # Only possible when the notebook exports week-by-week outbreak labels
+        if data.get('clf_actual') and data.get('clf_pred'):
+            part['acc_real'], part['prec_real'] = _outbreak_scores(data['clf_actual'], data['clf_pred'], real)
+            part['acc_syn'],  part['prec_syn']  = _outbreak_scores(data['clf_actual'], data['clf_pred'], syn)
+            part['clf_split'] = True
+        else:
+            part['clf_split'] = False
+        split[brgy] = part
+    return split
+
 @main.route('/evaluation')
 @login_required
 def evaluation():
     eval_path = Path(__file__).resolve().parent.parent / 'data' / 'evaluation.json'
     with open(eval_path, 'r') as f:
         eval_data = json.load(f)
-    return render_template('evaluation.html', eval_data=eval_data)
+    split = _split_evaluation(eval_data)
+    first = next(iter(split.values()), {})
+    prov = {
+        'n_syn':      first.get('n_syn', 0),
+        'n_real':     first.get('n_real', 0),
+        'syn_years':  first.get('syn_years', []),
+        'real_years': first.get('real_years', []),
+        'clf_split':  all(p['clf_split'] for p in split.values()) if split else False,
+    }
+    return render_template('evaluation.html', eval_data=eval_data, split=split, prov=prov)
 
 @main.route('/heatmap')
 @login_required
