@@ -45,13 +45,13 @@
       </div>
       <div class="nav-divider"></div>
       <div class="nav-user">
-                <div class="user-avatar">{{ 'AD' if session.user_role == 'admin' else 'HO' }}</div>
+        <div class="user-avatar">{{ 'AD' if session.user_role == 'admin' else 'HO' }}</div>
         <div class="user-info">
-                    <span class="user-name">{{ 'IT Admin' if session.user_role == 'admin' else 'Health Officer' }}</span>
+          <span class="user-name">{{ 'IT Admin' if session.user_role == 'admin' else 'Health Officer' }}</span>
           <span class="user-role">{{ 'IT Admin' if session.user_role == 'admin' else 'Marikina CHO' }}</span>
         </div>
       </div>
-      <a href="/login" class="btn-logout">
+      <a href="/logout" class="btn-logout">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
           <polyline points="16 17 21 12 16 7"/>
@@ -63,7 +63,7 @@
   </nav>
 
   <!-- MAIN CONTENT -->
-  <main class="main-content">
+  <main class="main-content" id="evalPage">
 
     <!-- PAGE HEADER -->
     <div class="page-header">
@@ -71,30 +71,93 @@
         <h1 class="page-title">Model Evaluation</h1>
         <p class="page-sub">Predicted vs Actual case counts · Outbreak detection performance · Per barangay</p>
       </div>
+      {% if prov.n_syn %}
+      <div class="data-view-toggle" role="group" aria-label="Which weeks to show">
+        <button type="button" class="dv-btn active" data-view="all">All weeks</button>
+        <button type="button" class="dv-btn" data-view="recorded">Recorded only</button>
+      </div>
+      {% endif %}
     </div>
 
-        <div class="eval-summary-grid">
+    {% if prov.n_syn %}
+    <!-- DATA SOURCE NOTICE -->
+    <section class="prov-panel">
+      <div class="prov-head">
+        <div class="prov-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 3h6"/><path d="M10 3v6.5L4.6 18.4A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.4-2.6L14 9.5V3"/><path d="M7.5 15h9"/>
+          </svg>
+        </div>
+        <div>
+          <div class="prov-title">These results are measured on two kinds of data</div>
+          <div class="prov-sub">
+            The models were evaluated on <strong>{{ prov.n_syn + prov.n_real }} weeks</strong> per barangay.
+            <strong>{{ prov.n_syn }} of them ({{ prov.syn_years[0] }}–{{ prov.syn_years[-1] }}) are synthetic</strong> — generated for training, not actual case records.
+            The figures marked <span class="src-chip real">Recorded</span> use only the {{ prov.n_real }} actual weeks and best reflect real-world performance.
+          </div>
+        </div>
+      </div>
+
+      <div class="prov-timeline" aria-hidden="true">
+        <div class="prov-seg syn" style="flex: {{ prov.n_syn }};">
+          <span class="prov-seg-tag">Synthetic · {{ prov.n_syn }} weeks</span>
+          <span class="prov-seg-years">{{ prov.syn_years[0] }}–{{ prov.syn_years[-1] }}</span>
+        </div>
+        <div class="prov-seg real" style="flex: {{ prov.n_real }};">
+          <span class="prov-seg-tag">Recorded · {{ prov.n_real }} weeks</span>
+          <span class="prov-seg-years">{{ prov.real_years[0] }}–{{ prov.real_years[-1] }}</span>
+        </div>
+      </div>
+
+      {% if not prov.clf_split %}
+      <div class="prov-caveat">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Prediction error is shown separately for recorded and synthetic weeks. Outbreak detection accuracy and alert precision are still measured across <strong>all weeks, including synthetic ones</strong>.</span>
+      </div>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    <!-- SUMMARY CARDS -->
+    <div class="eval-summary-grid">
       {% for brgy, data in eval_data.items() %}
+      {% set sp = split[brgy] %}
+      {% set acc  = sp.acc_real  if sp.clf_split else data.accuracy %}
+      {% set prec = sp.prec_real if sp.clf_split else data.precision %}
       <div class="eval-summary-card">
         <div class="eval-card-header">
           <div class="eval-brgy-name">Barangay {{ brgy }}</div>
-          <div class="eval-accuracy-badge">{{ data.accuracy }}% accurate</div>
+          <div class="eval-accuracy-badge">{{ acc }}% accurate</div>
         </div>
 
-        <!-- PLAIN LANGUAGE DEFAULT VIEW -->
         <div class="eval-card-plain">
-                    <div class="eval-plain-stat">
+          <!-- Prediction error -->
+          <div class="eval-plain-stat">
             <div class="eval-plain-icon blue">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
               </svg>
             </div>
             <div class="eval-plain-text">
-              Predictions were accurate within
-              <strong>±{{ data.avg_error }} case{{ 's' if data.avg_error != 1 else '' }}</strong>
-              per week on average
+              {% if sp.n_syn and sp.rf_real is not none %}
+                <span class="src-chip real">Recorded</span>
+                Predictions were within
+                <strong>±{{ sp.rf_real }} case{{ 's' if sp.rf_real != 1 else '' }}</strong>
+                per week on average
+                {% if sp.rf_syn is not none %}
+                <div class="eval-syn-line syn-only">
+                  <span class="src-chip syn">Synthetic</span> ±{{ sp.rf_syn }} per week
+                </div>
+                {% endif %}
+              {% else %}
+                Predictions were accurate within
+                <strong>±{{ data.avg_error }} case{{ 's' if data.avg_error != 1 else '' }}</strong>
+                per week on average
+              {% endif %}
             </div>
           </div>
+
+          <!-- Outbreak detection -->
           <div class="eval-plain-stat">
             <div class="eval-plain-icon green">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -103,10 +166,18 @@
               </svg>
             </div>
             <div class="eval-plain-text">
+              {% if sp.n_syn %}
+                {% if sp.clf_split %}<span class="src-chip real">Recorded</span>{% else %}<span class="src-chip mixed">All weeks · incl. synthetic</span>{% endif %}
+              {% endif %}
               Correctly detected outbreak weeks
-              <strong>{{ data.accuracy }}%</strong> of the time
+              <strong>{{ acc }}%</strong> of the time
+              {% if sp.clf_split and sp.acc_syn is not none %}
+              <div class="eval-syn-line syn-only"><span class="src-chip syn">Synthetic</span> {{ sp.acc_syn }}%</div>
+              {% endif %}
             </div>
           </div>
+
+          <!-- Alert precision -->
           <div class="eval-plain-stat">
             <div class="eval-plain-icon red">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -116,17 +187,20 @@
               </svg>
             </div>
             <div class="eval-plain-text">
+              {% if sp.n_syn %}
+                {% if sp.clf_split %}<span class="src-chip real">Recorded</span>{% else %}<span class="src-chip mixed">All weeks · incl. synthetic</span>{% endif %}
+              {% endif %}
               When flagging high risk, was correct
-              <strong>{{ data.precision }}%</strong> of the time
+              <strong>{{ prec if prec is not none else '—' }}{{ '%' if prec is not none }}</strong> of the time
+              {% if sp.clf_split and sp.prec_syn is not none %}
+              <div class="eval-syn-line syn-only"><span class="src-chip syn">Synthetic</span> {{ sp.prec_syn }}%</div>
+              {% endif %}
             </div>
           </div>
-          
         </div>
 
-       
-
         <div class="eval-accuracy-bar">
-          <div class="eval-accuracy-fill" style="width:{{ data.accuracy }}%"></div>
+          <div class="eval-accuracy-fill" style="width:{{ acc }}%"></div>
         </div>
       </div>
       {% endfor %}
@@ -139,6 +213,7 @@
         <div class="eval-tabs">
           {% for brgy in eval_data.keys() %}
           <button class="eval-tab {% if loop.first %}active{% endif %}"
+                  data-brgy="{{ brgy }}"
                   onclick="showChart('{{ brgy }}', this)">{{ brgy }}</button>
           {% endfor %}
         </div>
@@ -157,10 +232,13 @@
       </div>
 
       {% for brgy, data in eval_data.items() %}
+      {% set sp = split[brgy] %}
       <div class="chart-toolbar" id="toolbar-{{ brgy }}"
            style="display:{% if loop.first %}flex{% else %}none{% endif %}">
-        <span style="font-size:13px;color:var(--gray-400)">
-          {{ data.total }} weeks · scroll horizontally in expanded view
+        <span class="chart-week-count">
+          <span class="syn-only">{{ data.total }} weeks{% if sp.n_syn %} · <span class="src-chip syn">{{ sp.n_syn }} synthetic</span> <span class="src-chip real">{{ sp.n_real }} recorded</span>{% endif %}</span>
+          {% if sp.n_syn %}<span class="rec-only">{{ sp.n_real }} recorded weeks</span>{% endif %}
+          · scroll horizontally in expanded view
         </span>
         <button class="btn-zoom" id="zoom-{{ brgy }}" onclick="toggleZoom('{{ brgy }}')">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -175,10 +253,10 @@
       </div>
       {% endfor %}
 
-                 <div class="chart-legend">
+      <div class="chart-legend">
         <div class="legend-item">
           <div class="legend-dot actual"></div>
-          <span>Actual Cases (CHO records)</span>
+          <span>Actual cases</span>
         </div>
         <div class="legend-item">
           <div class="legend-dot predicted"></div>
@@ -188,38 +266,121 @@
           <div class="legend-dot xgb"></div>
           <span>XGBoost Predicted</span>
         </div>
-                <div class="legend-item">
+        <div class="legend-item">
           <div class="legend-dot ensemble"></div>
           <span>Ensemble Predicted</span>
         </div>
+        {% if prov.n_syn %}
+        <div class="legend-item syn-only">
+          <div class="legend-swatch-syn"></div>
+          <span>Shaded area = synthetic weeks ({{ prov.syn_years[0] }}–{{ prov.syn_years[-1] }})</span>
+        </div>
+        {% endif %}
       </div>
     </div>
-
-    
 
   </main>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script>
-  
-</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  const evalData = {{ eval_data | tojson | safe }};
-  const charts   = {};
+  const evalData  = {{ eval_data | tojson | safe }};
+  const splitData = {{ split | tojson | safe }};
+  const charts    = {};
   const expanded  = {};
+  let recordedOnly = false;
 
-  function buildChartConfig(data, isExpanded) {
+  // Data for the current view: all weeks, or recorded weeks only
+  function viewData(brgy) {
+    const data  = evalData[brgy];
+    const start = recordedOnly ? splitData[brgy].first_real : 0;
+    const cut   = arr => (Array.isArray(arr) ? arr.slice(start) : []);
+    return {
+      weeks:     cut(data.weeks),
+      actual:    cut(data.actual),
+      predicted: cut(data.predicted),
+      xgb:       cut(data.xgb),
+      ensemble:  cut(data.ensemble),
+      firstReal: recordedOnly ? 0 : splitData[brgy].first_real
+    };
+  }
+
+  // Shades the synthetic weeks and marks where recorded data begins
+  const syntheticZone = {
+    id: 'syntheticZone',
+    beforeDatasetsDraw(chart, args, opts) {
+      const firstReal = opts.firstReal || 0;
+      if (!firstReal) return;
+      const { ctx, chartArea: { top, bottom, left }, scales: { x } } = chart;
+      const edge = (x.getPixelForValue(firstReal - 1) + x.getPixelForValue(firstReal)) / 2;
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(124, 58, 237, 0.07)';
+      ctx.fillRect(left, top, edge - left, bottom - top);
+
+      // diagonal stripes
+      ctx.beginPath();
+      ctx.rect(left, top, edge - left, bottom - top);
+      ctx.clip();
+      ctx.strokeStyle = 'rgba(124, 58, 237, 0.10)';
+      ctx.lineWidth = 6;
+      for (let s = left - (bottom - top); s < edge; s += 18) {
+        ctx.beginPath();
+        ctx.moveTo(s, bottom);
+        ctx.lineTo(s + (bottom - top), top);
+        ctx.stroke();
+      }
+      ctx.restore();
+    },
+    afterDraw(chart, args, opts) {
+      const firstReal = opts.firstReal || 0;
+      if (!firstReal) return;
+      const { ctx, chartArea: { top, bottom, left, right }, scales: { x } } = chart;
+      const edge = (x.getPixelForValue(firstReal - 1) + x.getPixelForValue(firstReal)) / 2;
+
+      ctx.save();
+      ctx.strokeStyle = '#7C3AED';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      ctx.moveTo(edge, top);
+      ctx.lineTo(edge, bottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.font = '700 10.5px Inter, sans-serif';
+      ctx.textBaseline = 'top';
+      const tag = (text, x0, bg, fg) => {
+        const w = ctx.measureText(text).width + 14;
+        ctx.fillStyle = bg;
+        ctx.beginPath();
+        ctx.roundRect ? ctx.roundRect(x0, top + 6, w, 18, 9) : ctx.rect(x0, top + 6, w, 18);
+        ctx.fill();
+        ctx.fillStyle = fg;
+        ctx.fillText(text, x0 + 7, top + 10);
+        return w;
+      };
+      // label the synthetic zone, repeated so it stays visible when the expanded chart is scrolled
+      for (let tx = left + 8; tx < edge - 190; tx += 640) tag('SYNTHETIC WEEKS', tx, '#EDE9FE', '#6D28D9');
+      if (edge - left > 110) tag('SYNTHETIC', edge - 96, '#EDE9FE', '#6D28D9');
+      if (right - edge > 110) tag('RECORDED', edge + 8, '#E8F1FB', '#1A56A0');
+      ctx.restore();
+    }
+  };
+
+  function buildChartConfig(view, isExpanded) {
+    const isSyn = i => i < view.firstReal;
     return {
       type: 'line',
+      plugins: [syntheticZone],
       data: {
-        labels: data.weeks,
+        labels: view.weeks,
         datasets: [
-                    {
+          {
             label: 'Actual Cases',
-            data: data.actual,
+            data: view.actual,
             borderColor: '#1A56A0',
             backgroundColor: 'rgba(26,86,160,0.08)',
             borderWidth: 3,
@@ -230,7 +391,7 @@
           },
           {
             label: 'RF Predicted',
-            data: data.predicted,
+            data: view.predicted,
             borderColor: '#DC2626',
             backgroundColor: 'rgba(220,38,38,0.05)',
             borderWidth: 3,
@@ -240,9 +401,9 @@
             borderDash: [5, 3],
             fill: false
           },
-                    {
+          {
             label: 'XGBoost Predicted',
-            data: Array.isArray(data.xgb) ? data.xgb : [],
+            data: view.xgb,
             borderColor: '#7C3AED',
             backgroundColor: 'rgba(124,58,237,0.05)',
             borderWidth: 3,
@@ -252,9 +413,9 @@
             borderDash: [8, 4],
             fill: false
           },
-                    {
+          {
             label: 'Ensemble Predicted',
-            data: Array.isArray(data.ensemble) ? data.ensemble : [],
+            data: view.ensemble,
             borderColor: '#F59E0B',
             backgroundColor: 'rgba(245,158,11,0.05)',
             borderWidth: 3,
@@ -270,27 +431,34 @@
         responsive: true,
         maintainAspectRatio: false,
         animation: false,
-                plugins: {
+        plugins: {
           legend: { display: false },
+          syntheticZone: { firstReal: view.firstReal },
           tooltip: {
             enabled: true,
-                        mode: 'index',
+            mode: 'index',
             intersect: false,
             position: 'nearest',
             backgroundColor: 'rgba(13,59,122,0.95)',
             titleColor: 'white',
             bodyColor: 'rgba(255,255,255,0.85)',
+            footerColor: '#DDD6FE',
             titleFont: { size: 13, weight: 'bold', family: 'DM Sans' },
             bodyFont: { size: 12, family: 'Inter' },
+            footerFont: { size: 11, weight: 'normal', family: 'Inter' },
             padding: 10,
             cornerRadius: 8,
             callbacks: {
-              title: (items) => 'Week of ' + items[0].label,
-              label: (item) => item.dataset.label + ': ' + item.parsed.y + ' cases'
+              title: (items) => 'Week of ' + items[0].label + (isSyn(items[0].dataIndex) ? '  ·  SYNTHETIC' : '  ·  Recorded'),
+              label: (item) => {
+                const name = (item.datasetIndex === 0 && isSyn(item.dataIndex)) ? 'Synthetic cases (est.)' : item.dataset.label;
+                return name + ': ' + item.parsed.y + ' cases';
+              },
+              footer: (items) => isSyn(items[0].dataIndex) ? 'Modelled week — not an actual case record' : ''
             }
           }
         },
-                interaction: { mode: 'index', intersect: false },
+        interaction: { mode: 'index', intersect: false },
         scales: {
           x: {
             ticks: {
@@ -325,29 +493,26 @@
     if (charts[brgy]) charts[brgy].resize();
   }
 
-  function toggleZoom(brgy) {
-    const wrap = document.getElementById('chart-' + brgy);
-    const btn  = document.getElementById('zoom-' + brgy);
-    const data = evalData[brgy];
-    expanded[brgy] = !expanded[brgy];
+  function drawChart(brgy) {
+    const wrap   = document.getElementById('chart-' + brgy);
+    const btn    = document.getElementById('zoom-' + brgy);
+    const canvas = document.getElementById('canvas-' + brgy);
+    const view   = viewData(brgy);
 
     if (charts[brgy]) charts[brgy].destroy();
-    const canvas = document.getElementById('canvas-' + brgy);
 
     if (expanded[brgy]) {
-      const totalWeeks = data.weeks.length;
-      const expandedWidth = totalWeeks * 18;
+      const expandedWidth = view.weeks.length * 18;
       wrap.style.overflowX = 'auto';
       wrap.style.height = '340px';
       canvas.style.width  = expandedWidth + 'px';
       canvas.style.height = '300px';
-            canvas.width  = expandedWidth;
+      canvas.width  = expandedWidth;
       canvas.height = 300;
       btn.classList.add('active');
       btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg> Collapse View`;
-            const config = buildChartConfig(data, true);
+      const config = buildChartConfig(view, true);
       config.options.responsive = false;
-      config.options.maintainAspectRatio = false;
       config.options.plugins.tooltip.position = 'average';
       charts[brgy] = new Chart(canvas.getContext('2d'), config);
     } else {
@@ -355,15 +520,17 @@
       wrap.style.height = '320px';
       canvas.removeAttribute('width');
       canvas.removeAttribute('height');
-      canvas.style.width  = '';
-      canvas.style.height = '';
+      canvas.style.width  = '100%';
+      canvas.style.height = '100%';
       btn.classList.remove('active');
       btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/><line x1="11" y1="8" x2="11" y2="14"/></svg> Expand View`;
-            const config = buildChartConfig(data, false);
-      config.options.responsive = true;
-      config.options.plugins.tooltip.position = 'nearest';
-      charts[brgy] = new Chart(canvas.getContext('2d'), config);
+      charts[brgy] = new Chart(canvas.getContext('2d'), buildChartConfig(view, false));
     }
+  }
+
+  function toggleZoom(brgy) {
+    expanded[brgy] = !expanded[brgy];
+    drawChart(brgy);
   }
 
   function searchDate() {
@@ -372,13 +539,13 @@
     if (!input) { result.textContent = 'Please enter a date.'; result.style.color = 'var(--red-alert)'; return; }
 
     const activeTab = document.querySelector('.eval-tab.active');
-    const brgy = activeTab ? activeTab.textContent.trim() : Object.keys(evalData)[0];
-    const data = evalData[brgy];
+    const brgy = activeTab ? activeTab.dataset.brgy : Object.keys(evalData)[0];
+    const view = viewData(brgy);
     const searchDate = new Date(input);
 
     let closestIdx = 0;
     let closestDiff = Infinity;
-    data.weeks.forEach((w, i) => {
+    view.weeks.forEach((w, i) => {
       const diff = Math.abs(new Date(w) - searchDate);
       if (diff < closestDiff) { closestDiff = diff; closestIdx = i; }
     });
@@ -386,15 +553,16 @@
     const chart = charts[brgy];
     if (!chart) return;
 
-    const foundWeek = data.weeks[closestIdx];
-    const actual    = data.actual[closestIdx];
-    const predicted = data.predicted[closestIdx];
+    const foundWeek = view.weeks[closestIdx];
+    const actual    = view.actual[closestIdx];
+    const predicted = view.predicted[closestIdx];
+    const isSyn     = closestIdx < view.firstReal;
 
     // Highlight the found point
-    chart.data.datasets[0].pointRadius = data.weeks.map((_, i) => i === closestIdx ? 10 : 3);
-    chart.data.datasets[1].pointRadius = data.weeks.map((_, i) => i === closestIdx ? 10 : 3);
-    chart.data.datasets[0].pointBackgroundColor = data.weeks.map((_, i) => i === closestIdx ? '#FFD700' : '#1A56A0');
-    chart.data.datasets[1].pointBackgroundColor = data.weeks.map((_, i) => i === closestIdx ? '#FFD700' : '#DC2626');
+    chart.data.datasets[0].pointRadius = view.weeks.map((_, i) => i === closestIdx ? 10 : 3);
+    chart.data.datasets[1].pointRadius = view.weeks.map((_, i) => i === closestIdx ? 10 : 3);
+    chart.data.datasets[0].pointBackgroundColor = view.weeks.map((_, i) => i === closestIdx ? '#FFD700' : '#1A56A0');
+    chart.data.datasets[1].pointBackgroundColor = view.weeks.map((_, i) => i === closestIdx ? '#FFD700' : '#DC2626');
     chart.tooltip.setActiveElements(
       [{ datasetIndex: 0, index: closestIdx }, { datasetIndex: 1, index: closestIdx }],
       { x: 0, y: 0 }
@@ -404,21 +572,35 @@
     // Scroll to position in expanded mode
     const wrap = document.getElementById('chart-' + brgy);
     if (expanded[brgy]) {
-      const scrollPos = (closestIdx / data.weeks.length) * wrap.scrollWidth;
+      const scrollPos = (closestIdx / view.weeks.length) * wrap.scrollWidth;
       wrap.scrollLeft = scrollPos - wrap.clientWidth / 2;
     }
 
-    result.textContent = `Week of ${foundWeek} — Actual: ${actual} cases · Predicted: ${predicted} cases`;
+    result.innerHTML = `Week of ${foundWeek} — ${isSyn ? 'Synthetic (est.)' : 'Actual'}: ${actual} cases · Predicted: ${predicted} cases`
+      + (isSyn ? ' <span class="src-chip syn">Synthetic week</span>' : '');
     result.style.color = 'var(--blue-primary)';
   }
 
-  // Initialize all charts
-  Object.entries(evalData).forEach(([brgy, data]) => {
-    expanded[brgy] = false;
-    const canvas = document.getElementById('canvas-' + brgy);
-    canvas.style.width  = '100%';
-    canvas.style.height = '100%';
-    charts[brgy] = new Chart(canvas.getContext('2d'), buildChartConfig(data, false));
+  // ── ALL WEEKS / RECORDED ONLY ──
+  function setView(view) {
+    recordedOnly = view === 'recorded';
+    document.getElementById('evalPage').classList.toggle('recorded-only', recordedOnly);
+    document.querySelectorAll('.dv-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+    document.getElementById('searchResult').textContent = '';
+    Object.keys(evalData).forEach(drawChart);
+    try { localStorage.setItem('evalView', view); } catch (e) {}
+  }
+
+  document.querySelectorAll('.dv-btn').forEach(btn => {
+    btn.addEventListener('click', () => setView(btn.dataset.view));
   });
+
+  // Initialize all charts
+  Object.keys(evalData).forEach(brgy => { expanded[brgy] = false; });
+  let savedView = 'all';
+  if (document.querySelector('.dv-btn')) {
+    try { savedView = localStorage.getItem('evalView') || 'all'; } catch (e) {}
+  }
+  setView(savedView);
 </script>
 {% endblock %}
