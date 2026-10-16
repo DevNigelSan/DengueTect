@@ -369,3 +369,196 @@
   padding-top: 12px;
   border-top: 1px solid var(--gray-200);
 }
+
+
+/* ════════════════════════════════════════════
+   SYNTHETIC vs RECORDED DATA
+   ════════════════════════════════════════════ */
+:root {
+  --syn-ink:    #6D28D9;
+  --syn-accent: #7C3AED;
+  --syn-bg:     #F5F3FF;
+  --syn-border: #DDD6FE;
+}
+
+/* All weeks / Recorded only switch */
+.page-header { gap: 16px; flex-wrap: wrap; }
+
+.data-view-toggle {
+  display: inline-flex;
+  padding: 4px;
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 10px;
+  gap: 4px;
+}
+
+.dv-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.dv-btn:hover { color: var(--blue-deep); }
+.dv-btn.active { background: var(--blue-primary); color: var(--white); }
+
+.recorded-only .syn-only { display: none !important; }
+.rec-only { display: none; }
+.recorded-only .rec-only { display: inline; }
+
+/* Data source notice */
+.prov-panel {
+  background: var(--white);
+  border: 1.5px solid var(--syn-border);
+  border-left: 5px solid var(--syn-accent);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 18px rgba(124, 58, 237, 0.08);
+}
+
+.prov-head {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.prov-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--syn-bg);
+  color: var(--syn-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.prov-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--blue-deep);
+  margin-bottom: 4px;
+}
+
+.prov-sub {
+  font-size: 13.5px;
+  color: var(--gray-600);
+  line-height: 1.7;
+}
+
+.prov-sub strong { color: var(--gray-800); }
+
+.prov-timeline {
+  display: flex;
+  gap: 4px;
+  height: 52px;
+}
+
+.prov-seg {
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.prov-seg.syn {
+  background-color: #EDE9FE;
+  background-image: repeating-linear-gradient(135deg, rgba(124,58,237,0.13) 0 6px, transparent 6px 12px);
+  border: 1.5px dashed #A78BFA;
+  color: var(--syn-ink);
+}
+
+.prov-seg.real {
+  background: var(--blue-primary);
+  border: 1.5px solid var(--blue-primary);
+  color: var(--white);
+}
+
+.prov-seg-tag {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.prov-seg-years {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.prov-caveat {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  color: #92400E;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.prov-caveat svg { flex-shrink: 0; margin-top: 2px; }
+
+/* Small source labels */
+.src-chip {
+  display: inline-block;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+
+.src-chip.real  { background: var(--blue-light); color: var(--blue-primary); border: 1px solid #BFD9F5; }
+.src-chip.syn   { background: var(--syn-bg); color: var(--syn-ink); border: 1px dashed #A78BFA; }
+.src-chip.mixed { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; letter-spacing: 0.3px; }
+
+/* scope label sits on its own line above the sentence */
+.eval-plain-text > .src-chip:first-child { display: table; margin-bottom: 4px; }
+
+.eval-syn-line {
+  margin-top: 5px;
+  font-size: 12.5px;
+  color: var(--syn-ink);
+  font-weight: 600;
+}
+
+.chart-week-count {
+  font-size: 13px;
+  color: var(--gray-400);
+}
+
+.legend-swatch-syn {
+  width: 22px;
+  height: 12px;
+  border-radius: 3px;
+  background-color: #EDE9FE;
+  background-image: repeating-linear-gradient(135deg, rgba(124,58,237,0.25) 0 3px, transparent 3px 6px);
+  border: 1px dashed #A78BFA;
+}
+
+@media (max-width: 900px) {
+  .prov-seg-tag { font-size: 9.5px; }
+}
