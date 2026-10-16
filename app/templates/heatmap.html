@@ -46,9 +46,9 @@
       </div>
       <div class="nav-divider"></div>
       <div class="nav-user">
-                <div class="user-avatar">{{ 'AD' if session.user_role == 'admin' else 'HO' }}</div>
+        <div class="user-avatar">{{ 'AD' if session.user_role == 'admin' else 'HO' }}</div>
         <div class="user-info">
-                    <span class="user-name">{{ 'IT Admin' if session.user_role == 'admin' else 'Health Officer' }}</span>
+          <span class="user-name">{{ 'IT Admin' if session.user_role == 'admin' else 'Health Officer' }}</span>
           <span class="user-role">{{ 'IT Admin' if session.user_role == 'admin' else 'Marikina CHO' }}</span>
         </div>
       </div>
@@ -64,15 +64,70 @@
   </nav>
 
   <!-- MAIN CONTENT -->
-  <main class="main-content">
+  <main class="main-content" id="heatmapPage">
 
-        <!-- PAGE HEADER -->
+    <!-- PAGE HEADER -->
     <div class="page-header">
       <div>
         <h1 class="page-title">Dengue Case Heatmap</h1>
-        <p class="page-sub">Weekly case intensity across barangays · {{ years[0] }}–{{ years[-1] }} · Hover a cell for details</p>
+        <p class="page-sub">Weekly case intensity across barangays · {% if prov.n_syn %}<span class="syn-only">{{ years[0] }}</span><span class="rec-only">{{ prov.real_years[0] }}</span>{% else %}{{ years[0] }}{% endif %}–{{ years[-1] }} · Hover a cell for details</p>
       </div>
+      {% if prov.n_syn %}
+      <div class="data-view-toggle" role="group" aria-label="Which data to show">
+        <button type="button" class="dv-btn active" data-view="all">All years</button>
+        <button type="button" class="dv-btn" data-view="recorded">Recorded only</button>
+      </div>
+      {% endif %}
     </div>
+
+    {% if prov.n_syn %}
+    <!-- DATA SOURCE NOTICE -->
+    <section class="prov-panel syn-only">
+      <div class="prov-head">
+        <div class="prov-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 3h6"/><path d="M10 3v6.5L4.6 18.4A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.4-2.6L14 9.5V3"/><path d="M7.5 15h9"/>
+          </svg>
+        </div>
+        <div>
+          <div class="prov-title">This heatmap combines two kinds of data</div>
+          <div class="prov-sub">
+            Weeks from <strong>{{ prov.syn_years[0] }} to {{ prov.syn_years[-1] }}</strong> are <strong>synthetic</strong>.
+            They were generated for model training and are <strong>not actual case records</strong>.
+            Read them as a plausible seasonal pattern only.
+          </div>
+        </div>
+      </div>
+
+      <div class="prov-timeline" aria-hidden="true">
+        <div class="prov-seg syn" style="flex: {{ prov.n_syn }};">
+          <span class="prov-seg-tag">Synthetic</span>
+          <span class="prov-seg-years">{{ prov.syn_years[0] }}–{{ prov.syn_years[-1] }}</span>
+        </div>
+        <div class="prov-seg real" style="flex: {{ prov.n_real }};">
+          <span class="prov-seg-tag">Recorded</span>
+          <span class="prov-seg-years">{{ prov.real_years[0] }}–{{ prov.real_years[-1] }}</span>
+        </div>
+      </div>
+
+      <div class="prov-defs">
+        <div class="prov-def">
+          <span class="prov-swatch syn"></span>
+          <div>
+            <strong>Synthetic · {{ prov.syn_years[0] }}–{{ prov.syn_years[-1] }}</strong>
+            Estimated from DOH city-wide yearly totals, divided among the three barangays and spread across each year using the seasonal pattern seen in recorded data. Barangay-level records for these years do not exist.
+          </div>
+        </div>
+        <div class="prov-def">
+          <span class="prov-swatch real"></span>
+          <div>
+            <strong>Recorded · {{ prov.real_years[0] }}–{{ prov.real_years[-1] }}</strong>
+            Actual weekly dengue cases reported for Nangka, Tumana and Malanday.
+          </div>
+        </div>
+      </div>
+    </section>
+    {% endif %}
 
     <!-- GUIDE BANNER -->
     <div class="heatmap-guide">
@@ -88,22 +143,22 @@
         <div class="heatmap-guide-body">
           <div class="heatmap-guide-item">
             <span class="heatmap-guide-label">Color Grid</span>
-            Each column represents one week from {{ years[0] }} to {{ years[-1] }} from 2022 to 2026. Each row is a barangay. The color of each cell shows how many dengue cases were recorded that week — green means few or no cases, red means a high number of cases. Hover over any cell to see the exact week and case count.
+            Each column represents one week from {% if prov.n_syn %}<span class="syn-only">{{ years[0] }}</span><span class="rec-only">{{ prov.real_years[0] }}</span>{% else %}{{ years[0] }}{% endif %} to {{ years[-1] }}. Each row is a barangay. The color of each cell shows how many dengue cases there were that week — green means few or no cases, red means a high number of cases.{% if prov.n_syn %}<span class="syn-only"> <strong>Faded, striped cells are synthetic weeks</strong>; solid cells are recorded weeks.</span>{% endif %} Hover over any cell to see the exact week and case count.
           </div>
           <div class="heatmap-guide-item">
             <span class="heatmap-guide-label">Geographic Map</span>
-            The map below shows the same data geographically. Each barangay polygon is colored based on its dengue case count for the selected week. Use the slider or arrow buttons to move through the weeks and observe how risk shifts across barangays over time.
+            The map below shows the same data geographically. Each barangay polygon is colored based on its dengue case count for the selected week. Use the slider or arrow buttons to move through the weeks and observe how risk shifts across barangays over time.{% if prov.n_syn %}<span class="syn-only"> A purple notice appears on the map whenever the selected week is synthetic.</span>{% endif %}
           </div>
           <div class="heatmap-guide-item">
             <span class="heatmap-guide-label">Year Summary</span>
-            The cards at the bottom show the total recorded dengue cases per barangay for each year, giving a quick overview of which years and barangays were most affected.
+            The cards at the bottom show the total dengue cases per barangay for each year.{% if prov.n_syn %}<span class="syn-only"> Recorded years and synthetic years are shown in separate groups.</span>{% endif %}
           </div>
         </div>
       </div>
     </div>
 
     <!-- LEGEND -->
-        <div class="heatmap-legend-wrap">
+    <div class="heatmap-legend-wrap">
       <span class="heatmap-legend-label">0 cases</span>
       <div class="heatmap-legend-bar">
         <div class="heatmap-legend-gradient"></div>
@@ -116,6 +171,9 @@
       <span style="color:#FB923C">6–10</span>
       <span style="color:#EF4444">11–20</span>
       <span style="color:#991B1B">21+</span>
+      {% if prov.n_syn %}
+      <span class="legend-syn syn-only"><i class="legend-syn-swatch"></i>Striped = synthetic week</span>
+      {% endif %}
     </div>
 
     <!-- HEATMAP -->
@@ -123,23 +181,41 @@
       <div class="heatmap-scroll">
         <div class="heatmap-grid" id="heatmapGrid">
 
+          {% if prov.n_syn %}
+          <!-- Data source bands above the grid -->
+          <div class="heatmap-row heatmap-zone-row">
+            <div class="heatmap-row-label"></div>
+            <div class="heatmap-zones">
+              <div class="hz hz-syn syn-only" style="width: {{ prov.n_syn * 10 - 2 }}px;">
+                <span>Synthetic · {{ prov.syn_years[0] }}–{{ prov.syn_years[-1] }} · not actual records</span>
+              </div>
+              <div class="hz-gap syn-only"></div>
+              <div class="hz hz-real" style="width: {{ prov.n_real * 10 - 2 }}px;">
+                <span>Recorded · {{ prov.real_years[0] }}–{{ prov.real_years[-1] }}</span>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
           {% for brgy, weeks in heatmap_data.barangays.items() %}
           <div class="heatmap-row">
             <div class="heatmap-row-label">{{ brgy }}</div>
             <div class="heatmap-cells">
               {% for entry in weeks %}
-              <div class="heatmap-cell"
+              {% if prov.n_syn and loop.index0 == prov.n_syn %}<div class="heatmap-divider syn-only"></div>{% endif %}
+              <div class="heatmap-cell{{ ' is-syn syn-only' if entry.source == 'synthetic' }}"
                    data-week="{{ entry.week }}"
                    data-cases="{{ entry.cases }}"
                    data-brgy="{{ brgy }}"
-                                      style="background: {% if entry.cases == 0 %}#DCFCE7{% elif entry.cases <= 2 %}#86EFAC{% elif entry.cases <= 5 %}#FDE047{% elif entry.cases <= 10 %}#FB923C{% elif entry.cases <= 20 %}#EF4444{% else %}#991B1B{% endif %}">
+                   data-source="{{ entry.source or 'real' }}"
+                   style="background-color: {% if entry.cases == 0 %}#DCFCE7{% elif entry.cases <= 2 %}#86EFAC{% elif entry.cases <= 5 %}#FDE047{% elif entry.cases <= 10 %}#FB923C{% elif entry.cases <= 20 %}#EF4444{% else %}#991B1B{% endif %}">
               </div>
               {% endfor %}
             </div>
           </div>
           {% endfor %}
 
-          <!-- X-axis labels -->
+          <!-- X-axis labels (positioned by script) -->
           <div class="heatmap-row">
             <div class="heatmap-row-label"></div>
             <div class="heatmap-cells heatmap-axis">
@@ -147,7 +223,7 @@
                 {% if loop.first %}
                   {% for entry in weeks %}
                     {% if loop.index0 % 13 == 0 %}
-                    <div class="heatmap-axis-label" style="left:{{ loop.index0 * 7 }}px">
+                    <div class="heatmap-axis-label{{ ' syn-only' if entry.source == 'synthetic' }}" data-idx="{{ loop.index0 }}">
                       {{ entry.week[:7] }}
                     </div>
                     {% endif %}
@@ -165,10 +241,16 @@
     <div class="heatmap-tooltip" id="heatmapTooltip"></div>
 
     <!-- YEAR SUMMARY -->
-    <div class="heatmap-summary-grid">
-      {% for year in years %}
-      <div class="heatmap-summary-card">
-        <div class="heatmap-summary-year">{{ year }}</div>
+    {% macro year_card(year, synthetic) %}
+      <div class="heatmap-summary-card{{ ' syn' if synthetic }}">
+        <div class="heatmap-summary-year">
+          {{ year }}
+          {% if synthetic %}
+            <span class="year-tag syn">Synthetic</span>
+          {% elif year == years[-1] and prov.last_week[5:7] != '12' %}
+            <span class="year-tag partial">To {{ prov.last_week }}</span>
+          {% endif %}
+        </div>
         {% for brgy, weeks in heatmap_data.barangays.items() %}
         <div class="heatmap-summary-row">
           <span class="heatmap-summary-brgy">{{ brgy }}</span>
@@ -179,15 +261,38 @@
                 {% set ns.total = ns.total + entry.cases %}
               {% endif %}
             {% endfor %}
-            {{ ns.total }} cases
+            {% if synthetic %}≈ {{ ns.total }} <small>est.</small>{% else %}{{ ns.total }} cases{% endif %}
           </span>
         </div>
         {% endfor %}
       </div>
-      {% endfor %}
+    {% endmacro %}
+
+    <div class="year-group">
+      {% if prov.n_syn %}
+      <div class="year-group-head">
+        <span class="yg-tag real">Recorded</span>
+        <span class="yg-text">Actual reported cases per year</span>
+      </div>
+      {% endif %}
+      <div class="heatmap-summary-grid">
+        {% for year in prov.real_years %}{{ year_card(year, false) }}{% endfor %}
+      </div>
     </div>
 
-           <!-- CHOROPLETH MAP -->
+    {% if prov.n_syn %}
+    <div class="year-group syn syn-only">
+      <div class="year-group-head">
+        <span class="yg-tag syn">Synthetic</span>
+        <span class="yg-text">Modelled estimates for training — not actual case records</span>
+      </div>
+      <div class="heatmap-summary-grid">
+        {% for year in prov.syn_years %}{{ year_card(year, true) }}{% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- CHOROPLETH MAP -->
     <div class="section-title" style="margin-top:32px;">
       Geographic Risk Map <span>· Select a week to see barangay risk levels</span>
     </div>
@@ -195,22 +300,40 @@
       <div class="choropleth-controls">
         <div class="choropleth-week-label">
           Week: <strong id="selectedWeek">Latest</strong>
+          <span class="week-src" id="weekSrc"></span>
         </div>
         <div class="choropleth-slider-wrap">
-          <input type="range" id="weekSlider" min="0" max="211" value="211" class="week-slider"/>
+          <input type="range" id="weekSlider" min="0" max="0" value="0" class="week-slider"/>
+          {% if prov.n_syn %}
+          <div class="slider-zones" aria-hidden="true">
+            <span class="sz syn syn-only" style="flex: {{ prov.n_syn }};">Synthetic</span>
+            <span class="sz real" style="flex: {{ prov.n_real }};">Recorded</span>
+          </div>
+          {% endif %}
         </div>
         <div class="choropleth-week-nav">
           <button onclick="changeWeek(-1)">◀</button>
           <button onclick="changeWeek(1)">▶</button>
         </div>
       </div>
-      <div id="choropleth-map" style="height:420px;width:100%;z-index:1;"></div>
+      <div class="map-wrap">
+        <div class="map-syn-flag" id="mapSynFlag" hidden>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          Synthetic week — modelled data, not actual case records
+        </div>
+        <div id="choropleth-map" style="height:420px;width:100%;z-index:1;"></div>
+      </div>
       <div class="map-legend">
         <div class="map-legend-title">Risk Level</div>
         <div class="map-legend-item"><div class="map-legend-dot" style="background:#16A34A"></div><span>Low Risk</span></div>
         <div class="map-legend-item"><div class="map-legend-dot" style="background:#D97706"></div><span>Moderate Risk</span></div>
         <div class="map-legend-item"><div class="map-legend-dot" style="background:#DC2626"></div><span>High Risk</span></div>
         <div class="map-legend-item"><div class="map-legend-dot" style="background:#E2E8F0"></div><span>No Cases</span></div>
+        {% if prov.n_syn %}
+        <div class="map-legend-item syn-only"><div class="map-legend-dot dashed"></div><span>Dashed outline = synthetic week</span></div>
+        {% endif %}
       </div>
     </div>
 
@@ -222,26 +345,34 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
   const maxCases = {{ heatmap_data.max_cases }};
+  const N_SYN    = {{ prov.n_syn }};
   const tooltip  = document.getElementById('heatmapTooltip');
+  const page     = document.getElementById('heatmapPage');
 
+  // ── GRID TOOLTIP ──
   document.querySelectorAll('.heatmap-cell').forEach(cell => {
-    cell.addEventListener('mouseenter', (e) => {
-      const cases = parseInt(cell.dataset.cases);
-      const week  = cell.dataset.week;
-      const brgy  = cell.dataset.brgy;
-      const level = cases === 0 ? 'No cases'
-                  : cases <= 2  ? 'Low (1–2 cases)'
-                  : cases <= 5  ? 'Moderate (3–5 cases)'
-                  : cases <= 10 ? 'Elevated (6–10 cases)'
-                  : cases <= 20 ? 'High (11–20 cases)'
-                  : 'Very high (21+ cases)';
-      const swatch = cell.style.background;
+    cell.addEventListener('mouseenter', () => {
+      const cases  = parseInt(cell.dataset.cases);
+      const week   = cell.dataset.week;
+      const brgy   = cell.dataset.brgy;
+      const isSyn  = cell.dataset.source === 'synthetic';
+      const level  = cases === 0 ? 'No cases'
+                   : cases <= 2  ? 'Low (1–2 cases)'
+                   : cases <= 5  ? 'Moderate (3–5 cases)'
+                   : cases <= 10 ? 'Elevated (6–10 cases)'
+                   : cases <= 20 ? 'High (11–20 cases)'
+                   : 'Very high (21+ cases)';
+      const swatch = cell.style.backgroundColor;
+      const count  = `${isSyn ? '≈ ' : ''}${cases} case${cases !== 1 ? 's' : ''}`;
 
+      tooltip.classList.toggle('syn', isSyn);
       tooltip.innerHTML = `
+        <div class="tt-src ${isSyn ? 'syn' : 'real'}">${isSyn ? 'Synthetic estimate' : 'Recorded'}</div>
         <div class="tt-brgy">${brgy}</div>
         <div class="tt-week">Week of ${week}</div>
-        <div class="tt-cases">${cases} case${cases !== 1 ? 's' : ''}</div>
-        <div class="tt-risk"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${swatch};margin-right:6px;vertical-align:middle;"></span>${level}</div>
+        <div class="tt-cases">${count}</div>
+        <div class="tt-risk"><span class="tt-dot" style="background:${swatch};"></span>${level}</div>
+        ${isSyn ? '<div class="tt-note">Modelled value — not an actual case count</div>' : ''}
       `;
       tooltip.style.display = 'block';
     });
@@ -257,7 +388,19 @@
     });
   });
 
-    // ── CHOROPLETH MAP ──
+  // ── AXIS LABELS: line each label up with its week's cell ──
+  function placeAxisLabels() {
+    const firstRowCells = document.querySelectorAll('.heatmap-row:not(.heatmap-zone-row) .heatmap-cells:not(.heatmap-axis)')[0];
+    if (!firstRowCells) return;
+    const cells = firstRowCells.querySelectorAll('.heatmap-cell');
+    document.querySelectorAll('.heatmap-axis-label').forEach(label => {
+      const cell = cells[parseInt(label.dataset.idx)];
+      if (cell) label.style.left = cell.offsetLeft + 'px';
+    });
+  }
+  placeAxisLabels();
+
+  // ── CHOROPLETH MAP ──
   const heatmapData = {{ heatmap_data | tojson }};
   const barangays   = ['Nangka', 'Tumana', 'Malanday'];
 
@@ -297,7 +440,6 @@
    .addTo(cmap).bindTooltip('Marikina River');
 
   const polygonLayers = {};
-  const labelLayers   = {};
 
   barangays.forEach(brgy => {
     const coords = barangayPolygons[brgy];
@@ -309,7 +451,7 @@
     const center = coords.reduce(
       (acc, c) => [acc[0] + c[0]/coords.length, acc[1] + c[1]/coords.length], [0,0]
     );
-    labelLayers[brgy] = L.marker(center, {
+    L.marker(center, {
       icon: L.divIcon({
         className: '',
         html: `<div style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;
@@ -320,36 +462,58 @@
     }).addTo(cmap);
   });
 
+  const synFlag  = document.getElementById('mapSynFlag');
+  const weekSrc  = document.getElementById('weekSrc');
+  let currentIdx = 0;
+
   function updateChoropleth(weekIdx) {
+    let isSyn = false;
+    currentIdx = weekIdx;
+
     barangays.forEach(brgy => {
       const weeks = heatmapData.barangays[brgy];
       const entry = weeks[weekIdx] || weeks[weeks.length - 1];
       const color = riskColors[entry.risk] || riskColors.none;
+      isSyn = entry.source === 'synthetic';
 
-      polygonLayers[brgy].setStyle({ fillColor: color });
+      polygonLayers[brgy].setStyle({
+        fillColor: color,
+        fillOpacity: isSyn ? 0.45 : 0.75,
+        color: isSyn ? '#7C3AED' : 'white',
+        dashArray: isSyn ? '6,5' : null,
+        weight: isSyn ? 2.5 : 2
+      });
       polygonLayers[brgy].unbindPopup();
       polygonLayers[brgy].bindPopup(`
-        <div style="font-family:'Inter',sans-serif;min-width:160px;">
+        <div style="font-family:'Inter',sans-serif;min-width:170px;">
+          ${isSyn ? `<div style="display:inline-block;margin-bottom:8px;padding:2px 8px;border-radius:999px;
+                      font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+                      background:#F3E8FF;color:#6D28D9;">Synthetic estimate</div>` : ''}
           <div style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;
                       color:#0D3B7A;margin-bottom:6px;">Barangay ${brgy}</div>
           <div style="font-size:13px;color:#475569;margin-bottom:4px;">
             📅 Week of ${entry.week}
           </div>
           <div style="font-size:13px;color:#475569;margin-bottom:6px;">
-            🦟 Cases: <strong>${entry.cases}</strong>
+            🦟 Cases: <strong>${isSyn ? '≈ ' : ''}${entry.cases}</strong>
           </div>
           <div style="display:inline-block;padding:3px 10px;border-radius:999px;
                       font-size:11px;font-weight:700;background:${color};
                       color:${entry.risk === 'none' ? '#475569' : 'white'};">
             ${entry.risk === 'none' ? 'No Cases' : entry.risk.charAt(0).toUpperCase() + entry.risk.slice(1) + ' Risk'}
           </div>
+          ${isSyn ? `<div style="margin-top:8px;font-size:11.5px;color:#6D28D9;">Modelled value — not an actual case count</div>` : ''}
         </div>
-      `, { maxWidth: 200 });
+      `, { maxWidth: 220 });
     });
 
     const weeks = heatmapData.barangays['Nangka'];
     const weekLabel = weeks[weekIdx] ? weeks[weekIdx].week : weeks[weeks.length-1].week;
     document.getElementById('selectedWeek').textContent = weekLabel;
+
+    synFlag.hidden = !isSyn;
+    weekSrc.textContent = isSyn ? 'Synthetic' : 'Recorded';
+    weekSrc.className = 'week-src ' + (isSyn ? 'syn' : 'real');
   }
 
   // Initialize at latest week
@@ -363,11 +527,36 @@
 
   function changeWeek(dir) {
     const val = parseInt(slider.value) + dir;
-    if (val >= 0 && val <= totalWeeks - 1) {
+    if (val >= parseInt(slider.min) && val <= totalWeeks - 1) {
       slider.value = val;
       updateChoropleth(val);
     }
   }
 
+  // ── ALL YEARS / RECORDED ONLY ──
+  function setView(view) {
+    const recordedOnly = view === 'recorded';
+    page.classList.toggle('recorded-only', recordedOnly);
+    document.querySelectorAll('.dv-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+
+    slider.min = recordedOnly ? N_SYN : 0;
+    if (recordedOnly && currentIdx < N_SYN) {
+      slider.value = N_SYN;
+      updateChoropleth(N_SYN);
+    }
+    document.querySelector('.heatmap-scroll').scrollLeft = 0;
+    placeAxisLabels();
+    try { localStorage.setItem('heatmapView', view); } catch (e) {}
+  }
+
+  document.querySelectorAll('.dv-btn').forEach(btn => {
+    btn.addEventListener('click', () => setView(btn.dataset.view));
+  });
+
+  if (N_SYN) {
+    let saved = 'all';
+    try { saved = localStorage.getItem('heatmapView') || 'all'; } catch (e) {}
+    setView(saved);
+  }
 </script>
 {% endblock %}

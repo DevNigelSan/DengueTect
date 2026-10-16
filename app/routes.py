@@ -230,7 +230,16 @@ def heatmap():
         heatmap_data = json.load(f)
     first_brgy = next(iter(heatmap_data['barangays'].values()), [])
     years = sorted({int(entry['week'][:4]) for entry in first_brgy}) or [date.today().year]
-    return render_template('heatmap.html', heatmap_data=heatmap_data, years=years)
+    syn_years = sorted({int(e['week'][:4]) for e in first_brgy if e.get('source') == 'synthetic'})
+    n_syn = sum(1 for e in first_brgy if e.get('source') == 'synthetic')
+    prov = {
+        'n_syn': n_syn,
+        'n_real': len(first_brgy) - n_syn,
+        'syn_years': syn_years,
+        'real_years': [y for y in years if y not in syn_years],
+        'last_week': first_brgy[-1]['week'] if first_brgy else '',
+    }
+    return render_template('heatmap.html', heatmap_data=heatmap_data, years=years, prov=prov)
 
 
 @main.route('/technical')
