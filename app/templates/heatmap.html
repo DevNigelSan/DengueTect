@@ -64,7 +64,7 @@
   </nav>
 
   <!-- MAIN CONTENT -->
-  <main class="main-content" id="heatmapPage">
+    <main class="main-content{{ ' recorded-only' if prov.n_syn }}" id="heatmapPage">
 
     <!-- PAGE HEADER -->
     <div class="page-header">
@@ -73,9 +73,16 @@
         <p class="page-sub">Weekly case intensity across barangays · {% if prov.n_syn %}<span class="syn-only">{{ years[0] }}</span><span class="rec-only">{{ prov.real_years[0] }}</span>{% else %}{{ years[0] }}{% endif %}–{{ years[-1] }} · Hover a cell for details</p>
       </div>
       {% if prov.n_syn %}
-      <div class="data-view-toggle" role="group" aria-label="Which data to show">
-        <button type="button" class="dv-btn active" data-view="all">All years</button>
-        <button type="button" class="dv-btn" data-view="recorded">Recorded only</button>
+            <div class="data-view-toggle" role="group" aria-label="Which data to show">
+        <span class="dv-label">Show</span>
+        <button type="button" class="dv-btn active" data-view="recorded" title="Show only actual case records">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Recorded only
+        </button>
+        <button type="button" class="dv-btn dv-syn" data-view="all" title="Also show the synthetic {{ prov.syn_years[0] }}–{{ prov.syn_years[-1] }} weeks">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          All years <span class="dv-sub">+ synthetic {{ prov.syn_years[0] }}–{{ prov.syn_years[-1] }}</span>
+        </button>
       </div>
       {% endif %}
     </div>
@@ -554,8 +561,8 @@
   });
 
   if (N_SYN) {
-    let saved = 'all';
-    try { saved = localStorage.getItem('heatmapView') || 'all'; } catch (e) {}
+    let saved = 'recorded';
+    try { saved = localStorage.getItem('heatmapView') || 'recorded'; } catch (e) {}
     setView(saved);
   }
 </script>

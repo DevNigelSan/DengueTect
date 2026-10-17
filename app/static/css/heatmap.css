@@ -14,31 +14,80 @@
 
 .data-view-toggle {
   display: inline-flex;
+  align-items: center;
   padding: 4px;
   background: var(--white);
   border: 1.5px solid var(--gray-200);
-  border-radius: 10px;
+  border-radius: 12px;
   gap: 4px;
+  box-shadow: 0 1px 3px rgba(13, 59, 122, 0.06);
+}
+
+.dv-label {
+  padding: 0 6px 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--gray-400);
 }
 
 .dv-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   padding: 8px 14px;
-  border: none;
-  border-radius: 7px;
-  background: transparent;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 8px;
+  background: var(--white);
   font-size: 13px;
   font-weight: 600;
   color: var(--gray-600);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 
-.dv-btn:hover { color: var(--blue-deep); }
+.dv-btn svg { flex-shrink: 0; }
+
+.dv-btn:hover {
+  border-color: var(--blue-primary);
+  color: var(--blue-primary);
+  box-shadow: 0 2px 6px rgba(26, 86, 160, 0.12);
+  transform: translateY(-1px);
+}
 
 .dv-btn.active {
   background: var(--blue-primary);
+  border-color: var(--blue-primary);
+  color: var(--white);
+  box-shadow: none;
+  transform: none;
+  cursor: default;
+}
+
+/* The synthetic option: dashed purple, so it reads as "add the synthetic years" */
+.dv-btn.dv-syn {
+  border-style: dashed;
+  border-color: #A78BFA;
+  color: #6D28D9;
+  background: #FAF8FF;
+}
+
+.dv-btn.dv-syn:hover {
+  background: #F5F3FF;
+  border-color: #7C3AED;
+  color: #5B21B6;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.18);
+}
+
+.dv-btn.dv-syn.active {
+  background: #7C3AED;
+  border-color: #7C3AED;
+  border-style: solid;
   color: var(--white);
 }
+
+.dv-sub { font-size: 11px; font-weight: 500; opacity: 0.85; }
 
 /* "Recorded only" hides everything marked as synthetic */
 .recorded-only .syn-only { display: none !important; }
