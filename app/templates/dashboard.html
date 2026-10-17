@@ -200,54 +200,80 @@
     <!-- BOTTOM PANELS -->
     <div class="lower-grid">
 
-      <!-- RECENT FORECAST LOG -->
-      <div class="table-panel">
+      <!-- RISK TREND -->
+      <div class="table-panel trend-panel">
         <div class="panel-header">
-          <div class="panel-title">Recent Forecast Log</div>
-          <div class="panel-sub">Latest entries · all barangays</div>
+          <div>
+            <div class="panel-title">Risk Trend</div>
+            <div class="panel-sub">Outbreak probability over the last 8 forecast weeks</div>
+          </div>
+          <a href="/history" class="trend-link">Full history →</a>
         </div>
-        <div class="table-wrap">
-          <table class="forecast-table">
-            <thead>
-              <tr>
-                <th>Barangay</th>
-                <th>Week</th>
-                <th>Cases</th>
-                <th>Probability</th>
-                <th>Risk</th>
-                <th>Generated</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {% set all = [] %}
-              {% if nangka %}{% set _ = all.append(nangka) %}{% endif %}
-              {% if tumana %}{% set _ = all.append(tumana) %}{% endif %}
-              {% if malanday %}{% set _ = all.append(malanday) %}{% endif %}
-              {% for f in all %}
-              <tr>
-                <td><strong>{{ f.barangay }}</strong></td>
-                <td>{{ f.week_date }}</td>
-                <td>{{ f.predicted_cases }}</td>
-                <td>{{ f.outbreak_proba }}%</td>
-                <td><span class="badge {{ f.risk_level }}">{{ f.risk_level | title }}</span></td>
-                <td class="td-done">{{ f.generated_at }}</td>
-                <td>
-                  <form action="/delete-forecast" method="POST" onsubmit="return false" onclick="showDeleteConfirm(event, this)">
-                    <input type="hidden" name="forecast_id" value="{{ f.id }}"/>
-                    <button type="submit" class="btn-delete">Remove</button>
-                  </form>
-                </td>
-              </tr>
+
+        <div class="trend-list">
+          {% for t in trends %}
+          <div class="trend-row">
+            <div class="trend-name">
+              <span class="trend-brgy">{{ t.barangay }}</span>
+              {% if t.latest %}
+              <span class="badge {{ t.latest.risk_level }}">{{ t.latest.risk_level | title }}</span>
+              {% endif %}
+            </div>
+
+            {% if t.points %}
+            <div class="trend-chart" title="Outbreak probability per forecast week">
+              <svg viewBox="-6 -6 222 52" width="222" height="52" aria-hidden="true">
+                <rect x="-6" y="-6" width="222" height="16" class="zone-high"/>
+                <rect x="-6" y="10" width="222" height="10" class="zone-mod"/>
+                <line x1="-6" x2="216" y1="10" y2="10" class="zone-line"/>
+                <line x1="-6" x2="216" y1="20" y2="20" class="zone-line"/>
+                {% if t.points | length > 1 %}
+                <polyline points="{{ t.polyline }}" class="trend-line"/>
+                {% endif %}
+                {% for p in t.points %}
+                <circle cx="{{ p.x }}" cy="{{ p.y }}" r="{{ 4 if loop.last else 2.6 }}" class="trend-dot {{ p.risk }}{{ ' last' if loop.last }}">
+                  <title>Week of {{ p.week }} · {{ p.proba }}% · {{ p.cases }} projected cases</title>
+                </circle>
+                {% endfor %}
+              </svg>
+            </div>
+
+            <div class="trend-delta">
+              <div class="trend-now">{{ t.latest.outbreak_proba }}<span>%</span></div>
+              {% if t.delta is none %}
+                <div class="delta flat">First forecast</div>
+              {% elif t.delta > 0 %}
+                <div class="delta up">▲ {{ t.delta }} pts</div>
+              {% elif t.delta < 0 %}
+                <div class="delta down">▼ {{ t.delta | abs }} pts</div>
               {% else %}
-              <tr>
-                <td colspan="7" style="text-align:center;color:var(--gray-400);padding:24px">
-                  No forecasts yet — <a href="/input">generate one</a>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+                <div class="delta flat">No change</div>
+              {% endif %}
+            </div>
+
+            <div class="trend-due">
+              {% if t.due == 'ok' %}
+                <span class="due-chip ok">Up to date</span>
+              {% elif t.due == 'due' %}
+                <a href="/input" class="due-chip due">Forecast due</a>
+              {% elif t.due == 'overdue' %}
+                <a href="/input" class="due-chip overdue">{{ t.weeks_behind }} weeks behind</a>
+              {% endif %}
+              <div class="due-week">Last: {{ t.latest.week_date }}</div>
+            </div>
+            {% else %}
+            <div class="trend-empty">
+              No forecasts yet · <a href="/input">Generate one →</a>
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="trend-legend">
+          <span><i class="lg high"></i>High zone (75%+)</span>
+          <span><i class="lg mod"></i>Moderate zone (50–74%)</span>
+          <span><i class="lg dot"></i>Latest forecast</span>
         </div>
       </div>
 
