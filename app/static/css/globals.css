@@ -87,6 +87,66 @@ input, select, textarea {
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
+/* ── CLIMATE INPUT: the primary action in the navbar ── */
+.nav-link[href="/input"] {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--white);
+  font-weight: 600;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(45, 212, 191, 0.14));
+  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.45);
+}
+
+/* "+" icon */
+.nav-link[href="/input"]::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  background-color: #7DD3FC;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 1v10M1 6h10' stroke='black' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 1v10M1 6h10' stroke='black' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* soft glow that breathes every few seconds */
+.nav-link[href="/input"]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 0 rgba(125, 211, 252, 0.55);
+  animation: primaryNavPulse 4s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes primaryNavPulse {
+  0%, 60% { box-shadow: 0 0 0 0 rgba(125, 211, 252, 0.45); }
+  85%     { box-shadow: 0 0 0 6px rgba(125, 211, 252, 0); }
+  100%    { box-shadow: 0 0 0 0 rgba(125, 211, 252, 0); }
+}
+
+.nav-link[href="/input"]:hover {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.34), rgba(45, 212, 191, 0.22));
+  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.7);
+}
+
+/* when you are on Climate Input */
+.nav-link.active[href="/input"] {
+  background: var(--white);
+  color: var(--blue-deep);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 0 0 2px rgba(125, 211, 252, 0.6);
+}
+
+.nav-link.active[href="/input"]::before { background-color: #0EA5E9; }
+.nav-link.active[href="/input"]::after  { animation: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-link[href="/input"]::after { animation: none; }
+}
+
 /* ── DELETE CONFIRMATION MODAL ── */
 .delete-modal-overlay {
   position: fixed;
