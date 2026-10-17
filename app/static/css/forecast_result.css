@@ -491,11 +491,72 @@
 }
 
 /* ── PRINT STYLES ── */
+/* Compact one-page layout so the report never ends with a near-empty page.
+   "body" in front of each rule lets these win over the mobile layout further down. */
+@page { margin: 12mm; }
+
 @media print {
-  .navbar, .page-header, .header-actions { display: none; }
-  .main-content { padding: 0; }
-  .report-wrap { border: none; border-radius: 0; }
+  body .navbar, body .page-header, body .header-actions { display: none; }
+  body .main-content { padding: 0; max-width: none; }
   body { background: white; }
+
+  /* keep colours (risk badges, header) when printing */
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  body .report-wrap { border: none; border-radius: 0; max-width: none; }
+
+  /* Header — keep side by side even on narrow paper */
+  body .report-header { flex-direction: row; gap: 12px; padding: 12px 18px; }
+  body .report-logo { width: 32px; height: 32px; border-radius: 8px; }
+  body .report-logo svg { width: 17px; height: 17px; }
+  body .report-system-name { font-size: 13px; }
+  body .report-org { font-size: 10px; }
+  body .report-header-right { gap: 1px; }
+  body .report-meta-label { font-size: 8.5px; }
+  body .report-meta-val { font-size: 10px; }
+
+  /* Verdict */
+  body .verdict-block { flex-direction: row; gap: 12px; padding: 12px 18px; border-bottom-width: 2px; }
+  body .verdict-left { gap: 12px; }
+  body .verdict-icon { width: 40px; height: 40px; border-radius: 10px; }
+  body .verdict-icon svg { width: 20px; height: 20px; }
+  body .verdict-label { font-size: 8.5px; margin-bottom: 2px; }
+  body .verdict-level { font-size: 24px; margin-bottom: 3px; }
+  body .verdict-brgy { font-size: 11px; }
+  body .verdict-score-num { font-size: 40px; }
+  body .verdict-score-num span { font-size: 16px; }
+  body .verdict-score-label { font-size: 10px; margin-top: 2px; }
+
+  /* Sections */
+  body .report-section { padding: 12px 18px; border-bottom-width: 1px; break-inside: avoid; }
+  body .report-section-title { font-size: 11.5px; margin-bottom: 8px; padding-bottom: 5px; }
+
+  /* Summary cards: 5 small tiles in one row */
+  body .summary-cards-row { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  body .summary-info-card { padding: 8px; gap: 6px; border-radius: 8px; border-width: 1px; align-items: flex-start; }
+  body .sic-icon { display: none; }
+  body .sic-num { font-size: 22px; margin-bottom: 2px; }
+  body .sic-num span { font-size: 11px; }
+  body .sic-label { font-size: 9.5px; line-height: 1.25; }
+  body .sic-sub { font-size: 8.5px; line-height: 1.25; }
+
+  /* Recommendations */
+  body .recommendation-block { border-radius: 8px; border-width: 1px; }
+  body .rec-risk-label { padding: 6px 12px; font-size: 9.5px; }
+  body .rec-body { padding: 12px 14px; gap: 8px; }
+  body .rec-body p { font-size: 11.5px; line-height: 1.6; }
+
+  /* Climate table */
+  body .report-section > p { font-size: 10px !important; line-height: 1.45 !important; margin-bottom: 6px !important; }
+  body .report-table th { padding: 5px 10px; font-size: 8.5px; }
+  body .report-table td { padding: 6px 10px; font-size: 11px; }
+
+  /* Footer stays with the content above it */
+  body .report-footer { padding: 8px 18px; break-before: avoid; break-inside: avoid; }
+  body .report-footer p { font-size: 8.5px; line-height: 1.45; margin-bottom: 4px; }
+  body .report-footer-meta { font-size: 8.5px; }
+
+  body .help-fab { display: none !important; }
 }
 
 /* ── RESPONSIVE ── */
