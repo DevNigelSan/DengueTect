@@ -64,6 +64,43 @@ def logout():
     session.clear()
     return redirect(url_for('main.login'))
 
+def _risk_trends(limit=8):
+    """Last few forecast weeks per barangay, for the Risk Trend panel."""
+    from datetime import timedelta
+    this_monday = date.today() - timedelta(days=date.today().weekday())
+    W, H = 210, 40
+    trends = []
+    rows = get_all_forecasts()          # newest first
+    for brgy in ['Nangka', 'Tumana', 'Malanday']:
+        by_week = {}
+        for r in rows:                  # keep the newest forecast for each week
+            if r['barangay'] == brgy and r['week_date'] not in by_week:
+                by_week[r['week_date']] = r
+        weeks = [by_week[w] for w in sorted(by_week)][-limit:]
+
+        t = {'barangay': brgy, 'points': [], 'latest': weeks[-1] if weeks else None,
+             'delta': None, 'due': 'none', 'weeks_behind': 0}
+        if weeks:
+            n = len(weeks)
+            for i, f in enumerate(weeks):
+                proba = float(f['outbreak_proba'] or 0)
+                x = round(W / 2 if n == 1 else i * W / (n - 1), 1)
+                y = round(H - proba / 100 * H, 1)
+                t['points'].append({'x': x, 'y': y, 'proba': proba, 'risk': f['risk_level'],
+                                    'week': f['week_date'], 'cases': f['predicted_cases']})
+            t['polyline'] = ' '.join(f"{p['x']},{p['y']}" for p in t['points'])
+            if n > 1:
+                t['delta'] = round(t['points'][-1]['proba'] - t['points'][-2]['proba'], 1)
+            try:
+                latest_week = date.fromisoformat(weeks[-1]['week_date'])
+                behind = (this_monday - latest_week).days // 7
+                t['weeks_behind'] = max(behind, 0)
+                t['due'] = 'ok' if behind <= 0 else ('due' if behind == 1 else 'overdue')
+            except (TypeError, ValueError):
+                t['due'] = 'unknown'
+        trends.append(t)
+    return trends
+
 @main.route('/dashboard')
 @login_required
 def dashboard():
@@ -74,7 +111,8 @@ def dashboard():
         nangka=nangka,
         tumana=tumana,
         malanday=malanday,
-        active_forecast=nangka or tumana or malanday
+        active_forecast=nangka or tumana or malanday,
+        trends=_risk_trends()
     )
 
 @main.route('/input', methods=['GET', 'POST'])
@@ -210,6 +248,8 @@ def delete_forecast():
     forecast_id = request.form.get('forecast_id')
     if forecast_id:
         delete_forecast_by_id(int(forecast_id))
+    if request.form.get('next') == 'history':
+        return redirect(url_for('main.history'))
     return redirect(url_for('main.dashboard'))
 
 # ── Model Evaluation: separate synthetic and recorded weeks ──
