@@ -595,7 +595,7 @@
     document.querySelectorAll('.dv-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
     document.getElementById('searchResult').textContent = '';
     Object.keys(evalData).forEach(drawChart);
-    try { localStorage.setItem('evalView', view); } catch (e) {}
+    try { localStorage.setItem('evalViewMode', view); } catch (e) {}
   }
 
   document.querySelectorAll('.dv-btn').forEach(btn => {
@@ -606,7 +606,7 @@
   Object.keys(evalData).forEach(brgy => { expanded[brgy] = false; });
   let savedView = 'recorded';
   if (document.querySelector('.dv-btn')) {
-    try { savedView = localStorage.getItem('evalView') || 'recorded'; } catch (e) {}
+    try { savedView = localStorage.getItem('evalViewMode') || 'recorded'; } catch (e) {}
   }
   setView(savedView);
 </script>
