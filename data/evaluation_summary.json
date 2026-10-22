@@ -1,0 +1,41 @@
+{
+  "test_start": "2025-01-01",
+  "train_weeks": 1230,
+  "test_weeks": 186,
+  "case_count": {
+    "Random Forest": {
+      "mae": 1.15,
+      "rmse": 1.57
+    },
+    "XGBoost": {
+      "mae": 1.24,
+      "rmse": 1.7
+    },
+    "Ensemble (0.6 RF + 0.4 XGB)": {
+      "mae": 1.16,
+      "rmse": 1.59
+    },
+    "Baseline: same as last week": {
+      "mae": 1.38,
+      "rmse": 1.92
+    },
+    "Baseline: 4-week average": {
+      "mae": 1.25,
+      "rmse": 1.66
+    }
+  },
+  "outbreak": {
+    "Logistic Regression": {
+      "accuracy": 69.9,
+      "precision": 77.6,
+      "recall": 45.8,
+      "f1": 57.6
+    },
+    "Baseline: outbreak if last week was": {
+      "accuracy": 65.6,
+      "precision": 61.2,
+      "recall": 62.7,
+      "f1": 61.9
+    }
+  }
+}
