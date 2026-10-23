@@ -65,6 +65,8 @@
   <!-- MAIN CONTENT -->
     <main class="main-content{{ ' recorded-only' if prov.n_syn }}" id="evalPage">
 
+        {% set test_label = 'Held-out test' if prov.has_test else 'Recorded' %}
+
     <!-- PAGE HEADER -->
     <div class="page-header">
       <div>
@@ -100,7 +102,11 @@
           <div class="prov-sub">
             The models were evaluated on <strong>{{ prov.n_syn + prov.n_real }} weeks</strong> per barangay.
             <strong>{{ prov.n_syn }} of them ({{ prov.syn_years[0] }}–{{ prov.syn_years[-1] }}) are synthetic</strong> — generated for training, not actual case records.
-            The figures marked <span class="src-chip real">Recorded</span> use only the {{ prov.n_real }} actual weeks and best reflect real-world performance.
+            {% if prov.has_test %}
+            The figures marked <span class="src-chip real">Held-out test</span> come from the <strong>{{ prov.n_test }} recorded weeks from {{ prov.test_start[:4] }} onward</strong>, which the models never saw during training. They show how the system performs on new, real data.
+            {% else %}
+            The figures marked <s<span class="src-chip real">{{ test_label }}</span>pan class="src-chip real">Recorded</span> use only the {{ prov.n_real }} actual weeks and best reflect real-world performance.
+            {% endif %}
           </div>
         </div>
       </div>
@@ -147,7 +153,7 @@
             </div>
             <div class="eval-plain-text">
               {% if sp.n_syn and sp.rf_real is not none %}
-                <span class="src-chip real">Recorded</span>
+                <span class="src-chip real">{{ test_label }}</span>
                 Predictions were within
                 <strong>±{{ sp.rf_real }} case{{ 's' if sp.rf_real != 1 else '' }}</strong>
                 per week on average
@@ -174,7 +180,7 @@
             </div>
             <div class="eval-plain-text">
               {% if sp.n_syn %}
-                {% if sp.clf_split %}<span class="src-chip real">Recorded</span>{% else %}<span class="src-chip mixed">All weeks · incl. synthetic</span>{% endif %}
+                {% if sp.clf_split %}<span class="src-chip real">{{ test_label }}</span>{% else %}<span class="src-chip mixed">All weeks · incl. synthetic</span>{% endif %}
               {% endif %}
               Correctly detected outbreak weeks
               <strong>{{ acc }}%</strong> of the time
@@ -195,12 +201,15 @@
             </div>
             <div class="eval-plain-text">
               {% if sp.n_syn %}
-                {% if sp.clf_split %}<span class="src-chip real">Recorded</span>{% else %}<span class="src-chip mixed">All weeks · incl. synthetic</span>{% endif %}
+                {% if sp.clf_split %}<span class="src-chip real">{{ test_label }}</span>{% else %}<span class="src-chip mixed">All weeks · incl. synthetic</span>{% endif %}
               {% endif %}
               When flagging high risk, was correct
               <strong>{{ prec if prec is not none else '—' }}{{ '%' if prec is not none }}</strong> of the time
-              {% if sp.clf_split and sp.prec_syn is not none %}
+                           {% if sp.clf_split and sp.prec_syn is not none %}
               <div class="eval-syn-line syn-only"><span class="src-chip syn">Synthetic</span> {{ sp.prec_syn }}%</div>
+              {% endif %}
+              {% if sp.recall is not none %}
+              <div class="eval-recall-line">Caught <strong>{{ sp.recall }}%</strong> of actual outbreak weeks</div>
               {% endif %}
             </div>
           </div>
@@ -212,6 +221,60 @@
       </div>
       {% endfor %}
     </div>
+
+        {% if summary %}
+    <!-- COMPARISON WITH SIMPLE RULES -->
+    {% set rows = summary.case_count %}
+    {% set maxmae = rows.values() | map(attribute='mae') | max %}
+    {% set rf_mae = rows['Random Forest'].mae %}
+    {% set vs_last = ((1 - rf_mae / rows['Baseline: same as last week'].mae) * 100) | round | int %}
+    {% set vs_avg  = ((1 - rf_mae / rows['Baseline: 4-week average'].mae) * 100) | round | int %}
+    <div class="eval-section baseline-panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Does the model beat simple rules?</div>
+          <div class="panel-sub">Held-out test · {{ summary.test_weeks }} recorded weeks from {{ summary.test_start[:4] }} that the models never saw</div>
+        </div>
+      </div>
+      <div class="baseline-grid">
+        <div class="baseline-col">
+          <div class="baseline-head">Weekly case count · average error <span>(lower is better)</span></div>
+          {% for name, r in rows.items() %}
+          <div class="bl-row{{ ' is-base' if name.startswith('Baseline') }}">
+            <span class="bl-name">{{ name }}</span>
+            <span class="bl-bar"><i style="width: {{ (r.mae / maxmae * 100) | round(1) }}%"></i></span>
+            <span class="bl-val">±{{ r.mae }}</span>
+          </div>
+          {% endfor %}
+          <p class="bl-note">
+            Random Forest is <strong>{{ vs_last | abs }}% {{ 'more' if vs_last >= 0 else 'less' }} accurate</strong> than assuming next week equals this week,
+            and <strong>{{ vs_avg | abs }}% {{ 'more' if vs_avg >= 0 else 'less' }} accurate</strong> than a 4-week average.
+          </p>
+        </div>
+        <div class="baseline-col">
+          <div class="baseline-head">Outbreak alerts</div>
+          <table class="bl-table">
+            <thead>
+              <tr><th></th><th>Accuracy</th><th>Precision</th><th>Recall</th></tr>
+            </thead>
+            <tbody>
+              {% for name, r in summary.outbreak.items() %}
+              <tr class="{{ 'is-base' if name.startswith('Baseline') }}">
+                <td>{{ name | replace('if last week was', 'if last week was one') }}</td>
+                <td>{{ r.accuracy }}%</td>
+                <td>{{ r.precision }}%</td>
+                <td>{{ r.recall }}%</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <p class="bl-note">
+            <strong>Precision</strong> — how often an alert was right. <strong>Recall</strong> — how many actual outbreak weeks were caught.
+          </p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
 
     <!-- PREDICTED VS ACTUAL CHART -->
     <div class="eval-section">
@@ -310,7 +373,8 @@
       predicted: cut(data.predicted),
       xgb:       cut(data.xgb),
       ensemble:  cut(data.ensemble),
-      firstReal: recordedOnly ? 0 : splitData[brgy].first_real
+      firstReal: recordedOnly ? 0 : splitData[brgy].first_real,
+      firstTest: splitData[brgy].first_test - start
     };
   }
 
@@ -377,11 +441,56 @@
     }
   };
 
+    // Tints the held-out test weeks and marks where they begin
+  const testZone = {
+    id: 'testZone',
+    beforeDatasetsDraw(chart, args, opts) {
+      const ft = opts.firstTest;
+      const n = chart.data.labels.length;
+      if (ft == null || ft <= 0 || ft >= n) return;
+      const { ctx, chartArea: { top, bottom, right }, scales: { x } } = chart;
+      const edge = (x.getPixelForValue(ft - 1) + x.getPixelForValue(ft)) / 2;
+      ctx.save();
+      ctx.fillStyle = 'rgba(26, 86, 160, 0.06)';
+      ctx.fillRect(edge, top, right - edge, bottom - top);
+      ctx.restore();
+    },
+    afterDraw(chart, args, opts) {
+      const ft = opts.firstTest;
+      const n = chart.data.labels.length;
+      if (ft == null || ft <= 0 || ft >= n) return;
+      const { ctx, chartArea: { top, bottom, right }, scales: { x } } = chart;
+      const edge = (x.getPixelForValue(ft - 1) + x.getPixelForValue(ft)) / 2;
+      ctx.save();
+      ctx.strokeStyle = '#1A56A0';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([2, 3]);
+      ctx.beginPath();
+      ctx.moveTo(edge, top);
+      ctx.lineTo(edge, bottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      if (right - edge > 120) {
+        const text = 'HELD-OUT TEST →';
+        ctx.font = '700 10.5px Inter, sans-serif';
+        ctx.textBaseline = 'top';
+        const w = ctx.measureText(text).width + 14;
+        ctx.fillStyle = '#1A56A0';
+        ctx.beginPath();
+        ctx.roundRect ? ctx.roundRect(edge + 8, top + 30, w, 18, 9) : ctx.rect(edge + 8, top + 30, w, 18);
+        ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText(text, edge + 15, top + 34);
+      }
+      ctx.restore();
+    }
+  };
+
   function buildChartConfig(view, isExpanded) {
     const isSyn = i => i < view.firstReal;
     return {
       type: 'line',
-      plugins: [syntheticZone],
+      plugins: [syntheticZone, testZone],
       data: {
         labels: view.weeks,
         datasets: [
@@ -441,6 +550,7 @@
         plugins: {
           legend: { display: false },
           syntheticZone: { firstReal: view.firstReal },
+          testZone: { firstTest: view.firstTest },
           tooltip: {
             enabled: true,
             mode: 'index',
@@ -456,7 +566,11 @@
             padding: 10,
             cornerRadius: 8,
             callbacks: {
-              title: (items) => 'Week of ' + items[0].label + (isSyn(items[0].dataIndex) ? '  ·  SYNTHETIC' : '  ·  Recorded'),
+                            title: (items) => {
+                const i = items[0].dataIndex;
+                const tag = isSyn(i) ? 'SYNTHETIC' : (i >= view.firstTest ? 'Held-out test' : 'Recorded · training');
+                return 'Week of ' + items[0].label + '  ·  ' + tag;
+              },
               label: (item) => {
                 const name = (item.datasetIndex === 0 && isSyn(item.dataIndex)) ? 'Synthetic cases (est.)' : item.dataset.label;
                 return name + ': ' + item.parsed.y + ' cases';

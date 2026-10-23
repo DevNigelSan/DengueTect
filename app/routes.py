@@ -285,9 +285,17 @@ def _split_evaluation(eval_data):
     for brgy, data in eval_data.items():
         weeks  = data.get('weeks', [])
         actual = data.get('actual', [])
-        syn    = [lookup.get((brgy, w), int(w[:4]) < 2022) for w in weeks]
+        if data.get('source'):
+            syn = [s == 'synthetic' for s in data['source']]
+        else:
+            syn = [lookup.get((brgy, w), int(w[:4]) < 2022) for w in weeks]
         real   = [not s for s in syn]
+        # Held-out test weeks: recorded weeks the models never saw during training
+        test   = [s == 'test' for s in data['split']] if data.get('split') else real
         part = {
+            'first_test': test.index(True) if True in test else len(weeks),
+            'n_test':     sum(test),
+            'recall':     data.get('recall'),
             'syn':        syn,
             'first_real': real.index(True) if True in real else len(weeks),
             'n_syn':      sum(syn),
@@ -297,11 +305,11 @@ def _split_evaluation(eval_data):
         }
         for key, series in (('rf', 'predicted'), ('xgb', 'xgb'), ('ens', 'ensemble')):
             values = data.get(series) or []
-            part[key + '_real'] = _mean_abs_error(actual, values, real) if values else None
+            part[key + '_real'] = _mean_abs_error(actual, values, test) if values else None
             part[key + '_syn']  = _mean_abs_error(actual, values, syn) if values else None
         # Only possible when the notebook exports week-by-week outbreak labels
         if data.get('clf_actual') and data.get('clf_pred'):
-            part['acc_real'], part['prec_real'] = _outbreak_scores(data['clf_actual'], data['clf_pred'], real)
+            part['acc_real'], part['prec_real'] = _outbreak_scores(data['clf_actual'], data['clf_pred'], test)
             part['acc_syn'],  part['prec_syn']  = _outbreak_scores(data['clf_actual'], data['clf_pred'], syn)
             part['clf_split'] = True
         else:
@@ -317,14 +325,23 @@ def evaluation():
         eval_data = json.load(f)
     split = _split_evaluation(eval_data)
     first = next(iter(split.values()), {})
+    summary_path = Path(__file__).resolve().parent.parent / 'data' / 'evaluation_summary.json'
+    try:
+        with open(summary_path, 'r') as f:
+            summary = json.load(f)
+    except (OSError, ValueError):
+        summary = None
     prov = {
         'n_syn':      first.get('n_syn', 0),
         'n_real':     first.get('n_real', 0),
         'syn_years':  first.get('syn_years', []),
         'real_years': first.get('real_years', []),
         'clf_split':  all(p['clf_split'] for p in split.values()) if split else False,
+        'has_test':   bool(summary),
+        'n_test':     first.get('n_test', 0),
+        'test_start': summary['test_start'] if summary else '',
     }
-    return render_template('evaluation.html', eval_data=eval_data, split=split, prov=prov)
+    return render_template('evaluation.html', eval_data=eval_data, split=split, prov=prov, summary=summary)
 
 @main.route('/heatmap')
 @login_required

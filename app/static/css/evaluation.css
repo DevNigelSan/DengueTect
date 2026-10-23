@@ -615,3 +615,110 @@
 @media (max-width: 900px) {
   .prov-seg-tag { font-size: 9.5px; }
 }
+
+/* ── HELD-OUT TEST vs SIMPLE RULES ── */
+.eval-recall-line {
+  margin-top: 5px;
+  font-size: 12.5px;
+  color: var(--gray-600);
+}
+
+.eval-recall-line strong { color: var(--blue-deep); }
+
+.baseline-panel { margin-bottom: 24px; }
+
+.baseline-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  padding: 18px 22px 20px;
+}
+
+.baseline-head {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--blue-deep);
+  margin-bottom: 12px;
+}
+
+.baseline-head span { font-family: 'Inter', sans-serif; font-weight: 500; color: var(--gray-400); }
+
+.bl-row {
+  display: grid;
+  grid-template-columns: 190px 1fr 52px;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 13px;
+}
+
+.bl-name { color: var(--gray-800); font-weight: 600; }
+.bl-row.is-base .bl-name { color: var(--gray-400); font-weight: 500; }
+
+.bl-bar {
+  height: 10px;
+  background: var(--gray-100);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bl-bar i {
+  display: block;
+  height: 100%;
+  background: var(--blue-primary);
+  border-radius: 999px;
+}
+
+.bl-row.is-base .bl-bar i { background: var(--gray-400); }
+
+.bl-val {
+  text-align: right;
+  font-weight: 700;
+  color: var(--blue-deep);
+  font-variant-numeric: tabular-nums;
+}
+
+.bl-row.is-base .bl-val { color: var(--gray-400); }
+
+.bl-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.bl-table th {
+  text-align: right;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--gray-400);
+  padding: 0 0 8px;
+}
+
+.bl-table td {
+  padding: 8px 0;
+  border-top: 1px solid var(--gray-200);
+  text-align: right;
+  font-weight: 700;
+  color: var(--blue-deep);
+  font-variant-numeric: tabular-nums;
+}
+
+.bl-table td:first-child { text-align: left; font-weight: 600; color: var(--gray-800); }
+.bl-table tr.is-base td { color: var(--gray-400); font-weight: 500; }
+
+.bl-note {
+  margin-top: 12px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--gray-600);
+}
+
+.bl-note strong { color: var(--blue-deep); }
+
+@media (max-width: 900px) {
+  .baseline-grid { grid-template-columns: 1fr; }
+  .bl-row { grid-template-columns: 150px 1fr 48px; }
+}
