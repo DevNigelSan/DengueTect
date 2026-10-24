@@ -200,61 +200,44 @@
     <!-- BOTTOM PANELS -->
     <div class="lower-grid">
 
-            <!-- COMMUNITY ALERTS (publishing) -->
+                  <!-- COMMUNITY ALERTS (publishing) -->
       {% set pending = publish | selectattr('state', 'equalto', 'pending') | list %}
       <div class="table-panel publish-panel">
         <div class="panel-header">
           <div>
             <div class="panel-title">Community Alerts</div>
-            <div class="panel-sub">Residents only see the forecasts you publish here</div>
+            <div class="panel-sub">
+              {% if pending %}{{ pending | length }} waiting to be published{% else %}Residents see the latest forecasts{% endif %}
+            </div>
           </div>
-          <a href="/community" target="_blank" rel="noopener" class="pub-link">
-            View community page
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          </a>
+          <a href="/community" target="_blank" rel="noopener" class="pub-link">Community page ↗</a>
         </div>
 
         <div class="pub-list">
           {% for p in publish %}
-          <div class="pub-row {{ p.state }}">
-            <div class="pub-brgy">
-              <span class="pub-name">{{ p.barangay }}</span>
-              {% if p.latest %}
-              <span class="badge {{ p.latest.risk_level }}">{{ p.latest.risk_level | title }}</span>
-              {% endif %}
-            </div>
-
+          <div class="pub-row">
+            <span class="pub-dot {{ p.latest.risk_level if p.latest else 'none' }}"></span>
             <div class="pub-info">
+              <div class="pub-name">{{ p.barangay }}</div>
               {% if p.latest %}
-              <div class="pub-line">
-                <span class="pub-key">Latest forecast</span>
-                <span class="nw">Week of {{ p.latest.week_date }}</span> · <span class="nw">{{ p.latest.outbreak_proba }}% · {{ p.latest.predicted_cases }} cases</span>
-              </div>
-              <div class="pub-line">
-                <span class="pub-key">Residents see</span>
-                {% if p.state == 'live' %}
-                  <span class="pub-ok">This forecast</span>
-                {% elif p.shown %}
-                  <span class="pub-old nw">Week of {{ p.shown.week_date }} (older)</span>
-                {% else %}
-                  <span class="pub-none">Nothing yet</span>
-                {% endif %}
-              </div>
+              <a href="/result?id={{ p.latest.id }}" class="pub-meta" title="Open the report">
+                Week of {{ p.latest.week_date }} · {{ p.latest.outbreak_proba }}% {{ p.latest.risk_level }}
+              </a>
               {% else %}
-              <div class="pub-line pub-none">No forecast yet · <a href="/input">Generate one →</a></div>
+              <a href="/input" class="pub-meta">No forecast yet · Generate →</a>
               {% endif %}
             </div>
 
             <div class="pub-action">
               {% if p.state == 'live' %}
-                <span class="pub-status"><i></i>Published</span>
+                <span class="pub-state live">Published</span>
                 <form action="{{ url_for('main.toggle_publish') }}" method="POST">
                   <input type="hidden" name="forecast_id" value="{{ p.latest.id }}">
                   <input type="hidden" name="next" value="dashboard">
-                  <button type="submit" class="pub-undo" title="Hide this forecast from residents">Unpublish</button>
+                  <button type="submit" class="pub-undo" title="Hide this forecast from residents" aria-label="Unpublish">✕</button>
                 </form>
               {% elif p.latest %}
-                <a href="/result?id={{ p.latest.id }}" class="pub-review">Review</a>
+                <span class="pub-state">{{ 'Older week live' if p.shown else 'Not published' }}</span>
                 <form action="{{ url_for('main.toggle_publish') }}" method="POST">
                   <input type="hidden" name="forecast_id" value="{{ p.latest.id }}">
                   <input type="hidden" name="next" value="dashboard">
@@ -266,25 +249,11 @@
           {% endfor %}
         </div>
 
-        <div class="pub-footer">
-          {% if pending %}
-            <p class="pub-note">
-              <strong>{{ pending | length }} {{ 'forecast is' if pending | length == 1 else 'forecasts are' }} waiting.</strong>
-              Review each report before publishing it.
-            </p>
-            <form action="{{ url_for('main.publish_latest') }}" method="POST">
-              <button type="submit" class="btn-pub-all">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-                Publish all latest ({{ pending | length }})
-              </button>
-            </form>
-          {% else %}
-            <p class="pub-note done">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              The community page is up to date for every barangay with a forecast.
-            </p>
-          {% endif %}
-        </div>
+        {% if pending | length > 1 %}
+        <form action="{{ url_for('main.publish_latest') }}" method="POST" class="pub-footer">
+          <button type="submit" class="btn-pub-all">Publish all ({{ pending | length }})</button>
+        </form>
+        {% endif %}
       </div>
 
       <!-- QUICK STATS -->
