@@ -200,80 +200,90 @@
     <!-- BOTTOM PANELS -->
     <div class="lower-grid">
 
-      <!-- RISK TREND -->
-      <div class="table-panel trend-panel">
+            <!-- COMMUNITY ALERTS (publishing) -->
+      {% set pending = publish | selectattr('state', 'equalto', 'pending') | list %}
+      <div class="table-panel publish-panel">
         <div class="panel-header">
           <div>
-            <div class="panel-title">Risk Trend</div>
-            <div class="panel-sub">Outbreak probability over the last 8 forecast weeks</div>
+            <div class="panel-title">Community Alerts</div>
+            <div class="panel-sub">Residents only see the forecasts you publish here</div>
           </div>
-          <a href="/history" class="trend-link">Full history →</a>
+          <a href="/community" target="_blank" rel="noopener" class="pub-link">
+            View community page
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
         </div>
 
-        <div class="trend-list">
-          {% for t in trends %}
-          <div class="trend-row">
-            <div class="trend-name">
-              <span class="trend-brgy">{{ t.barangay }}</span>
-              {% if t.latest %}
-              <span class="badge {{ t.latest.risk_level }}">{{ t.latest.risk_level | title }}</span>
+        <div class="pub-list">
+          {% for p in publish %}
+          <div class="pub-row {{ p.state }}">
+            <div class="pub-brgy">
+              <span class="pub-name">{{ p.barangay }}</span>
+              {% if p.latest %}
+              <span class="badge {{ p.latest.risk_level }}">{{ p.latest.risk_level | title }}</span>
               {% endif %}
             </div>
 
-            {% if t.points %}
-            <div class="trend-chart" title="Outbreak probability per forecast week">
-              <svg viewBox="-6 -6 222 52" width="222" height="52" aria-hidden="true">
-                <rect x="-6" y="-6" width="222" height="16" class="zone-high"/>
-                <rect x="-6" y="10" width="222" height="10" class="zone-mod"/>
-                <line x1="-6" x2="216" y1="10" y2="10" class="zone-line"/>
-                <line x1="-6" x2="216" y1="20" y2="20" class="zone-line"/>
-                {% if t.points | length > 1 %}
-                <polyline points="{{ t.polyline }}" class="trend-line"/>
+            <div class="pub-info">
+              {% if p.latest %}
+              <div class="pub-line">
+                <span class="pub-key">Latest forecast</span>
+                <span class="nw">Week of {{ p.latest.week_date }}</span> · <span class="nw">{{ p.latest.outbreak_proba }}% · {{ p.latest.predicted_cases }} cases</span>
+              </div>
+              <div class="pub-line">
+                <span class="pub-key">Residents see</span>
+                {% if p.state == 'live' %}
+                  <span class="pub-ok">This forecast</span>
+                {% elif p.shown %}
+                  <span class="pub-old nw">Week of {{ p.shown.week_date }} (older)</span>
+                {% else %}
+                  <span class="pub-none">Nothing yet</span>
                 {% endif %}
-                {% for p in t.points %}
-                <circle cx="{{ p.x }}" cy="{{ p.y }}" r="{{ 4 if loop.last else 2.6 }}" class="trend-dot {{ p.risk }}{{ ' last' if loop.last }}">
-                  <title>Week of {{ p.week }} · {{ p.proba }}% · {{ p.cases }} projected cases</title>
-                </circle>
-                {% endfor %}
-              </svg>
-            </div>
-
-            <div class="trend-delta">
-              <div class="trend-now">{{ t.latest.outbreak_proba }}<span>%</span></div>
-              {% if t.delta is none %}
-                <div class="delta flat">First forecast</div>
-              {% elif t.delta > 0 %}
-                <div class="delta up">▲ {{ t.delta }} pts</div>
-              {% elif t.delta < 0 %}
-                <div class="delta down">▼ {{ t.delta | abs }} pts</div>
+              </div>
               {% else %}
-                <div class="delta flat">No change</div>
+              <div class="pub-line pub-none">No forecast yet · <a href="/input">Generate one →</a></div>
               {% endif %}
             </div>
 
-            <div class="trend-due">
-              {% if t.due == 'ok' %}
-                <span class="due-chip ok">Up to date</span>
-              {% elif t.due == 'due' %}
-                <a href="/input" class="due-chip due">Forecast due</a>
-              {% elif t.due == 'overdue' %}
-                <a href="/input" class="due-chip overdue">{{ t.weeks_behind }} weeks behind</a>
+            <div class="pub-action">
+              {% if p.state == 'live' %}
+                <span class="pub-status"><i></i>Published</span>
+                <form action="{{ url_for('main.toggle_publish') }}" method="POST">
+                  <input type="hidden" name="forecast_id" value="{{ p.latest.id }}">
+                  <input type="hidden" name="next" value="dashboard">
+                  <button type="submit" class="pub-undo" title="Hide this forecast from residents">Unpublish</button>
+                </form>
+              {% elif p.latest %}
+                <a href="/result?id={{ p.latest.id }}" class="pub-review">Review</a>
+                <form action="{{ url_for('main.toggle_publish') }}" method="POST">
+                  <input type="hidden" name="forecast_id" value="{{ p.latest.id }}">
+                  <input type="hidden" name="next" value="dashboard">
+                  <button type="submit" class="btn-pub">Publish</button>
+                </form>
               {% endif %}
-              <div class="due-week">Last: {{ t.latest.week_date }}</div>
             </div>
-            {% else %}
-            <div class="trend-empty">
-              No forecasts yet · <a href="/input">Generate one →</a>
-            </div>
-            {% endif %}
           </div>
           {% endfor %}
         </div>
 
-        <div class="trend-legend">
-          <span><i class="lg high"></i>High zone (75%+)</span>
-          <span><i class="lg mod"></i>Moderate zone (50–74%)</span>
-          <span><i class="lg dot"></i>Latest forecast</span>
+        <div class="pub-footer">
+          {% if pending %}
+            <p class="pub-note">
+              <strong>{{ pending | length }} {{ 'forecast is' if pending | length == 1 else 'forecasts are' }} waiting.</strong>
+              Review each report before publishing it.
+            </p>
+            <form action="{{ url_for('main.publish_latest') }}" method="POST">
+              <button type="submit" class="btn-pub-all">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                Publish all latest ({{ pending | length }})
+              </button>
+            </form>
+          {% else %}
+            <p class="pub-note done">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              The community page is up to date for every barangay with a forecast.
+            </p>
+          {% endif %}
         </div>
       </div>
 
