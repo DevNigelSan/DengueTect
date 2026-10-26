@@ -4,28 +4,44 @@
   "test_weeks": 186,
   "case_count": {
     "Random Forest": {
-      "mae": 1.15,
-      "rmse": 1.57
+      "mae": 1.16,
+      "rmse": 1.59,
+      "within1": 71.0,
+      "within2": 89.2
     },
     "XGBoost": {
-      "mae": 1.24,
-      "rmse": 1.7
+      "mae": 1.23,
+      "rmse": 1.71,
+      "within1": 71.0,
+      "within2": 88.2
     },
     "Ensemble (0.6 RF + 0.4 XGB)": {
-      "mae": 1.16,
-      "rmse": 1.59
+      "mae": 1.17,
+      "rmse": 1.61,
+      "within1": 72.0,
+      "within2": 89.8
     },
     "Baseline: same as last week": {
       "mae": 1.38,
-      "rmse": 1.92
+      "rmse": 1.92,
+      "within1": 61.3,
+      "within2": 81.7
     },
     "Baseline: 4-week average": {
       "mae": 1.25,
-      "rmse": 1.66
+      "rmse": 1.66,
+      "within1": 64.5,
+      "within2": 88.2
     }
   },
   "outbreak": {
-    "Logistic Regression": {
+    "LR + Ensemble blend": {
+      "accuracy": 71.0,
+      "precision": 75.4,
+      "recall": 51.8,
+      "f1": 61.4
+    },
+    "Logistic Regression alone": {
       "accuracy": 69.9,
       "precision": 77.6,
       "recall": 45.8,
@@ -37,5 +53,6 @@
       "recall": 62.7,
       "f1": 61.9
     }
-  }
+  },
+  "outbreak_method": "blend"
 }
