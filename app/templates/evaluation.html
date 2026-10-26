@@ -65,13 +65,13 @@
   <!-- MAIN CONTENT -->
     <main class="main-content{{ ' recorded-only' if prov.n_syn }}" id="evalPage">
 
-        {% set test_label = 'Held-out test' if prov.has_test else 'Recorded' %}
+        
 
     <!-- PAGE HEADER -->
     <div class="page-header">
       <div>
         <h1 class="page-title">Model Evaluation</h1>
-        <p class="page-sub">Predicted vs Actual case counts · Outbreak detection performance · Per barangay</p>
+                <p class="page-sub">How closely DengueTect's forecasts matched real case counts</p>
       </div>
       {% if prov.n_syn %}
             <div class="data-view-toggle" role="group" aria-label="Which weeks to show">
@@ -88,8 +88,7 @@
       {% endif %}
     </div>
 
-    {% if prov.n_syn %}
-    <!-- DATA SOURCE NOTICE -->
+        <!-- HOW THIS WAS TESTED -->
     <section class="prov-panel">
       <div class="prov-head">
         <div class="prov-icon">
@@ -98,45 +97,26 @@
           </svg>
         </div>
         <div>
-          <div class="prov-title">These results are measured on two kinds of data</div>
+          <div class="prov-title">How these results were measured</div>
           <div class="prov-sub">
-            The models were evaluated on <strong>{{ prov.n_syn + prov.n_real }} weeks</strong> per barangay.
-            <strong>{{ prov.n_syn }} of them ({{ prov.syn_years[0] }}–{{ prov.syn_years[-1] }}) are synthetic</strong> — generated for training, not actual case records.
             {% if prov.has_test %}
-            The figures marked <span class="src-chip real">Held-out test</span> come from the <strong>{{ prov.n_test }} recorded weeks from {{ prov.test_start[:4] }} onward</strong>, which the models never saw during training. They show how the system performs on new, real data.
+            The system was tested on <strong>{{ prov.n_test }} weeks of {{ prov.test_start[:4] }}–{{ prov.real_years[-1] }} case records</strong> per barangay that it had never seen before.
             {% else %}
-            The figures marked <s<span class="src-chip real">{{ test_label }}</span>pan class="src-chip real">Recorded</span> use only the {{ prov.n_real }} actual weeks and best reflect real-world performance.
+            These results compare the forecasts with <strong>{{ prov.n_real }} weeks of recorded cases</strong> per barangay.
             {% endif %}
+            {% if prov.n_syn %}The {{ prov.syn_years[0] }}–{{ prov.syn_years[-1] }} weeks on the chart are synthetic estimates used only to train the system, not actual case records.{% endif %}
           </div>
         </div>
       </div>
-
-      <div class="prov-timeline" aria-hidden="true">
-        <div class="prov-seg syn" style="flex: {{ prov.n_syn }};">
-          <span class="prov-seg-tag">Synthetic · {{ prov.n_syn }} weeks</span>
-          <span class="prov-seg-years">{{ prov.syn_years[0] }}–{{ prov.syn_years[-1] }}</span>
-        </div>
-        <div class="prov-seg real" style="flex: {{ prov.n_real }};">
-          <span class="prov-seg-tag">Recorded · {{ prov.n_real }} weeks</span>
-          <span class="prov-seg-years">{{ prov.real_years[0] }}–{{ prov.real_years[-1] }}</span>
-        </div>
-      </div>
-
-      {% if not prov.clf_split %}
-      <div class="prov-caveat">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span>Prediction error is shown separately for recorded and synthetic weeks. Outbreak detection accuracy and alert precision are still measured across <strong>all weeks, including synthetic ones</strong>.</span>
-      </div>
-      {% endif %}
     </section>
-    {% endif %}
 
-    <!-- SUMMARY CARDS -->
+        <!-- SUMMARY CARDS -->
     <div class="eval-summary-grid">
       {% for brgy, data in eval_data.items() %}
       {% set sp = split[brgy] %}
       {% set acc  = sp.acc_real  if sp.clf_split else data.accuracy %}
       {% set prec = sp.prec_real if sp.clf_split else data.precision %}
+      {% set err  = data.avg_error %}
       <div class="eval-summary-card">
         <div class="eval-card-header">
           <div class="eval-brgy-name">Barangay {{ brgy }}</div>
@@ -144,7 +124,7 @@
         </div>
 
         <div class="eval-card-plain">
-          <!-- Prediction error -->
+          <!-- Case count -->
           <div class="eval-plain-stat">
             <div class="eval-plain-icon blue">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -152,45 +132,13 @@
               </svg>
             </div>
             <div class="eval-plain-text">
-              {% if sp.n_syn and sp.rf_real is not none %}
-                <span class="src-chip real">{{ test_label }}</span>
-                Predictions were within
-                <strong>±{{ sp.rf_real }} case{{ 's' if sp.rf_real != 1 else '' }}</strong>
-                per week on average
-                {% if sp.rf_syn is not none %}
-                <div class="eval-syn-line syn-only">
-                  <span class="src-chip syn">Synthetic</span> ±{{ sp.rf_syn }} per week
-                </div>
-                {% endif %}
-              {% else %}
-                Predictions were accurate within
-                <strong>±{{ data.avg_error }} case{{ 's' if data.avg_error != 1 else '' }}</strong>
-                per week on average
-              {% endif %}
+              Forecasts were usually within about
+              <strong>{{ err | round(1) }} case{{ 's' if err != 1 else '' }}</strong>
+              of the actual weekly count
             </div>
           </div>
 
-          <!-- Outbreak detection -->
-          <div class="eval-plain-stat">
-            <div class="eval-plain-icon green">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                <polyline points="22 4 12 14.01 9 11.01"/>
-              </svg>
-            </div>
-            <div class="eval-plain-text">
-              {% if sp.n_syn %}
-                {% if sp.clf_split %}<span class="src-chip real">{{ test_label }}</span>{% else %}<span class="src-chip mixed">All weeks · incl. synthetic</span>{% endif %}
-              {% endif %}
-              Correctly detected outbreak weeks
-              <strong>{{ acc }}%</strong> of the time
-              {% if sp.clf_split and sp.acc_syn is not none %}
-              <div class="eval-syn-line syn-only"><span class="src-chip syn">Synthetic</span> {{ sp.acc_syn }}%</div>
-              {% endif %}
-            </div>
-          </div>
-
-          <!-- Alert precision -->
+          <!-- Outbreak alerts -->
           <div class="eval-plain-stat">
             <div class="eval-plain-icon red">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -200,16 +148,11 @@
               </svg>
             </div>
             <div class="eval-plain-text">
-              {% if sp.n_syn %}
-                {% if sp.clf_split %}<span class="src-chip real">{{ test_label }}</span>{% else %}<span class="src-chip mixed">All weeks · incl. synthetic</span>{% endif %}
-              {% endif %}
-              When flagging high risk, was correct
-              <strong>{{ prec if prec is not none else '—' }}{{ '%' if prec is not none }}</strong> of the time
-                           {% if sp.clf_split and sp.prec_syn is not none %}
-              <div class="eval-syn-line syn-only"><span class="src-chip syn">Synthetic</span> {{ sp.prec_syn }}%</div>
-              {% endif %}
-              {% if sp.recall is not none %}
-              <div class="eval-recall-line">Caught <strong>{{ sp.recall }}%</strong> of actual outbreak weeks</div>
+              {% if prec is not none %}
+              When it warned of an outbreak, it was right
+              <strong>{{ (prec / 10) | round | int }} out of 10</strong> times
+              {% else %}
+              No outbreak warnings were raised in the test weeks
               {% endif %}
             </div>
           </div>
@@ -222,57 +165,24 @@
       {% endfor %}
     </div>
 
-        {% if summary %}
-    <!-- COMPARISON WITH SIMPLE RULES -->
-    {% set rows = summary.case_count %}
-    {% set maxmae = rows.values() | map(attribute='mae') | max %}
-    {% set rf_mae = rows['Random Forest'].mae %}
-    {% set vs_last = ((1 - rf_mae / rows['Baseline: same as last week'].mae) * 100) | round | int %}
-    {% set vs_avg  = ((1 - rf_mae / rows['Baseline: 4-week average'].mae) * 100) | round | int %}
-    <div class="eval-section baseline-panel">
-      <div class="panel-header">
-        <div>
-          <div class="panel-title">Does the model beat simple rules?</div>
-          <div class="panel-sub">Held-out test · {{ summary.test_weeks }} recorded weeks from {{ summary.test_start[:4] }} that the models never saw</div>
-        </div>
+    {% if summary %}
+    <!-- COMPARED WITH A SIMPLE GUESS -->
+    {% set rf_mae  = summary.case_count['Random Forest'].mae %}
+    {% set vs_last = ((1 - rf_mae / summary.case_count['Baseline: same as last week'].mae) * 100) | round | int %}
+    <div class="eval-trust">
+      <div class="eval-trust-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
-      <div class="baseline-grid">
-        <div class="baseline-col">
-          <div class="baseline-head">Weekly case count · average error <span>(lower is better)</span></div>
-          {% for name, r in rows.items() %}
-          <div class="bl-row{{ ' is-base' if name.startswith('Baseline') }}">
-            <span class="bl-name">{{ name }}</span>
-            <span class="bl-bar"><i style="width: {{ (r.mae / maxmae * 100) | round(1) }}%"></i></span>
-            <span class="bl-val">±{{ r.mae }}</span>
-          </div>
-          {% endfor %}
-          <p class="bl-note">
-            Random Forest is <strong>{{ vs_last | abs }}% {{ 'more' if vs_last >= 0 else 'less' }} accurate</strong> than assuming next week equals this week,
-            and <strong>{{ vs_avg | abs }}% {{ 'more' if vs_avg >= 0 else 'less' }} accurate</strong> than a 4-week average.
-          </p>
-        </div>
-        <div class="baseline-col">
-          <div class="baseline-head">Outbreak alerts</div>
-          <table class="bl-table">
-            <thead>
-              <tr><th></th><th>Accuracy</th><th>Precision</th><th>Recall</th></tr>
-            </thead>
-            <tbody>
-              {% for name, r in summary.outbreak.items() %}
-              <tr class="{{ 'is-base' if name.startswith('Baseline') }}">
-                <td>{{ name | replace('if last week was', 'if last week was one') }}</td>
-                <td>{{ r.accuracy }}%</td>
-                <td>{{ r.precision }}%</td>
-                <td>{{ r.recall }}%</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          <p class="bl-note">
-            <strong>Precision</strong> — how often an alert was right. <strong>Recall</strong> — how many actual outbreak weeks were caught.
-          </p>
-        </div>
-      </div>
+      <p>
+        {% if vs_last > 0 %}
+        <strong>More reliable than a simple guess.</strong> Forecasts were {{ vs_last }}% closer to the actual counts than assuming next week will match this week.
+        {% else %}
+        <strong>Compared with a simple guess</strong> (assuming next week will match this week), forecasts were about as close to the actual counts.
+        {% endif %}
+      </p>
+      {% if session.user_role == 'admin' %}
+      <a href="/technical" class="eval-trust-link">Full technical results →</a>
+      {% endif %}
     </div>
     {% endif %}
 
@@ -471,7 +381,7 @@
       ctx.stroke();
       ctx.setLineDash([]);
       if (right - edge > 120) {
-        const text = 'HELD-OUT TEST →';
+        const text = 'TEST WEEKS →';
         ctx.font = '700 10.5px Inter, sans-serif';
         ctx.textBaseline = 'top';
         const w = ctx.measureText(text).width + 14;
@@ -568,7 +478,7 @@
             callbacks: {
                             title: (items) => {
                 const i = items[0].dataIndex;
-                const tag = isSyn(i) ? 'SYNTHETIC' : (i >= view.firstTest ? 'Held-out test' : 'Recorded · training');
+                const tag = isSyn(i) ? 'SYNTHETIC' : (i >= view.firstTest ? 'Test week' : 'Recorded');
                 return 'Week of ' + items[0].label + '  ·  ' + tag;
               },
               label: (item) => {

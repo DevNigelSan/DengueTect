@@ -61,11 +61,18 @@
   <!-- MAIN CONTENT -->
   <main class="main-content">
 
+       {% set first   = eval_data.values() | first %}
+    {% set sp0     = split.values() | first %}
+    {% set n_brgy  = eval_data | length %}
+
     <!-- PAGE HEADER -->
     <div class="page-header">
       <div>
         <h1 class="page-title">Technical Model Evaluation</h1>
-        <p class="page-sub">Quantitative performance metrics · For research and panel evaluation purposes only</p>
+        <p class="page-sub">
+          {% if summary %}Held-out test on recorded weeks from {{ summary.test_start[:4] }} onward · Models never saw these weeks during training
+          {% else %}Quantitative performance metrics · For research and panel evaluation purposes only{% endif %}
+        </p>
       </div>
       <div class="tech-admin-badge">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -76,31 +83,122 @@
       </div>
     </div>
 
-    {% set first   = eval_data.values() | first %}
-    {% set n_rows  = eval_data.values() | sum(attribute='total') %}
-    {% set n_test  = (n_rows * 0.2) | round(0, 'ceil') | int %}
-    {% set n_train = n_rows - n_test %}
+    {% if summary %}
+    {% set syn_train  = sp0.n_syn * n_brgy %}
+    {% set test_weeks = first.weeks[sp0.first_test:] %}
 
-    <!-- TECHNICAL METRICS TABLE -->
-    <div class="tech-section">
+    <!-- EVALUATION SETUP -->
+    <div class="ts-setup">
+      <div class="ts-tile">
+        <div class="ts-label">Training data</div>
+        <div class="ts-num">{{ '{:,}'.format(summary.train_weeks) }} <span>weeks</span></div>
+        <div class="ts-desc">{{ first.weeks[0][:4] }}–{{ (summary.test_start[:4] | int) - 1 }} · {{ '{:,}'.format(syn_train) }} synthetic + {{ '{:,}'.format(summary.train_weeks - syn_train) }} recorded</div>
+      </div>
+      <div class="ts-tile test">
+        <div class="ts-label">Held-out test</div>
+        <div class="ts-num">{{ summary.test_weeks }} <span>weeks</span></div>
+        <div class="ts-desc">{{ test_weeks[0] if test_weeks else summary.test_start }} to {{ first.weeks[-1] }} · {{ sp0.n_test }} per barangay · recorded only</div>
+      </div>
+      <div class="ts-tile">
+        <div class="ts-label">Outbreak week</div>
+        <div class="ts-num">≥ P75</div>
+        <div class="ts-desc">At or above the barangay's 75th percentile of recorded weekly cases</div>
+      </div>
+      <div class="ts-tile">
+        <div class="ts-label">Split method</div>
+        <div class="ts-num">Time-based</div>
+        <div class="ts-desc">Train on earlier years, test on later ones — no shuffling, no future data in training</div>
+      </div>
+    </div>
+
+    <!-- OVERALL COMPARISON -->
+    <div class="ts-compare">
+      <div class="tech-section">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Case Count Models</div>
+            <div class="panel-sub">Held-out test · all barangays · lower is better</div>
+          </div>
+        </div>
+        {% set last_mae = summary.case_count['Baseline: same as last week'].mae %}
+        <table class="tech-table">
+          <thead>
+            <tr><th>Model</th><th>MAE</th><th>RMSE</th><th>vs. last-week rule</th></tr>
+          </thead>
+          <tbody>
+            {% for name, r in summary.case_count.items() %}
+            {% set gain = ((1 - r.mae / last_mae) * 100) | round | int %}
+            <tr class="{{ 'ts-base' if name.startswith('Baseline') }}">
+              <td>{% if name.startswith('Baseline') %}{{ name }}{% else %}<strong>{{ name }}</strong>{% endif %}</td>
+              <td>±{{ r.mae }}</td>
+              <td>{{ r.rmse }}</td>
+              <td>
+                {% if name == 'Baseline: same as last week' %}—
+                {% elif gain > 0 %}<span class="ts-good">{{ gain }}% better</span>
+                {% elif gain < 0 %}<span class="ts-bad">{{ gain | abs }}% worse</span>
+                {% else %}Same{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tech-section">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Outbreak Classifier</div>
+            <div class="panel-sub">Held-out test · all barangays · higher is better</div>
+          </div>
+        </div>
+        <table class="tech-table">
+          <thead>
+            <tr><th>Model</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th></tr>
+          </thead>
+          <tbody>
+            {% for name, r in summary.outbreak.items() %}
+            <tr class="{{ 'ts-base' if name.startswith('Baseline') }}">
+              <td>{% if name.startswith('Baseline') %}{{ name | replace('if last week was', 'if last week was one') }}{% else %}<strong>{{ name }}</strong>{% endif %}</td>
+              <td>{{ r.accuracy }}%</td>
+              <td>{{ r.precision }}%</td>
+              <td>{{ r.recall }}%</td>
+              <td>{{ r.f1 }}%</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- PER-BARANGAY METRICS -->
+    <div class="tech-section" style="margin-top:24px;">
       <div class="panel-header">
-        <div class="panel-title">Model Performance Metrics</div>
-              <div class="panel-sub">Evaluated on full dataset · {{ first.total }} weeks per barangay · {{ first.weeks[0][:4] }}–{{ first.weeks[-1][:4] }}{% if first.weeks[0][:4] < '2022' %} · {{ first.weeks[0][:4] }}–2021 weeks are synthetic{% endif %}</div>
+        <div>
+          <div class="panel-title">Per-Barangay Performance</div>
+          <div class="panel-sub">
+            {% if summary %}Held-out test · {{ sp0.n_test }} weeks per barangay · last column shows fit on synthetic training weeks for reference
+            {% else %}Evaluated on full dataset · {{ first.total }} weeks per barangay{% endif %}
+          </div>
+        </div>
       </div>
       <table class="tech-table">
         <thead>
           <tr>
             <th>Barangay</th>
-            <th>RF Avg Error</th>
-            <th>XGBoost Avg Error</th>
-            <th>Ensemble Avg Error</th>
-            <th>Outbreak Detection Accuracy</th>
-            <th>Alert Precision</th>
-            <th>Total Weeks</th>
+            <th>RF MAE</th>
+            <th>XGBoost MAE</th>
+            <th>Ensemble MAE</th>
+            <th>Accuracy</th>
+            <th>Precision</th>
+            <th>Recall</th>
+            <th>F1</th>
+            <th class="ts-syn-col">Synthetic fit<br><small>RF MAE · accuracy</small></th>
           </tr>
         </thead>
         <tbody>
           {% for brgy, data in eval_data.items() %}
+          {% set sp = split[brgy] %}
           <tr>
             <td><strong>{{ brgy }}</strong></td>
             <td>±{{ data.avg_error }}</td>
@@ -108,11 +206,19 @@
             <td>±{{ data.ensemble_avg_error }}</td>
             <td>{{ data.accuracy }}%</td>
             <td>{{ data.precision }}%</td>
-            <td>{{ data.total }}</td>
+            <td>{{ data.recall ~ '%' if data.recall is defined else '—' }}</td>
+            <td>{{ data.f1 ~ '%' if data.f1 is defined else '—' }}</td>
+            <td class="ts-syn-col">
+              {% if sp.rf_syn is not none %}±{{ sp.rf_syn }}{% else %}—{% endif %}
+              · {% if sp.acc_syn is defined and sp.acc_syn is not none %}{{ sp.acc_syn }}%{% else %}—{% endif %}
+            </td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
+      {% if summary %}
+      <p class="ts-foot">Synthetic weeks were part of training, so their figures show how well the models fit that data — not how they perform on new weeks.</p>
+      {% endif %}
     </div>
 
     <!-- CONFUSION MATRICES -->
@@ -124,7 +230,7 @@
       <div class="tech-section">
         <div class="panel-header">
           <div class="panel-title">Barangay {{ brgy }}</div>
-          <div class="panel-sub">{{ data.total }} weeks evaluated</div>
+          <div class="panel-sub">{{ data.test_total if data.test_total is defined else data.total }} {{ 'held-out test weeks' if data.test_total is defined else 'weeks evaluated' }}</div>
         </div>
         <div class="confusion-grid">
           <div class="confusion-cell correct">
@@ -148,14 +254,6 @@
         <!-- Derived metrics -->
         <div class="tech-derived">
           <div class="tech-derived-item">
-            <span class="tech-derived-label">Sensitivity (Recall)</span>
-            <span class="tech-derived-val">
-              {% if (data.tp + data.fn) > 0 %}
-                {{ (data.tp / (data.tp + data.fn) * 100) | round(1) }}%
-              {% else %}—{% endif %}
-            </span>
-          </div>
-          <div class="tech-derived-item">
             <span class="tech-derived-label">Specificity</span>
             <span class="tech-derived-val">
               {% if (data.tn + data.fp) > 0 %}
@@ -164,18 +262,12 @@
             </span>
           </div>
           <div class="tech-derived-item">
-            <span class="tech-derived-label">F1 Score</span>
-            <span class="tech-derived-val">
-              {% set prec = data.precision / 100 %}
-              {% set rec = (data.tp / (data.tp + data.fn)) if (data.tp + data.fn) > 0 else 0 %}
-              {% if (prec + rec) > 0 %}
-                {{ ((2 * prec * rec) / (prec + rec)) | round(3) }}
-              {% else %}—{% endif %}
-            </span>
+            <span class="tech-derived-label">Outbreak weeks in test</span>
+            <span class="tech-derived-val">{{ data.tp + data.fn }}</span>
           </div>
           <div class="tech-derived-item">
-            <span class="tech-derived-label">Overall Accuracy</span>
-            <span class="tech-derived-val">{{ data.accuracy }}%</span>
+            <span class="tech-derived-label">Alerts raised</span>
+            <span class="tech-derived-val">{{ data.tp + data.fp }}</span>
           </div>
         </div>
       </div>
@@ -186,7 +278,7 @@
     <div class="tech-section" style="margin-top:24px;">
       <div class="panel-header">
         <div class="panel-title">Model Configuration</div>
-        <div class="panel-sub">Hyperparameters used during training</div>
+        <div class="panel-sub">Hyperparameters used during training · deployed models are retrained on all weeks after evaluation</div>
       </div>
       <table class="tech-table">
         <thead>
@@ -200,29 +292,23 @@
           </tr>
         </thead>
         <tbody>
+          {% set train_txt = ('{:,}'.format(summary.train_weeks) ~ ' weeks') if summary else '—' %}
+          {% set test_txt  = (summary.test_weeks ~ ' weeks') if summary else '—' %}
           <tr>
             <td><strong>Random Forest</strong></td>
             <td>Regressor</td>
             <td>Case count prediction</td>
             <td>n_estimators=100, random_state=42</td>
-            <td>{{ '{:,}'.format(n_train) }} rows (80%)td>
-            <td>{{ '{:,}'.format(n_test) }} rows (20%)</td>
-          </tr>
-          <tr>
-            <td><strong>Logistic Regression</strong></td>
-            <td>Classifier</td>
-            <td>Outbreak probability</td>
-            <td>max_iter=2000, random_state=42</td>
-            <td>{{ '{:,}'.format(n_train) }} rows (80%)td>
-            <td>{{ '{:,}'.format(n_test) }} rows (20%)td>
+            <td>{{ train_txt }}</td>
+            <td>{{ test_txt }}</td>
           </tr>
           <tr>
             <td><strong>XGBoost</strong></td>
             <td>Regressor</td>
             <td>Case count prediction</td>
             <td>n_estimators=100, max_depth=6, lr=0.1, subsample=0.8, colsample_bytree=0.8</td>
-            <td>{{ '{:,}'.format(n_train) }} rows (80%)td>
-            <td>{{ '{:,}'.format(n_test) }} rows (20%)</td>
+            <td>{{ train_txt }}</td>
+            <td>{{ test_txt }}</td>
           </tr>
           <tr>
             <td><strong>Ensemble</strong></td>
@@ -230,7 +316,15 @@
             <td>Combined case prediction</td>
             <td>RF weight=0.6, XGBoost weight=0.4</td>
             <td>—</td>
-            <td>—</td>
+            <td>{{ test_txt }}</td>
+          </tr>
+          <tr>
+            <td><strong>Logistic Regression</strong></td>
+            <td>Classifier</td>
+            <td>Outbreak probability</td>
+            <td>StandardScaler → LogisticRegression(max_iter=2000, random_state=42)</td>
+            <td>{{ train_txt }}</td>
+            <td>{{ test_txt }}</td>
           </tr>
         </tbody>
       </table>

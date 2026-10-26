@@ -363,4 +363,11 @@ def technical():
     eval_path = Path(__file__).resolve().parent.parent / 'data' / 'evaluation.json'
     with open(eval_path, 'r') as f:
         eval_data = json.load(f)
-    return render_template('technical.html', eval_data=eval_data)
+    summary_path = Path(__file__).resolve().parent.parent / 'data' / 'evaluation_summary.json'    
+    try:
+        with open(summary_path, 'r') as f:
+            summary = json.load(f)
+    except (OSError, ValueError):
+        summary = None
+    return render_template('technical.html', eval_data=eval_data,
+                           split=_split_evaluation(eval_data), summary=summary)
