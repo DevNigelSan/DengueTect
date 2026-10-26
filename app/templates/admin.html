@@ -278,48 +278,35 @@
           </div>
         </div>
 
-        <!-- SYSTEM LOG -->
+                <!-- ACTIVITY LOG -->
+        {% set dot = {'login': 'green', 'logout': 'green', 'forecast': 'green', 'publish': 'green',
+                                            'export': 'green', 'unpublish': 'yellow', 'delete': 'red', 'login_failed': 'red',
+                      'login_locked': 'red'} %}
+        {% set label = {'login': 'Signed in', 'logout': 'Signed out', 'forecast': 'Forecast generated',
+                        'publish': 'Forecast published', 'unpublish': 'Forecast unpublished',
+                        'delete': 'Forecast deleted', 'export': 'History exported',
+                                                'login_failed': 'Failed sign-in', 'login_locked': 'Sign-in blocked (too many attempts)'} %}
         <div class="admin-panel">
           <div class="panel-header">
-            <div class="panel-title">System Log</div>
-            <div class="panel-sub">Last 5 events</div>
+            <div class="panel-title">Activity Log</div>
+            <div class="panel-sub">{{ activity | length }} most recent · newest first</div>
           </div>
-          <div class="log-list">
+          <div class="log-list" style="max-height: 420px; overflow-y: auto;">
+            {% for a in activity %}
             <div class="log-item">
-              <div class="log-dot green"></div>
+              <div class="log-dot {{ dot.get(a.action, 'yellow') }}"></div>
               <div class="log-text">
-                <div class="log-msg">Forecast generated — Brgy. Nangka</div>
-                <div class="log-time">Jun 21, 2026 · 10:44 AM</div>
+                <div class="log-msg">{{ label.get(a.action, a.action) }}{% if a.details %} — {{ a.details }}{% endif %}</div>
+                <div class="log-time">{{ a.user_name or a.user_email or 'Not signed in' }} · {{ a.logged_at }}{% if a.ip_address %} · {{ a.ip_address }}{% endif %}</div>
               </div>
             </div>
+            {% else %}
             <div class="log-item">
-              <div class="log-dot green"></div>
               <div class="log-text">
-                <div class="log-msg">User login — m.santos@marikina.gov.ph</div>
-                <div class="log-time">Jun 21, 2026 · 10:41 AM</div>
+                <div class="log-msg">No activity recorded yet</div>
               </div>
             </div>
-            <div class="log-item">
-              <div class="log-dot yellow"></div>
-              <div class="log-text">
-                <div class="log-msg">High risk alert triggered — Brgy. Nangka</div>
-                <div class="log-time">Jun 21, 2026 · 10:44 AM</div>
-              </div>
-            </div>
-            <div class="log-item">
-              <div class="log-dot green"></div>
-              <div class="log-text">
-                <div class="log-msg">Forecast generated — Brgy. Tumana</div>
-                <div class="log-time">Jun 21, 2026 · 09:30 AM</div>
-              </div>
-            </div>
-            <div class="log-item">
-              <div class="log-dot red"></div>
-              <div class="log-text">
-                <div class="log-msg">Failed login attempt — unknown user</div>
-                <div class="log-time">Jun 20, 2026 · 11:12 PM</div>
-              </div>
-            </div>
+            {% endfor %}
           </div>
         </div>
 
