@@ -3,11 +3,22 @@ from app.ml.predict import run_forecast
 from app.ml.storage import save_forecast, get_latest_forecast, get_all_forecasts, delete_forecast_by_id, get_latest_published_forecast, toggle_published
 from datetime import date
 from app.ml.auth import verify_password
+from app.ml.activity import (log_activity, get_recent_activity, record_failed_login,
+                             clear_failed_logins, failed_logins_left, login_lock_minutes,
+                             LOCK_MINUTES)
 from functools import wraps
 import json
 from pathlib import Path
 
 main = Blueprint('main', __name__)
+
+def _log(action, details=''):
+    """Record an action by the signed-in user in the activity log."""
+    log_activity(action, details,
+                 user_email=session.get('user_email'),
+                 user_name=session.get('user_name'),
+                 role=session.get('user_role'),
+                 ip_address=request.remote_addr)
 
 def login_required(f):
     @wraps(f)
@@ -41,26 +52,46 @@ def login():
         email    = request.form.get('email')
         password = request.form.get('password')
         role     = request.form.get('role', 'health_officer')
-        user = verify_password(email, password)
-        if not user:
-            error = 'Invalid email or password. Please try again.'
-            error_hint = 'Check for typos and Caps Lock. Forgot your password? Contact your IT Admin.'
-        elif user['role'] != role:
-            error = (f"This account is registered as {ROLE_LABELS.get(user['role'], user['role'])}, "
-                     f"not {ROLE_LABELS.get(role, role)}.")
-            error_hint = 'Select the correct role under "Sign in as" and try again.'
+        locked_for = login_lock_minutes(email)
+        if locked_for:
+            error = (f"Too many failed sign-in attempts. Please try again in "
+                     f"{locked_for} minute{'s' if locked_for != 1 else ''}.")
+            error_hint = 'For security, sign-in for this account is paused. Forgot your password? Contact your IT Admin.'
+            log_activity('login_locked', f'Blocked sign-in attempt for {email}', ip_address=request.remote_addr)
         else:
-            session['user_email'] = user['email']
-            session['user_name']  = user['name']
-            session['user_role']  = user['role']
-            session.permanent = request.form.get('remember') == 'on'
-            return redirect(url_for('main.dashboard'))
+            user = verify_password(email, password)
+            if not user:
+                record_failed_login(email, request.remote_addr)
+                log_activity('login_failed', f'Failed sign-in for {email}', ip_address=request.remote_addr)
+                left = failed_logins_left(email)
+                error = 'Invalid email or password. Please try again.'
+                if left == 0:
+                    error_hint = f'Too many failed attempts. Sign-in for this account is paused for {LOCK_MINUTES} minutes.'
+                elif left <= 3:
+                    error_hint = (f"{left} attempt{'s' if left != 1 else ''} left before sign-in "
+                                  f"is paused for {LOCK_MINUTES} minutes.")
+                else:
+                    error_hint = 'Check for typos and Caps Lock. Forgot your password? Contact your IT Admin.'
+            elif user['role'] != role:
+                error = (f"This account is registered as {ROLE_LABELS.get(user['role'], user['role'])}, "
+                         f"not {ROLE_LABELS.get(role, role)}.")
+                error_hint = 'Select the correct role under "Sign in as" and try again.'
+                log_activity('login_failed', f'Wrong role selected for {email}', ip_address=request.remote_addr)
+            else:
+                clear_failed_logins(email)
+                session['user_email'] = user['email']
+                session['user_name']  = user['name']
+                session['user_role']  = user['role']
+                session.permanent = request.form.get('remember') == 'on'
+                _log('login', f"Signed in as {ROLE_LABELS.get(user['role'], user['role'])}")
+                return redirect(url_for('main.dashboard'))
     return render_template('login.html', error=error, error_hint=error_hint,
                            email=request.form.get('email', ''),
                            role=request.form.get('role', 'health_officer'))
 
 @main.route('/logout')
 def logout():
+    _log('logout', 'Signed out')
     session.clear()
     return redirect(url_for('main.login'))
 
@@ -123,6 +154,8 @@ def climate_input():
         result = run_forecast(barangay, week_date, climate_inputs)
         result.update(climate_inputs)
         save_forecast(result)
+        _log('forecast', f"Brgy. {result['barangay']} · week of {week_date} · "
+                         f"{result['outbreak_proba']}% {result['risk_level']} risk")
         session['last_forecast'] = result
         return redirect(url_for('main.forecast_result'))
 
@@ -174,6 +207,7 @@ def export_history():
         writer.writerow([row.get(key, '') for key, _ in columns])
 
     filename = f"denguetect_forecast_history_{date.today().isoformat()}.csv"
+    _log('export', 'Downloaded the forecast history as CSV')
     # utf-8-sig lets Excel display the ° and · symbols correctly
     return Response(
         output.getvalue().encode('utf-8-sig'),
@@ -210,7 +244,12 @@ def community():
 def toggle_publish():
     forecast_id = request.form.get('forecast_id')
     if forecast_id:
-                toggle_published(int(forecast_id))
+        from app.ml.storage import get_forecast_by_id
+        f = get_forecast_by_id(int(forecast_id))
+        toggle_published(int(forecast_id))
+        if f:
+            _log('unpublish' if f.get('published') else 'publish',
+                 f"Brgy. {f['barangay']} · week of {f['week_date']}")
     if request.form.get('next') == 'dashboard':
         return redirect(url_for('main.dashboard'))
     return redirect(url_for('main.history'))
@@ -223,6 +262,7 @@ def publish_latest():
         f = get_latest_forecast(brgy)
         if f and not f.get('published'):
             toggle_published(f['id'])
+            _log('publish', f"Brgy. {brgy} · week of {f['week_date']} (Publish all)")
     return redirect(url_for('main.dashboard'))
 
 @main.route('/admin')
@@ -230,14 +270,18 @@ def publish_latest():
 def admin():
     from app.ml.auth import get_all_users
     users = get_all_users()
-    return render_template('admin.html', users=users)
+    return render_template('admin.html', users=users, activity=get_recent_activity(50))
 
 @main.route('/delete-forecast', methods=['POST'])
 @login_required
 def delete_forecast():
     forecast_id = request.form.get('forecast_id')
     if forecast_id:
+        from app.ml.storage import get_forecast_by_id
+        f = get_forecast_by_id(int(forecast_id))
         delete_forecast_by_id(int(forecast_id))
+        if f:
+            _log('delete', f"Brgy. {f['barangay']} · week of {f['week_date']} (record #{forecast_id})")
     if request.form.get('next') == 'history':
         return redirect(url_for('main.history'))
     return redirect(url_for('main.dashboard'))
