@@ -123,7 +123,7 @@
         {% set last_mae = summary.case_count['Baseline: same as last week'].mae %}
         <table class="tech-table">
           <thead>
-            <tr><th>Model</th><th>MAE</th><th>RMSE</th><th>vs. last-week rule</th></tr>
+            <tr><th>Model</th><th>MAE</th><th>RMSE</th><th>Within ±1</th><th>Within ±2</th><th>vs. last-week rule</th></tr>
           </thead>
           <tbody>
             {% for name, r in summary.case_count.items() %}
@@ -131,7 +131,9 @@
             <tr class="{{ 'ts-base' if name.startswith('Baseline') }}">
               <td>{% if name.startswith('Baseline') %}{{ name }}{% else %}<strong>{{ name }}</strong>{% endif %}</td>
               <td>±{{ r.mae }}</td>
-              <td>{{ r.rmse }}</td>
+                            <td>{{ r.rmse }}</td>
+              <td>{{ r.within1 ~ '%' if r.within1 is defined else '—' }}</td>
+              <td>{% if r.within2 is defined %}{% if name.startswith('Baseline') %}{{ r.within2 }}%{% else %}<strong>{{ r.within2 }}%</strong>{% endif %}{% else %}—{% endif %}</td>
               <td>
                 {% if name == 'Baseline: same as last week' %}—
                 {% elif gain > 0 %}<span class="ts-good">{{ gain }}% better</span>
@@ -189,7 +191,8 @@
             <th>RF MAE</th>
             <th>XGBoost MAE</th>
             <th>Ensemble MAE</th>
-            <th>Accuracy</th>
+            <th>Within ±2<br><small>Ensemble</small></th>
+            <th>Outbreak accuracy</th>
             <th>Precision</th>
             <th>Recall</th>
             <th>F1</th>
@@ -204,6 +207,7 @@
             <td>±{{ data.avg_error }}</td>
             <td>±{{ data.xgb_avg_error }}</td>
             <td>±{{ data.ensemble_avg_error }}</td>
+            <td>{{ data.ens_within2 ~ '%' if data.ens_within2 is defined else '—' }}</td>
             <td>{{ data.accuracy }}%</td>
             <td>{{ data.precision }}%</td>
             <td>{{ data.recall ~ '%' if data.recall is defined else '—' }}</td>
@@ -223,7 +227,7 @@
 
     <!-- CONFUSION MATRICES -->
     <div class="section-title" style="margin-top:24px;">
-      Outbreak Detection Matrix <span>· Per barangay · Logistic Regression classifier</span>
+            Outbreak Detection Matrix <span>· Per barangay · {{ 'LR + Ensemble blend' if summary and summary.outbreak_method == 'blend' else 'Logistic Regression classifier' }}</span>
     </div>
     <div class="tech-confusion-grid">
       {% for brgy, data in eval_data.items() %}
@@ -322,10 +326,20 @@
             <td><strong>Logistic Regression</strong></td>
             <td>Classifier</td>
             <td>Outbreak probability</td>
-            <td>StandardScaler → LogisticRegression(max_iter=2000, random_state=42)</td>
+                        <td>StandardScaler → LogisticRegression(max_iter=2000, random_state=42)</td>
             <td>{{ train_txt }}</td>
             <td>{{ test_txt }}</td>
           </tr>
+          {% if summary and summary.outbreak_method == 'blend' %}
+          <tr>
+            <td><strong>Outbreak Blend</strong></td>
+            <td>Weighted Average</td>
+            <td>Final outbreak probability</td>
+            <td>0.5 × LR probability + 0.5 × Poisson P(cases ≥ threshold | Ensemble forecast)</td>
+            <td>—</td>
+            <td>{{ test_txt }}</td>
+          </tr>
+          {% endif %}
         </tbody>
       </table>
     </div>
