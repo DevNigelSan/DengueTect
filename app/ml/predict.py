@@ -1,3 +1,4 @@
+import math
 import joblib
 import numpy as np
 import pandas as pd
@@ -13,6 +14,19 @@ lr_model      = joblib.load(MODEL_DIR / 'lr_model.pkl')
 xgb_model     = joblib.load(MODEL_DIR / 'xgb_model.pkl')
 label_encoder = joblib.load(MODEL_DIR / 'label_encoder.pkl')
 feature_cols  = joblib.load(MODEL_DIR / 'feature_columns.pkl')
+
+# How outbreak probability is made (chosen in notebook 03); falls back to Logistic Regression alone
+try:
+    outbreak_config = joblib.load(MODEL_DIR / 'outbreak_config.pkl')
+except (OSError, ValueError):
+    outbreak_config = {'method': 'lr', 'thresholds': {}}
+
+def poisson_outbreak_proba(expected_cases, threshold):
+    """Chance of at least `threshold` cases in a week if cases follow a Poisson count with this mean."""
+    lam = max(float(expected_cases), 1e-6)
+    k = math.ceil(threshold)
+    below = sum(math.exp(-lam) * lam ** i / math.factorial(i) for i in range(k))
+    return max(0.0, 1.0 - below)
 
 def get_risk_level(probability):
     if probability >= 0.75:
@@ -82,13 +96,19 @@ def run_forecast(barangay, week_date, climate_inputs):
          # Run predictions
     predicted_cases     = int(round(max(0, rf_model.predict(features)[0])))
     xgb_predicted_cases = int(round(max(0, xgb_model.predict(features)[0])))
-    outbreak_proba      = float(lr_model.predict_proba(features)[0][1])
-    risk_level          = get_risk_level(outbreak_proba)
-
-    # Weighted ensemble — RF gets higher weight since it outperforms XGBoost
+        # Weighted ensemble — RF gets higher weight since it outperforms XGBoost
     rf_raw  = max(0, rf_model.predict(features)[0])
     xgb_raw = max(0, xgb_model.predict(features)[0])
-    ensemble_cases = int(round((rf_raw * 0.6) + (xgb_raw * 0.4)))
+    ensemble_raw   = (rf_raw * 0.6) + (xgb_raw * 0.4)
+    ensemble_cases = int(round(ensemble_raw))
+
+    # Outbreak probability: Logistic Regression, blended with the chance that the ensemble forecast
+    # reaches the barangay's outbreak threshold (method chosen on 2024 validation data in notebook 03)
+    outbreak_proba = float(lr_model.predict_proba(features)[0][1])
+    threshold = outbreak_config['thresholds'].get(barangay.capitalize())
+    if outbreak_config['method'] == 'blend' and threshold is not None:
+        outbreak_proba = 0.5 * outbreak_proba + 0.5 * poisson_outbreak_proba(ensemble_raw, threshold)
+    risk_level = get_risk_level(outbreak_proba)
 
     return {
         'barangay':             barangay.capitalize(),
