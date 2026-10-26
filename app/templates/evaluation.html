@@ -116,11 +116,12 @@
       {% set sp = split[brgy] %}
       {% set acc  = sp.acc_real  if sp.clf_split else data.accuracy %}
       {% set prec = sp.prec_real if sp.clf_split else data.precision %}
-      {% set err  = data.avg_error %}
+      {% set err  = data.ensemble_avg_error %}
+      {% set within = data.ens_within2 if data.ens_within2 is defined else none %}
       <div class="eval-summary-card">
         <div class="eval-card-header">
           <div class="eval-brgy-name">Barangay {{ brgy }}</div>
-          <div class="eval-accuracy-badge">{{ acc }}% accurate</div>
+            <div class="eval-accuracy-badge">{{ within if within is not none else acc }}% accurate</div>
         </div>
 
         <div class="eval-card-plain">
@@ -132,9 +133,14 @@
               </svg>
             </div>
             <div class="eval-plain-text">
+              {% if within is not none %}
+              Forecasts were within 2 cases of the real count in
+              <strong>{{ (within / 10) | round | int }} out of 10</strong> weeks
+              {% else %}
               Forecasts were usually within about
               <strong>{{ err | round(1) }} case{{ 's' if err != 1 else '' }}</strong>
               of the actual weekly count
+              {% endif %}
             </div>
           </div>
 
@@ -159,7 +165,7 @@
         </div>
 
         <div class="eval-accuracy-bar">
-          <div class="eval-accuracy-fill" style="width:{{ acc }}%"></div>
+          <div class="eval-accuracy-fill" style="width:{{ within if within is not none else acc }}%"></div>
         </div>
       </div>
       {% endfor %}
@@ -167,15 +173,18 @@
 
     {% if summary %}
     <!-- COMPARED WITH A SIMPLE GUESS -->
-    {% set rf_mae  = summary.case_count['Random Forest'].mae %}
-    {% set vs_last = ((1 - rf_mae / summary.case_count['Baseline: same as last week'].mae) * 100) | round | int %}
+    {% set ens  = summary.case_count['Ensemble (0.6 RF + 0.4 XGB)'] %}
+    {% set last = summary.case_count['Baseline: same as last week'] %}
+    {% set vs_last = ((1 - summary.case_count['Random Forest'].mae / last.mae) * 100) | round | int %}
     <div class="eval-trust">
       <div class="eval-trust-icon">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
       <p>
-        {% if vs_last > 0 %}
-        <strong>More reliable than a simple guess.</strong> Forecasts were {{ vs_last }}% closer to the actual counts than assuming next week will match this week.
+               {% if ens.within2 is defined %}
+        <strong>More reliable than a simple guess.</strong> Forecasts were within 2 cases of the real count in {{ ens.within2 }}% of test weeks, compared with {{ last.within2 }}% for assuming next week will match this week.
+        {% elif vs_last > 0 %}
+        <strong>More reliable than a simple guess.</strong>Forecasts were {{ vs_last }}% closer to the actual counts than assuming next week will match this week.
         {% else %}
         <strong>Compared with a simple guess</strong> (assuming next week will match this week), forecasts were about as close to the actual counts.
         {% endif %}
