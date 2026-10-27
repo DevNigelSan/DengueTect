@@ -236,6 +236,88 @@
         </div>
       </div>
 
+            <!-- FORECAST INSIGHTS -->
+      {% if insights and (insights.climate or insights.same_week or insights.trend) %}
+      <div class="report-section insights-section">
+        <div class="report-section-title">Forecast Insights <span>· How this forecast compares with past records</span></div>
+        <div class="insight-grid">
+
+          {% if insights.climate %}
+          <div class="insight-card">
+            <div class="insight-head">Climate in the past 4 weeks</div>
+            {% for c in insights.climate %}
+            <div class="insight-row">
+              <span class="insight-arrow {{ c.level }}">{{ '▲' if c.level == 'up' else '▼' if c.level == 'down' else '●' }}</span>
+              <div>
+                <div class="insight-label">{{ c.label }}</div>
+                <div class="insight-text">{{ c.text }}</div>
+                <div class="insight-effect {{ c.level }}">{{ c.effect }}</div>
+              </div>
+            </div>
+            {% endfor %}
+            <div class="insight-foot">Usual = average for the same weeks of the year, {{ insights.span }}</div>
+          </div>
+          {% endif %}
+
+          {% if insights.same_week %}
+          {% set sw = insights.same_week %}
+          {% set top = ([sw.forecast] + sw.years | map(attribute='cases') | list) | max %}
+          {% set top = top if top > 0 else 1 %}
+          <div class="insight-card">
+            <div class="insight-head">Same time in past years</div>
+            <p class="insight-text">
+              This forecast is <strong>{{ sw.compare }}</strong> the usual case count for this time of year
+              in Barangay {{ forecast.barangay }} ({{ sw.avg }} cases per week on average).
+            </p>
+            <div class="sw-bars">
+              {% for y in sw.years %}
+              <div class="sw-bar">
+                <span class="sw-val">{{ y.cases }}</span>
+                <div class="sw-track"><i style="height: {{ (y.cases / top * 100) | round(1) }}%"></i></div>
+                <span class="sw-year">{{ y.year }}</span>
+              </div>
+              {% endfor %}
+              <div class="sw-bar is-forecast">
+                <span class="sw-val">{{ sw.forecast | round | int }}</span>
+                <div class="sw-track"><i style="height: {{ (sw.forecast / top * 100) | round(1) }}%"></i></div>
+                <span class="sw-year">Forecast</span>
+              </div>
+            </div>
+            <div class="insight-foot">Average weekly cases in the same 3 weeks of each year · recorded data only</div>
+          </div>
+          {% endif %}
+
+          {% if insights.trend %}
+          {% set t = insights.trend %}
+          <div class="insight-card">
+            <div class="insight-head">Recent case trend</div>
+            <div class="trend-line-text {{ t.trend }}">
+              <span class="insight-arrow {{ t.trend }}">{{ '▲' if t.trend == 'up' else '▼' if t.trend == 'down' else '●' }}</span>
+              {{ t.text }}
+            </div>
+            <div class="trend-steps">
+              {% for c in t.cases %}
+              <span class="trend-step{{ ' last' if loop.last }}">{{ c }}</span>{% if not loop.last %}<span class="trend-arrow">→</span>{% endif %}
+              {% endfor %}
+            </div>
+            <div class="trend-steps-label">4 weeks ago → last week</div>
+            {% if t.usual %}
+            <p class="insight-text">
+              Last week's <strong>{{ t.last }} case{{ 's' if t.last != 1 else '' }}</strong>
+              {% if t.ratio and t.ratio >= 1.5 %}is <strong>{{ t.ratio }}×</strong> the usual
+              {% elif t.ratio is not none and t.ratio <= 0.67 %}is <strong>below</strong> the usual
+              {% else %}is <strong>close to</strong> the usual{% endif %}
+              {{ t.usual }} cases per week in Barangay {{ forecast.barangay }}.
+            </p>
+            {% endif %}
+            <div class="insight-foot">Usual = average weekly cases, recorded data 2022–2026</div>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+      {% endif %}
+
       <!-- RECOMMENDED ACTIONS — PARAGRAPH FORM -->
       <div class="report-section">
         <div class="report-section-title">Health Response Recommendations</div>

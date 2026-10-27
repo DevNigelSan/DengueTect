@@ -5,6 +5,7 @@ from app.ml.storage import (save_forecast, get_latest_forecast, get_all_forecast
                             set_published, restore_forecast)
 from datetime import date
 from app.ml.auth import verify_password
+from app.ml.insights import forecast_insights
 from app.ml.activity import (log_activity, get_recent_activity, get_activity, mark_undone, record_failed_login,
                              clear_failed_logins, failed_logins_left, login_lock_minutes,
                              LOCK_MINUTES)
@@ -176,7 +177,8 @@ def forecast_result():
             _log('view_report', f"Brgy. {forecast['barangay']} · week of {forecast['week_date']} (record #{forecast_id})")  
     else:
         forecast = session.get('last_forecast', None)
-    return render_template('forecast_result.html', forecast=forecast)
+    return render_template('forecast_result.html', forecast=forecast,
+                           insights=forecast_insights(forecast) if forecast else None)
 
 @main.route('/history')
 @login_required
