@@ -168,6 +168,8 @@ def forecast_result():
     if forecast_id:
         from app.ml.storage import get_forecast_by_id
         forecast = get_forecast_by_id(forecast_id)
+        if forecast:
+            _log('view_report', f"Brgy. {forecast['barangay']} · week of {forecast['week_date']} (record #{forecast_id})")  
     else:
         forecast = session.get('last_forecast', None)
     return render_template('forecast_result.html', forecast=forecast)
@@ -270,7 +272,7 @@ def publish_latest():
 def admin():
     from app.ml.auth import get_all_users
     users = get_all_users()
-    return render_template('admin.html', users=users, activity=get_recent_activity(50))
+    return render_template('admin.html', users=users, activity=get_recent_activity(200))
 
 @main.route('/delete-forecast', methods=['POST'])
 @login_required

@@ -79,7 +79,7 @@
 
 .asc-num {
   font-family: 'DM Sans', sans-serif;
-  font-size: 26px;
+  font-size: 30px;
   font-weight: 700;
   color: var(--blue-deep);
   letter-spacing: -0.5px;
@@ -88,7 +88,7 @@
 }
 
 .asc-label {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--gray-400);
   font-weight: 500;
 }
@@ -164,9 +164,9 @@
 }
 
 .admin-table th {
-  padding: 11px 16px;
+  padding: 13px 18px;
   text-align: left;
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.6px;
@@ -175,8 +175,8 @@
 }
 
 .admin-table td {
-  padding: 13px 16px;
-  font-size: 13.5px;
+  padding: 15px 18px;
+  font-size: 15px;
   color: var(--gray-800);
   border-bottom: 1px solid var(--gray-200);
 }
@@ -297,14 +297,14 @@
 .config-item:last-child { border-bottom: none; }
 
 .config-name {
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--gray-800);
   margin-bottom: 3px;
 }
 
 .config-desc {
-  font-size: 12px;
+  font-size: 13.5px;
   color: var(--gray-400);
 }
 
@@ -358,13 +358,13 @@
 .log-dot.red    { background: var(--red-alert); }
 
 .log-msg {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--gray-800);
   margin-bottom: 3px;
 }
 
 .log-time {
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--gray-400);
 }
 
@@ -377,4 +377,92 @@
 @media (max-width: 768px) {
   .admin-stats-row { grid-template-columns: 1fr 1fr; }
   .nav-center { display: none; }
+}
+
+/* ── ACTIVITY LOG (full width) ── */
+.activity-panel { margin-top: 24px; }
+
+.activity-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.activity-filters { display: flex; gap: 8px; }
+
+.activity-filters select {
+  padding: 7px 30px 7px 12px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 8px;
+  background: var(--white);
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--gray-800);
+  cursor: pointer;
+}
+
+.activity-filters select:focus { outline: none; border-color: var(--blue-primary); }
+
+.activity-table-wrap {
+  max-height: 560px;
+  overflow: auto;
+}
+
+.activity-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.activity-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 10px 16px;
+  background: var(--gray-100);
+  border-bottom: 1px solid var(--gray-200);
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--gray-400);
+  white-space: nowrap;
+}
+
+.activity-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--gray-200);
+  color: var(--gray-800);
+  vertical-align: top;
+}
+
+.activity-table tbody tr:hover td { background: var(--gray-100); }
+
+.act-time { white-space: nowrap; color: var(--gray-600); font-variant-numeric: tabular-nums; }
+.act-user { font-weight: 600; white-space: nowrap; }
+.act-details { color: var(--gray-600); min-width: 240px; }
+.act-ip { white-space: nowrap; color: var(--gray-400); font-variant-numeric: tabular-nums; }
+.act-muted { color: var(--gray-400); font-size: 12px; white-space: nowrap; }
+.act-empty { text-align: center; color: var(--gray-400); padding: 28px 16px; }
+
+.act-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.act-chip.green  { background: #DCFCE7; color: var(--green-safe); }
+.act-chip.blue   { background: var(--blue-light); color: var(--blue-primary); }
+.act-chip.yellow { background: #FEF3C7; color: #B45309; }
+.act-chip.red    { background: #FEE2E2; color: var(--red-alert); }
+
+@media (max-width: 700px) {
+  .activity-filters { width: 100%; }
+  .activity-filters select { flex: 1; }
 }

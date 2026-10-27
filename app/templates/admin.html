@@ -278,40 +278,104 @@
           </div>
         </div>
 
-                <!-- ACTIVITY LOG -->
-        {% set dot = {'login': 'green', 'logout': 'green', 'forecast': 'green', 'publish': 'green',
-                                            'export': 'green', 'unpublish': 'yellow', 'delete': 'red', 'login_failed': 'red',
-                      'login_locked': 'red'} %}
-        {% set label = {'login': 'Signed in', 'logout': 'Signed out', 'forecast': 'Forecast generated',
-                        'publish': 'Forecast published', 'unpublish': 'Forecast unpublished',
-                        'delete': 'Forecast deleted', 'export': 'History exported',
-                                                'login_failed': 'Failed sign-in', 'login_locked': 'Sign-in blocked (too many attempts)'} %}
-        <div class="admin-panel">
-          <div class="panel-header">
-            <div class="panel-title">Activity Log</div>
-            <div class="panel-sub">{{ activity | length }} most recent · newest first</div>
-          </div>
-          <div class="log-list" style="max-height: 420px; overflow-y: auto;">
-            {% for a in activity %}
-            <div class="log-item">
-              <div class="log-dot {{ dot.get(a.action, 'yellow') }}"></div>
-              <div class="log-text">
-                <div class="log-msg">{{ label.get(a.action, a.action) }}{% if a.details %} — {{ a.details }}{% endif %}</div>
-                <div class="log-time">{{ a.user_name or a.user_email or 'Not signed in' }} · {{ a.logged_at }}{% if a.ip_address %} · {{ a.ip_address }}{% endif %}</div>
-              </div>
-            </div>
-            {% else %}
-            <div class="log-item">
-              <div class="log-text">
-                <div class="log-msg">No activity recorded yet</div>
-              </div>
-            </div>
-            {% endfor %}
-          </div>
-        </div>
 
       </div>
     </div>
+
+      <!-- ACTIVITY LOG -->
+    {% set act = {
+      'login':        ('Signed in',             'green',  'signin'),
+      'logout':       ('Signed out',            'green',  'signin'),
+      'login_failed': ('Failed sign-in',        'red',    'security'),
+      'login_locked': ('Sign-in blocked',       'red',    'security'),
+      'forecast':     ('Forecast generated',    'green',  'forecasts'),
+      'view_report':  ('Report opened',         'blue',   'forecasts'),
+      'publish':      ('Forecast published',    'green',  'publishing'),
+      'unpublish':    ('Forecast unpublished',  'yellow', 'publishing'),
+      'delete':       ('Forecast deleted',      'red',    'deletions'),
+      'export':       ('History exported',      'blue',   'exports'),
+    } %}
+    <section class="admin-panel activity-panel">
+      <div class="panel-header activity-head">
+        <div>
+          <div class="panel-title">Activity Log</div>
+          <div class="panel-sub">Every action by every user · latest {{ activity | length }} · newest first</div>
+        </div>
+        <div class="activity-filters">
+          <select id="actRole" aria-label="Filter by role">
+            <option value="">All roles</option>
+            <option value="health_officer">Health Officer</option>
+            <option value="admin">IT Admin</option>
+            <option value="none">Not signed in</option>
+          </select>
+          <select id="actType" aria-label="Filter by action">
+            <option value="">All actions</option>
+            <option value="signin">Sign-ins</option>
+            <option value="forecasts">Forecasts</option>
+            <option value="publishing">Publishing</option>
+            <option value="deletions">Deletions</option>
+            <option value="exports">Exports</option>
+            <option value="security">Security</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="activity-table-wrap">
+        <table class="activity-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>User</th>
+              <th>Role</th>
+              <th>Action</th>
+              <th>Details</th>
+              <th>IP address</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in activity %}
+            {% set info = act.get(a.action, (a.action, 'yellow', 'other')) %}
+            <tr data-role="{{ a.role or 'none' }}" data-type="{{ info[2] }}">
+              <td class="act-time">{{ a.logged_at }}</td>
+              <td class="act-user">{{ a.user_name or a.user_email or '—' }}</td>
+              <td>
+                {% if a.role == 'admin' %}<span class="role-tag admin">IT Admin</span>
+                {% elif a.role %}<span class="role-tag ho">Health Officer</span>
+                {% else %}<span class="act-muted">Not signed in</span>{% endif %}
+              </td>
+              <td><span class="act-chip {{ info[1] }}">{{ info[0] }}</span></td>
+              <td class="act-details">{{ a.details or '' }}</td>
+              <td class="act-ip">{{ a.ip_address or '' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="act-empty">No activity recorded yet</td></tr>
+            {% endfor %}
+            <tr class="act-nomatch" hidden><td colspan="6" class="act-empty">No entries match these filters</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <script>
+      (function () {
+        const role = document.getElementById('actRole');
+        const type = document.getElementById('actType');
+        const rows = document.querySelectorAll('.activity-table tbody tr[data-role]');
+        const none = document.querySelector('.act-nomatch');
+        function apply() {
+          let shown = 0;
+          rows.forEach(r => {
+            const ok = (!role.value || r.dataset.role === role.value) &&
+                       (!type.value || r.dataset.type === type.value);
+            r.hidden = !ok;
+            if (ok) shown++;
+          });
+          none.hidden = shown > 0 || rows.length === 0;
+        }
+        role.addEventListener('change', apply);
+        type.addEventListener('change', apply);
+      })();
+    </script>
 
   </main>
 </div>
