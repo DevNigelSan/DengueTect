@@ -466,3 +466,38 @@
   .activity-filters { width: 100%; }
   .activity-filters select { flex: 1; }
 }
+
+
+/* ── ACTIVITY LOG: UNDO ── */
+.act-undo { text-align: right; white-space: nowrap; }
+.act-undo form { margin: 0; }
+
+.act-undo-btn {
+  padding: 4px 12px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 7px;
+  background: var(--white);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.act-undo-btn:hover { border-color: #FCD34D; background: #FFFBEB; color: #B45309; }
+
+.act-undone { font-size: 11.5px; line-height: 1.4; color: var(--gray-400); }
+
+.activity-table tr.is-undone td:not(.act-undo) { opacity: 0.55; }
+.activity-table tr.is-undone .act-details { text-decoration: line-through; }
+
+.act-notice {
+  margin: 0;
+  padding: 10px 20px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.act-notice.ok   { background: #F0FDF4; color: var(--green-safe); }
+.act-notice.warn { background: #FFFBEB; color: #B45309; }

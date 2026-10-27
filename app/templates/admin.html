@@ -282,7 +282,7 @@
       </div>
     </div>
 
-      <!-- ACTIVITY LOG -->
+              <!-- ACTIVITY LOG -->
     {% set act = {
       'login':        ('Signed in',             'green',  'signin'),
       'logout':       ('Signed out',            'green',  'signin'),
@@ -294,8 +294,16 @@
       'unpublish':    ('Forecast unpublished',  'yellow', 'publishing'),
       'delete':       ('Forecast deleted',      'red',    'deletions'),
       'export':       ('History exported',      'blue',   'exports'),
+      'undo':         ('Undo',                  'yellow', 'undo'),
     } %}
-    <section class="admin-panel activity-panel">
+    {% set undoable = ['forecast', 'publish', 'unpublish', 'delete'] %}
+    {% set undo_msgs = {
+      'done':         ('ok',   'The action was undone. It is recorded in the log as an Undo entry.'),
+      'already':      ('warn', 'That action was already undone.'),
+      'changed':      ('warn', 'Nothing was changed: the forecast has changed since that action, so it can no longer be undone.'),
+      'not_undoable': ('warn', 'That action cannot be undone.'),
+    } %}
+    <section class="admin-panel activity-panel" id="activity">
       <div class="panel-header activity-head">
         <div>
           <div class="panel-title">Activity Log</div>
@@ -316,9 +324,15 @@
             <option value="deletions">Deletions</option>
             <option value="exports">Exports</option>
             <option value="security">Security</option>
+            <option value="undo">Undo actions</option>
           </select>
         </div>
       </div>
+
+      {% set msg = undo_msgs.get(request.args.get('undo')) %}
+      {% if msg %}
+      <div class="act-notice {{ msg[0] }}">{{ msg[1] }}</div>
+      {% endif %}
 
       <div class="activity-table-wrap">
         <table class="activity-table">
@@ -330,12 +344,13 @@
               <th>Action</th>
               <th>Details</th>
               <th>IP address</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
             {% for a in activity %}
             {% set info = act.get(a.action, (a.action, 'yellow', 'other')) %}
-            <tr data-role="{{ a.role or 'none' }}" data-type="{{ info[2] }}">
+            <tr data-role="{{ a.role or 'none' }}" data-type="{{ info[2] }}" class="{{ 'is-undone' if a.undone_at }}">
               <td class="act-time">{{ a.logged_at }}</td>
               <td class="act-user">{{ a.user_name or a.user_email or '—' }}</td>
               <td>
@@ -346,11 +361,22 @@
               <td><span class="act-chip {{ info[1] }}">{{ info[0] }}</span></td>
               <td class="act-details">{{ a.details or '' }}</td>
               <td class="act-ip">{{ a.ip_address or '' }}</td>
+              <td class="act-undo">
+                {% if a.undone_at %}
+                  <span class="act-undone">Undone by {{ a.undone_by or 'admin' }}<br>{{ a.undone_at }}</span>
+                {% elif a.action in undoable and a.target_id %}
+                  <form method="POST" action="{{ url_for('main.undo_activity', log_id=a.id) }}"
+                        data-confirm="Undo “{{ info[0] }}” — {{ a.details }}?"
+                        onsubmit="return confirm(this.dataset.confirm);">
+                    <button type="submit" class="act-undo-btn">Undo</button>
+                  </form>
+                {% endif %}
+              </td>
             </tr>
             {% else %}
-            <tr><td colspan="6" class="act-empty">No activity recorded yet</td></tr>
+            <tr><td colspan="7" class="act-empty">No activity recorded yet</td></tr>
             {% endfor %}
-            <tr class="act-nomatch" hidden><td colspan="6" class="act-empty">No entries match these filters</td></tr>
+            <tr class="act-nomatch" hidden><td colspan="7" class="act-empty">No entries match these filters</td></tr>
           </tbody>
         </table>
       </div>

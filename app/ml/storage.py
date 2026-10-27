@@ -38,7 +38,10 @@ def save_forecast(forecast):
     ))
 
     conn.commit()
+    forecast_id = cursor.lastrowid
     conn.close()
+    forecast['id'] = forecast_id
+    return forecast_id
 
 def get_latest_forecast(barangay):
     conn = get_db()
@@ -97,3 +100,23 @@ def delete_forecast_by_id(forecast_id):
     cursor.execute('DELETE FROM forecasts WHERE id = ?', (forecast_id,))
     conn.commit()
     conn.close()
+
+
+
+def set_published(forecast_id, published):
+    """Set a forecast as published (1) or hidden from residents (0)."""
+    conn = get_db()
+    conn.execute('UPDATE forecasts SET published = ? WHERE id = ?', (1 if published else 0, forecast_id))
+    conn.commit()
+    conn.close()
+
+def restore_forecast(row):
+    """Put a deleted forecast back, with its original record number."""
+    conn = get_db()
+    columns = [c['name'] for c in conn.execute('PRAGMA table_info(forecasts)').fetchall()]
+    data = {k: v for k, v in row.items() if k in columns}
+    names = ', '.join(data)
+    marks = ', '.join('?' for _ in data)
+    conn.execute(f'INSERT INTO forecasts ({names}) VALUES ({marks})', tuple(data.values()))
+    conn.commit()
+    conn.close()    

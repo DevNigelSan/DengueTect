@@ -19,18 +19,25 @@ def _ensure_table(conn):
             ip_address TEXT
         )
     ''')
+    # Columns added for undo; older logs get them automatically
+    existing = [r['name'] for r in conn.execute('PRAGMA table_info(activity_log)').fetchall()]
+    for name, col_type in [('target_id', 'INTEGER'), ('snapshot', 'TEXT'),
+                           ('undone_at', 'TEXT'), ('undone_by', 'TEXT')]:
+        if name not in existing:
+            conn.execute(f'ALTER TABLE activity_log ADD COLUMN {name} {col_type}')
 
 
-def log_activity(action, details='', user_email=None, user_name=None, role=None, ip_address=None):
+def log_activity(action, details='', user_email=None, user_name=None, role=None, ip_address=None,
+                 target_id=None, snapshot=None):
     """Record one action. A logging problem must never stop the action itself."""
     try:
         conn = get_db()
         _ensure_table(conn)
         conn.execute(
-            'INSERT INTO activity_log (logged_at, user_email, user_name, role, action, details, ip_address) '
-            'VALUES (?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO activity_log (logged_at, user_email, user_name, role, action, details, ip_address, '
+            'target_id, snapshot) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
             (datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-             user_email, user_name, role, action, details, ip_address)
+             user_email, user_name, role, action, details, ip_address, target_id, snapshot)
         )
         conn.commit()
         conn.close()
@@ -46,6 +53,23 @@ def get_recent_activity(limit=50):
     return [dict(r) for r in rows]
 
 
+
+
+def get_activity(log_id):
+    conn = get_db()
+    _ensure_table(conn)
+    row = conn.execute('SELECT * FROM activity_log WHERE id = ?', (log_id,)).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def mark_undone(log_id, undone_by):
+    conn = get_db()
+    _ensure_table(conn)
+    conn.execute('UPDATE activity_log SET undone_at = ?, undone_by = ? WHERE id = ?',
+                 (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), undone_by, log_id))
+    conn.commit()
+    conn.close()
 
 
 # ── Sign-in attempt limit ──

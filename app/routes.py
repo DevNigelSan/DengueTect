@@ -1,9 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from app.ml.predict import run_forecast
-from app.ml.storage import save_forecast, get_latest_forecast, get_all_forecasts, delete_forecast_by_id, get_latest_published_forecast, toggle_published
+from app.ml.storage import (save_forecast, get_latest_forecast, get_all_forecasts, delete_forecast_by_id,
+                            get_latest_published_forecast, toggle_published, get_forecast_by_id,
+                            set_published, restore_forecast)
 from datetime import date
 from app.ml.auth import verify_password
-from app.ml.activity import (log_activity, get_recent_activity, record_failed_login,
+from app.ml.activity import (log_activity, get_recent_activity, get_activity, mark_undone, record_failed_login,
                              clear_failed_logins, failed_logins_left, login_lock_minutes,
                              LOCK_MINUTES)
 from functools import wraps
@@ -12,13 +14,14 @@ from pathlib import Path
 
 main = Blueprint('main', __name__)
 
-def _log(action, details=''):
+def _log(action, details='', target_id=None, snapshot=None):
     """Record an action by the signed-in user in the activity log."""
     log_activity(action, details,
                  user_email=session.get('user_email'),
                  user_name=session.get('user_name'),
                  role=session.get('user_role'),
-                 ip_address=request.remote_addr)
+                 ip_address=request.remote_addr,
+                 target_id=target_id, snapshot=snapshot)
 
 def login_required(f):
     @wraps(f)
@@ -153,9 +156,10 @@ def climate_input():
 
         result = run_forecast(barangay, week_date, climate_inputs)
         result.update(climate_inputs)
-        save_forecast(result)
+        new_id = save_forecast(result)
         _log('forecast', f"Brgy. {result['barangay']} · week of {week_date} · "
-                         f"{result['outbreak_proba']}% {result['risk_level']} risk")
+                         f"{result['outbreak_proba']}% {result['risk_level']} risk",
+             target_id=new_id)
         session['last_forecast'] = result
         return redirect(url_for('main.forecast_result'))
 
@@ -251,7 +255,7 @@ def toggle_publish():
         toggle_published(int(forecast_id))
         if f:
             _log('unpublish' if f.get('published') else 'publish',
-                 f"Brgy. {f['barangay']} · week of {f['week_date']}")
+                 f"Brgy. {f['barangay']} · week of {f['week_date']}", target_id=f['id'])
     if request.form.get('next') == 'dashboard':
         return redirect(url_for('main.dashboard'))
     return redirect(url_for('main.history'))
@@ -264,7 +268,7 @@ def publish_latest():
         f = get_latest_forecast(brgy)
         if f and not f.get('published'):
             toggle_published(f['id'])
-            _log('publish', f"Brgy. {brgy} · week of {f['week_date']} (Publish all)")
+            _log('publish', f"Brgy. {brgy} · week of {f['week_date']} (Publish all)", target_id=f['id'])
     return redirect(url_for('main.dashboard'))
 
 @main.route('/admin')
@@ -273,6 +277,50 @@ def admin():
     from app.ml.auth import get_all_users
     users = get_all_users()
     return render_template('admin.html', users=users, activity=get_recent_activity(200))
+
+UNDOABLE = {'forecast', 'publish', 'unpublish', 'delete'}
+
+@main.route('/admin/undo/<int:log_id>', methods=['POST'])
+@admin_required
+def undo_activity(log_id):
+    """Reverse one logged forecast action, if nothing has changed since."""
+    entry = get_activity(log_id)
+    back = lambda code: redirect(url_for('main.admin', undo=code, _anchor='activity'))
+    if not entry or entry['action'] not in UNDOABLE or not entry.get('target_id'):
+        return back('not_undoable')
+    if entry.get('undone_at'):
+        return back('already')
+
+    fid    = entry['target_id']
+    f      = get_forecast_by_id(fid)
+    action = entry['action']
+    if action == 'forecast':
+        if not f:
+            return back('changed')
+        delete_forecast_by_id(fid)
+        what = 'Removed the forecast'
+    elif action == 'publish':
+        if not f or not f.get('published'):
+            return back('changed')
+        set_published(fid, 0)
+        what = 'Unpublished'
+    elif action == 'unpublish':
+        if not f or f.get('published'):
+            return back('changed')
+        set_published(fid, 1)
+        what = 'Published again'
+    else:  # delete
+        if f or not entry.get('snapshot'):
+            return back('changed')
+        f = json.loads(entry['snapshot'])
+        restore_forecast(f)
+        what = 'Restored'
+
+    mark_undone(log_id, session.get('user_name') or session.get('user_email'))
+    _log('undo', f"{what} · Brgy. {f['barangay']} · week of {f['week_date']} "
+                 f"(record #{fid}, reversing log entry #{log_id})",
+         target_id=fid, snapshot=json.dumps(f) if action == 'forecast' else None)
+    return back('done')
 
 @main.route('/delete-forecast', methods=['POST'])
 @login_required
@@ -283,7 +331,8 @@ def delete_forecast():
         f = get_forecast_by_id(int(forecast_id))
         delete_forecast_by_id(int(forecast_id))
         if f:
-            _log('delete', f"Brgy. {f['barangay']} · week of {f['week_date']} (record #{forecast_id})")
+            _log('delete', f"Brgy. {f['barangay']} · week of {f['week_date']} (record #{forecast_id})",
+                 target_id=f['id'], snapshot=json.dumps(f))
     if request.form.get('next') == 'history':
         return redirect(url_for('main.history'))
     return redirect(url_for('main.dashboard'))
