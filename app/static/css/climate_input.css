@@ -937,3 +937,19 @@ input::placeholder { color: var(--gray-400); }
 .climate-input-row {
   transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
 }
+
+/* ── RECORDED CASES NOTE ── */
+.cases-source {
+  margin-top: 8px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.cases-source.ok      { background: #F0FDF4; border: 1px solid #BBF7D0; color: var(--green-safe); }
+.cases-source.partial,
+.cases-source.none    { background: #FFFBEB; border: 1px solid #FDE68A; color: #B45309; }
+.cases-source.ok::before      { content: '✓  '; font-weight: 700; }
+.cases-source.partial::before,
+.cases-source.none::before    { content: '⚠  '; }

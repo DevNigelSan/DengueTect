@@ -150,6 +150,8 @@ function clearForm() {
   document.querySelectorAll('.climate-input-row').forEach(resetParamRow);
 
   document.querySelector('.cases-row').classList.remove('has-warning');
+  document.querySelectorAll('input[name^="cases_"]').forEach(i => { delete i.dataset.auto; });
+  showCasesSource('', '');
   validateCases();
 }
 
@@ -347,9 +349,11 @@ async function fetchClimateData() {
     }
 
     // Update parameter indicators after fetch
-    document.querySelectorAll('input[name^="rain_"], input[name^="temp_"], input[name^="humid_"]').forEach(input => {
+         document.querySelectorAll('input[name^="rain_"], input[name^="temp_"], input[name^="humid_"]').forEach(input => {
       updateParamIndicator(input);
     });
+    loadRecordedCases();
+    
 
   } catch (err) {
     showStatus('error', 'Network error. Check your connection and try again.');
@@ -468,3 +472,64 @@ function toggleCasesInfo(event) {
 document.getElementById('casesInfoOverlay').addEventListener('click', function(e) {
   if (e.target === this) this.style.display = 'none';
 });
+
+
+// ── RECORDED CASES (MCHO records) ──
+// When the barangay and week are set, fill the 4 case boxes from the recorded data if it exists
+async function loadRecordedCases() {
+  const barangay = document.getElementById('barangay').value;
+  const weekDate = document.getElementById('week_date').value;
+  if (!barangay || !weekDate) { showCasesSource('', ''); return; }
+
+  try {
+    const resp = await fetch(`/api/recorded-cases?barangay=${encodeURIComponent(barangay)}&week=${encodeURIComponent(weekDate)}`);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+
+    data.weeks.forEach(w => {
+      const input = document.querySelector(`input[name="${w.field}"]`);
+      if (!input) return;
+      if (w.cases !== null) {
+        input.value = w.cases;
+        input.dataset.auto = '1';
+        input.style.borderColor = '';
+      } else if (input.dataset.auto === '1') {
+        input.value = '';                 // clear values that came from an earlier lookup
+        delete input.dataset.auto;
+      }
+    });
+
+    if (data.found === 4) {
+      showCasesSource('ok', `Filled from MCHO records (${data.weeks[0].from} to ${data.weeks[3].to}). You can still edit them.`);
+    } else if (data.found > 0) {
+      const left = 4 - data.found;
+      showCasesSource('partial', `${data.found} of 4 weeks filled from MCHO records. Enter the empty week${left > 1 ? 's' : ''} from your latest surveillance report.`);
+    } else {
+      showCasesSource('none', `No recorded cases for these weeks${data.records_end ? ` (records end ${data.records_end})` : ''}. Please enter them from your latest surveillance report.`);
+    }
+    validateCases();
+  } catch (err) {
+    console.error(err);
+    showCasesSource('', '');
+  }
+}
+
+function showCasesSource(type, msg) {
+  let el = document.getElementById('casesSource');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'casesSource';
+    document.querySelector('.cases-row').insertAdjacentElement('afterend', el);
+  }
+  el.className = `cases-source ${type}`;
+  el.textContent = msg;
+  el.hidden = !msg;
+}
+
+// A value typed by hand no longer comes from the records
+document.querySelectorAll('input[name^="cases_"]').forEach(input => {
+  input.addEventListener('input', () => { delete input.dataset.auto; });
+});
+
+document.getElementById('barangay').addEventListener('change', loadRecordedCases);
+document.getElementById('week_date').addEventListener('change', loadRecordedCases);

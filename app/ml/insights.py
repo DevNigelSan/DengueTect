@@ -134,3 +134,47 @@ def forecast_insights(f):
         'same_week': _same_week(f, real, fdate),
         'trend':     _case_trend(f, real),
     }
+
+
+
+def _recorded_week(real, barangay, day):
+    """Recorded case row for the barangay's week that contains `day`, or None."""
+    rows = real[(real['barangay'] == barangay)
+                & (real['week_start'] <= pd.Timestamp(day))
+                & (real['week_start'] > pd.Timestamp(day) - pd.Timedelta(days=7))]
+    return None if rows.empty else rows.iloc[0]
+
+
+def recorded_cases(barangay, week_date):
+    """MCHO recorded cases for the 4 weeks before a forecast week (Week −4 … Week −1)."""
+    barangay = (barangay or '').strip().capitalize()
+    try:
+        start = date.fromisoformat(str(week_date))
+        _, real = _history()
+    except (OSError, ValueError, KeyError, TypeError):
+        return {'found': 0, 'weeks': []}
+    weeks = []
+    for k in (4, 3, 2, 1):
+        day = start - timedelta(weeks=k)
+        row = _recorded_week(real, barangay, day)
+        weeks.append({
+            'field': f'cases_w{k}',
+            'from':  day.isoformat(),
+            'to':    (day + timedelta(days=6)).isoformat(),
+            'cases': None if row is None else int(row['case_count']),
+        })
+    found = sum(w['cases'] is not None for w in weeks)
+    last = real[real['barangay'] == barangay]['week_start'].max()
+    return {'found': found, 'weeks': weeks,
+            'records_end': None if pd.isna(last) else (last + pd.Timedelta(days=6)).date().isoformat()}
+
+
+def recorded_week_cases(barangay, week_date):
+    """MCHO recorded cases for the forecast week itself, or None if it isn't in the records."""
+    try:
+        day = date.fromisoformat(str(week_date))
+        _, real = _history()
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+    row = _recorded_week(real, (barangay or '').strip().capitalize(), day)
+    return None if row is None else int(row['case_count'])

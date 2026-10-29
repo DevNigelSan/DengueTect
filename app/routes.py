@@ -5,7 +5,7 @@ from app.ml.storage import (save_forecast, get_latest_forecast, get_all_forecast
                             set_published, restore_forecast, set_actual_cases, get_forecasts_with_actuals)
 from datetime import date, timedelta
 from app.ml.auth import verify_password
-from app.ml.insights import forecast_insights
+from app.ml.insights import forecast_insights, recorded_cases, recorded_week_cases
 from app.ml.activity import (log_activity, get_recent_activity, get_activity, mark_undone, record_failed_login,
                              clear_failed_logins, failed_logins_left, login_lock_minutes,
                              LOCK_MINUTES)
@@ -219,6 +219,13 @@ def record_actual(forecast_id):
     _log('actual', f"Brgy. {f['barangay']} · week of {f['week_date']} · actual {raw} cases"
                    + (f" (was {previous})" if previous is not None else ''), target_id=forecast_id)
     return back('saved')
+
+@main.route('/api/recorded-cases')
+@login_required
+def api_recorded_cases():
+    """MCHO recorded cases for the 4 weeks before a forecast week, used to pre-fill Climate Input."""
+    from flask import jsonify
+    return jsonify(recorded_cases(request.args.get('barangay', ''), request.args.get('week', '')))
 
 @main.route('/result')
 @login_required
