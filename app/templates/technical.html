@@ -344,6 +344,33 @@
       </table>
     </div>
 
+        <!-- WHAT DRIVES THE FORECAST (feature importance) -->
+    {% if importance %}
+    {% set top = importance.groups | map(attribute='share') | max %}
+    <div class="tech-section" style="margin-top:24px;">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">What Drives the Forecast</div>
+          <div class="panel-sub">Feature importance · how much the Ensemble's error grows when each input is scrambled on the held-out weeks from {{ importance.test_start[:4] }}</div>
+        </div>
+      </div>
+      <div class="fi-list">
+        {% for g in importance.groups %}
+        <div class="fi-row">
+          <div class="fi-name">{{ g.name }}</div>
+          <div class="fi-bar"><i style="width: {{ (g.share / (top if top else 1) * 100) | round(1) }}%"></i></div>
+          <div class="fi-share">{{ g.share }}%</div>
+          <div class="fi-detail">+{{ '%.2f' | format(g.mae_increase if g.mae_increase > 0 else 0) }} cases error · RF {{ g.rf }}% · XGB {{ g.xgb }}%</div>
+        </div>
+        {% endfor %}
+      </div>
+      <p class="ts-foot">
+        Share = portion of the total importance on unseen data. RF and XGB % show how often each input is used inside the trees during training.
+        Baseline Ensemble error on these weeks: ±{{ importance.base_mae }} cases.
+      </p>
+    </div>
+    {% endif %}
+
     <!-- FEATURE IMPORTANCE NOTE -->
     <div class="tech-section" style="margin-top:24px;">
       <div class="panel-header">

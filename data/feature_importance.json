@@ -1,0 +1,48 @@
+{
+  "test_start": "2025-01-01",
+  "base_mae": 1.17,
+  "groups": [
+    {
+      "name": "Recent cases (4-week average)",
+      "share": 52.6,
+      "mae_increase": 0.398,
+      "rf": 41.6,
+      "xgb": 17.4
+    },
+    {
+      "name": "Humidity (lag 1\u20134)",
+      "share": 21.3,
+      "mae_increase": 0.161,
+      "rf": 18.7,
+      "xgb": 28.8
+    },
+    {
+      "name": "Temperature (lag 1\u20134)",
+      "share": 15.2,
+      "mae_increase": 0.115,
+      "rf": 16.1,
+      "xgb": 22.8
+    },
+    {
+      "name": "Month (season)",
+      "share": 5.8,
+      "mae_increase": 0.044,
+      "rf": 2.0,
+      "xgb": 5.8
+    },
+    {
+      "name": "Rainfall (lag 1\u20134)",
+      "share": 3.6,
+      "mae_increase": 0.027,
+      "rf": 16.0,
+      "xgb": 20.7
+    },
+    {
+      "name": "Barangay",
+      "share": 1.5,
+      "mae_increase": 0.011,
+      "rf": 5.6,
+      "xgb": 4.4
+    }
+  ]
+}
