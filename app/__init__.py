@@ -1,9 +1,29 @@
-from flask import Flask, render_template
+import os
+import secrets
 from datetime import timedelta
+from pathlib import Path
+
+from flask import Flask, render_template
+
+
+def _secret_key():
+    """Signs login sessions. Kept out of the code (and GitHub) in instance/secret_key.txt."""
+    key = os.environ.get('SECRET_KEY')
+    if key:
+        return key
+    path = Path(__file__).resolve().parent.parent / 'instance' / 'secret_key.txt'
+    if path.exists():
+        return path.read_text().strip()
+    path.parent.mkdir(exist_ok=True)
+    key = secrets.token_hex(32)
+    path.write_text(key)
+    return key
 
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'denguesense-dev-key-2024'
+    app.config['SECRET_KEY'] = _secret_key()
+    app.config['SESSION_COOKIE_HTTPONLY'] = True     # page scripts can't read the login cookie
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'    # other websites can't send it along
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)   # "Remember me" duration
 
     from .routes import main
