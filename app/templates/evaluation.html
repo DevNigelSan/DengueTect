@@ -195,6 +195,62 @@
     </div>
     {% endif %}
 
+        <!-- HOW RECENT FORECASTS TURNED OUT (feedback loop) -->
+    <div class="eval-section tracking-panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">How Recent Forecasts Turned Out</div>
+          <div class="panel-sub">
+            {% if tracking.n %}Compared with the actual cases recorded by health officers · {{ tracking.n }} forecast{{ 's' if tracking.n != 1 }}
+            {% else %}Record actual cases on a forecast report after its week ends to track real-world accuracy here{% endif %}
+          </div>
+        </div>
+      </div>
+      {% if tracking.n %}
+      <div class="tracking-stats">
+        <div class="tracking-stat">
+          <div class="ts-big">{{ tracking.within2 }}%</div>
+          <div class="ts-small">within 2 cases of the actual count</div>
+        </div>
+        <div class="tracking-stat">
+          <div class="ts-big">±{{ tracking.mae }}</div>
+          <div class="ts-small">average difference in cases</div>
+        </div>
+        <div class="tracking-stat">
+          <div class="ts-big">{{ tracking.alert_right }}%</div>
+          <div class="ts-small">of outbreak warnings were correct</div>
+        </div>
+      </div>
+      <div class="tracking-table-wrap">
+        <table class="tracking-table">
+          <thead>
+            <tr><th>Week of</th><th>Barangay</th><th>Forecast</th><th>Actual</th><th>Difference</th><th>Outbreak warning</th></tr>
+          </thead>
+          <tbody>
+            {% for f in tracking.rows %}
+            {% set o = f.outcome %}
+            <tr>
+              <td><a href="/result?id={{ f.id }}">{{ f.week_date }}</a></td>
+              <td>{{ f.barangay }}</td>
+              <td>{{ o.predicted }}</td>
+              <td>{{ o.actual }}</td>
+              <td><span class="tk-chip {{ 'good' if o.within2 else 'bad' }}">{{ '%+d' | format(o.diff) }}</span></td>
+              <td>
+                <span class="tk-chip {{ 'good' if o.alert_right else 'bad' }}">
+                  {% if o.alerted and o.outbreak %}Warned · happened
+                  {% elif o.alerted %}Warned · didn't happen
+                  {% elif o.outbreak %}Missed
+                  {% else %}Correctly calm{% endif %}
+                </span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </div>
+
     <!-- PREDICTED VS ACTUAL CHART -->
     <div class="eval-section">
       <div class="panel-header">

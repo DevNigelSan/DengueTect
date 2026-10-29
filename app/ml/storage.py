@@ -119,4 +119,22 @@ def restore_forecast(row):
     marks = ', '.join('?' for _ in data)
     conn.execute(f'INSERT INTO forecasts ({names}) VALUES ({marks})', tuple(data.values()))
     conn.commit()
-    conn.close()    
+    conn.close()
+
+
+
+def set_actual_cases(forecast_id, actual_cases, recorded_by):
+    """Save the real number of cases for a forecast's week (the feedback loop)."""
+    conn = get_db()
+    conn.execute('UPDATE forecasts SET actual_cases = ?, actual_recorded_at = ?, actual_recorded_by = ? WHERE id = ?',
+                 (actual_cases, datetime.now().strftime('%B %d, %Y · %I:%M %p'), recorded_by, forecast_id))
+    conn.commit()
+    conn.close()
+
+def get_forecasts_with_actuals():
+    """Forecasts whose actual cases have been recorded, newest week first."""
+    conn = get_db()
+    rows = conn.execute('SELECT * FROM forecasts WHERE actual_cases IS NOT NULL '
+                        'ORDER BY week_date DESC, id DESC').fetchall()
+    conn.close()
+    return [dict(r) for r in rows]    

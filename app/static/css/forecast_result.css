@@ -812,3 +812,92 @@
 @media print {
   body .insights-section { display: none; }
 }
+
+/* ── ACTUAL OUTCOME (feedback loop) ── */
+.outcome-notice {
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.outcome-notice.ok   { background: #F0FDF4; color: var(--green-safe); }
+.outcome-notice.warn { background: #FFFBEB; color: #B45309; }
+
+.outcome-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.outcome-stat {
+  padding: 16px;
+  background: var(--gray-100);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 12px;
+}
+
+.outcome-stat.good { background: #F0FDF4; border-color: #BBF7D0; }
+.outcome-stat.bad  { background: #FEF2F2; border-color: #FECACA; }
+
+.os-num {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--blue-deep);
+}
+
+.outcome-stat.good .os-num { color: var(--green-safe); }
+.outcome-stat.bad .os-num  { color: var(--red-alert); }
+
+.os-label { margin-top: 4px; font-size: 12.5px; line-height: 1.4; color: var(--gray-600); }
+
+.outcome-meta { margin-top: 10px; font-size: 11.5px; color: var(--gray-400); }
+
+.outcome-form { margin-top: 16px; }
+
+.outcome-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.outcome-input-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.outcome-input-row input {
+  width: 140px;
+  padding: 9px 12px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.outcome-input-row input:focus { outline: none; border-color: var(--blue-primary); }
+
+.btn-outcome {
+  padding: 9px 18px;
+  border: none;
+  border-radius: 8px;
+  background: var(--blue-primary);
+  color: var(--white);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-outcome:hover { background: var(--blue-deep); }
+
+.outcome-wait { margin: 0; font-size: 13px; color: var(--gray-600); }
+
+@media (max-width: 800px) {
+  .outcome-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media print {
+  body .outcome-section { display: none; }
+}

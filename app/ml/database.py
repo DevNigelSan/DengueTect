@@ -48,6 +48,9 @@ def init_db():
         'xgb_predicted_cases': 'INTEGER',
         'ensemble_cases':      'INTEGER',
         'published':           'INTEGER NOT NULL DEFAULT 0',
+        'actual_cases':        'INTEGER',
+        'actual_recorded_at':  'TEXT',
+        'actual_recorded_by':  'TEXT',
     }
     for name, col_type in new_columns.items():
         if name not in existing:

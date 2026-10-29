@@ -236,7 +236,63 @@
         </div>
       </div>
 
-            <!-- FORECAST INSIGHTS -->
+                  <!-- ACTUAL OUTCOME (feedback loop) -->
+      {% if forecast.id %}
+      {% set outcome_msgs = {
+        'saved':   ('ok',   'Actual cases saved. They now count toward the accuracy shown on Model Evaluation.'),
+        'invalid': ('warn', 'Enter a whole number of cases from 0 to 500.'),
+        'early':   ('warn', 'Actual cases can only be recorded after the forecast week ends.'),
+      } %}
+      {% set om = outcome_msgs.get(request.args.get('actual')) %}
+      <div class="report-section outcome-section" id="outcome">
+        <div class="report-section-title">Actual Outcome <span>· What really happened, to track forecast accuracy</span></div>
+        {% if om %}<div class="outcome-notice {{ om[0] }}">{{ om[1] }}</div>{% endif %}
+
+        {% if outcome %}
+        <div class="outcome-grid">
+          <div class="outcome-stat">
+            <div class="os-num">{{ outcome.predicted }}</div>
+            <div class="os-label">Forecast cases</div>
+          </div>
+          <div class="outcome-stat">
+            <div class="os-num">{{ outcome.actual }}</div>
+            <div class="os-label">Actual cases</div>
+          </div>
+          <div class="outcome-stat {{ 'good' if outcome.within2 else 'bad' }}">
+            <div class="os-num">{{ '%+d' | format(outcome.diff) }}</div>
+            <div class="os-label">{{ 'Within 2 cases' if outcome.within2 else 'Off by more than 2 cases' }}</div>
+          </div>
+          <div class="outcome-stat {{ 'good' if outcome.alert_right else 'bad' }}">
+            <div class="os-num">{{ '✓' if outcome.alert_right else '✗' }}</div>
+            <div class="os-label">
+              {% if outcome.alerted and outcome.outbreak %}Outbreak warned, and it happened
+              {% elif outcome.alerted %}Warned, but no outbreak happened
+              {% elif outcome.outbreak %}Outbreak happened without a warning
+              {% else %}No outbreak, and none was warned{% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="outcome-meta">Recorded by {{ forecast.actual_recorded_by or '—' }} · {{ forecast.actual_recorded_at }}</div>
+        {% endif %}
+
+        {% if can_record %}
+        <form method="POST" action="{{ url_for('main.record_actual', forecast_id=forecast.id) }}" class="outcome-form">
+          <label for="actualCases">
+            {% if outcome %}Correct the actual cases if needed{% else %}Actual dengue cases in Barangay {{ forecast.barangay }} for the week of {{ forecast.week_date }}{% endif %}
+          </label>
+          <div class="outcome-input-row">
+            <input type="number" id="actualCases" name="actual_cases" min="0" max="500" step="1" required
+                   value="{{ outcome.actual if outcome else '' }}" placeholder="e.g. 3">
+            <button type="submit" class="btn-outcome">{{ 'Update' if outcome else 'Save actual cases' }}</button>
+          </div>
+        </form>
+        {% elif not outcome %}
+        <p class="outcome-wait">Actual cases can be recorded once this forecast week ends, on or after <strong>{{ week_end }}</strong>.</p>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- FORECAST INSIGHTS -->
       {% if insights and (insights.climate or insights.same_week or insights.trend) %}
       <div class="report-section insights-section">
         <div class="report-section-title">Forecast Insights <span>· How this forecast compares with past records</span></div>

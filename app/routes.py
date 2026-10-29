@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from app.ml.predict import run_forecast
+from app.ml.predict import run_forecast, outbreak_config
 from app.ml.storage import (save_forecast, get_latest_forecast, get_all_forecasts, delete_forecast_by_id,
                             get_latest_published_forecast, toggle_published, get_forecast_by_id,
-                            set_published, restore_forecast)
-from datetime import date
+                            set_published, restore_forecast, set_actual_cases, get_forecasts_with_actuals)
+from datetime import date, timedelta
 from app.ml.auth import verify_password
 from app.ml.insights import forecast_insights
 from app.ml.activity import (log_activity, get_recent_activity, get_activity, mark_undone, record_failed_login,
@@ -166,19 +166,83 @@ def climate_input():
 
     return render_template('climate_input.html')
 
+# ── Feedback loop: forecast vs actual cases ──
+def _outcome(f):
+    """How a forecast compared with the actual cases, once they are recorded."""
+    if not f or f.get('actual_cases') is None:
+        return None
+    predicted = f.get('ensemble_cases') if f.get('ensemble_cases') is not None else f.get('predicted_cases')
+    predicted = int(predicted or 0)
+    actual    = int(f['actual_cases'])
+    threshold = outbreak_config.get('thresholds', {}).get(f.get('barangay'), 2)
+    alerted   = f.get('risk_level') in ('high', 'moderate')
+    outbreak  = actual >= threshold
+    return {'predicted': predicted, 'actual': actual, 'diff': actual - predicted,
+            'within2': abs(actual - predicted) <= 2,
+            'alerted': alerted, 'outbreak': outbreak, 'alert_right': alerted == outbreak}
+
+def _tracking(limit=12):
+    """Real-world accuracy from the actual cases health officers have recorded."""
+    seen, rows = set(), []
+    for f in get_forecasts_with_actuals():          # newest first; keep one forecast per barangay-week
+        key = (f['barangay'], f['week_date'])
+        if key in seen:
+            continue
+        seen.add(key)
+        f['outcome'] = _outcome(f)
+        rows.append(f)
+    n = len(rows)
+    if not n:
+        return {'n': 0, 'rows': []}
+    return {
+        'n':           n,
+        'within2':     round(sum(r['outcome']['within2'] for r in rows) / n * 100),
+        'mae':         round(sum(abs(r['outcome']['diff']) for r in rows) / n, 1),
+        'alert_right': round(sum(r['outcome']['alert_right'] for r in rows) / n * 100),
+        'rows':        rows[:limit],
+    }
+
+@main.route('/forecast/<int:forecast_id>/actual', methods=['POST'])
+@login_required
+def record_actual(forecast_id):
+    f = get_forecast_by_id(forecast_id)
+    if not f:
+        return redirect(url_for('main.history'))
+    back = lambda code: redirect(url_for('main.forecast_result', id=forecast_id, actual=code, _anchor='outcome'))
+    raw = (request.form.get('actual_cases') or '').strip()
+    if not raw.isdigit() or int(raw) > 500:
+        return back('invalid')
+    if date.fromisoformat(f['week_date']) + timedelta(days=7) > date.today():
+        return back('early')
+    previous = f.get('actual_cases')
+    set_actual_cases(forecast_id, int(raw), session.get('user_name') or session.get('user_email'))
+    _log('actual', f"Brgy. {f['barangay']} · week of {f['week_date']} · actual {raw} cases"
+                   + (f" (was {previous})" if previous is not None else ''), target_id=forecast_id)
+    return back('saved')
+
 @main.route('/result')
 @login_required
 def forecast_result():
     forecast_id = request.args.get('id', type=int)
     if forecast_id:
-        from app.ml.storage import get_forecast_by_id
         forecast = get_forecast_by_id(forecast_id)
-        if forecast:
-            _log('view_report', f"Brgy. {forecast['barangay']} · week of {forecast['week_date']} (record #{forecast_id})")  
+        if forecast and not request.args.get('actual'):
+            _log('view_report', f"Brgy. {forecast['barangay']} · week of {forecast['week_date']} (record #{forecast_id})")
     else:
         forecast = session.get('last_forecast', None)
+        if forecast and forecast.get('id'):
+            forecast = get_forecast_by_id(forecast['id']) or forecast
+    week_end, can_record = None, False
+    if forecast and forecast.get('week_date'):
+        try:
+            week_end = date.fromisoformat(forecast['week_date']) + timedelta(days=7)
+            can_record = date.today() >= week_end
+        except ValueError:
+            pass
     return render_template('forecast_result.html', forecast=forecast,
-                           insights=forecast_insights(forecast) if forecast else None)
+                           insights=forecast_insights(forecast) if forecast else None,
+                           outcome=_outcome(forecast), can_record=can_record,
+                           week_end=week_end.isoformat() if week_end else '')
 
 @main.route('/history')
 @login_required
@@ -428,7 +492,8 @@ def evaluation():
         'n_test':     first.get('n_test', 0),
         'test_start': summary['test_start'] if summary else '',
     }
-    return render_template('evaluation.html', eval_data=eval_data, split=split, prov=prov, summary=summary)
+    return render_template('evaluation.html', eval_data=eval_data, split=split, prov=prov, summary=summary,
+                           tracking=_tracking())
 
 @main.route('/heatmap')
 @login_required
