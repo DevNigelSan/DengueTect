@@ -153,7 +153,13 @@
     <!-- HISTORY TABLE -->
     <div class="table-panel">
       <div class="panel-header">
-        <div class="panel-title">Forecast Records</div>
+                <div>
+          <div class="panel-title">Forecast Records</div>
+          <div class="wk-legend">
+            <span><span class="wk-tag current"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>On Dashboard</span> each barangay's current forecast, listed first</span>
+            <span><span class="wk-tag old"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Past week</span> <span class="wk-tag old"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Replaced</span> older forecasts, kept for reference</span>
+          </div>
+        </div>
         <div class="panel-sub" id="recordCount">
           Showing {{ rows | length }} record{{ 's' if rows | length != 1 else '' }}
         </div>
@@ -174,9 +180,15 @@
           </thead>
           <tbody id="historyBody">
             {% for f in rows %}
-            <tr data-brgy="{{ f.barangay }}" data-risk="{{ f.risk_level }}">
+                        <tr data-brgy="{{ f.barangay }}" data-risk="{{ f.risk_level }}"
+                class="{{ 'is-current' if f.status == 'current' else 'is-old' }}{{ ' is-last-current' if f.status == 'current' and (not loop.nextitem or loop.nextitem.status != 'current') }}">
               <td><strong>{{ f.barangay }}</strong></td>
-              <td>{{ f.week_date }}</td>
+              <td class="td-week">
+                <span class="wk-date">{{ f.week_date }}</span>
+                {% if f.status == 'current' %}<span class="wk-tag current" title="This is the forecast shown on the Dashboard"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>On Dashboard</span>
+                {% elif f.status == 'replaced' %}<span class="wk-tag old" title="A newer forecast was made for this same week"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Replaced</span>
+                {% else %}<span class="wk-tag old" title="A forecast for a later week is on the Dashboard"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Past week</span>{% endif %}
+              </td>
               <td>{{ f.predicted_cases }}</td>
               <td>{{ f.outbreak_proba }}%</td>
               <td><span class="badge {{ f.risk_level }}">{{ f.risk_level | title }}</span></td>

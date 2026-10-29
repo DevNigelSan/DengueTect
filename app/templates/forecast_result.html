@@ -161,6 +161,28 @@
       </div>
 
       <!-- FORECAST SUMMARY -->
+            <!-- NOT THE CURRENT FORECAST -->
+      {% if status and status != 'current' and current_forecast %}
+      <div class="report-status-note">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div class="rsn-body">
+          <div class="rsn-title">{{ 'This is a past-week forecast' if status == 'past' else 'This forecast was replaced' }}</div>
+          <p>
+            {% if status == 'past' %}
+            It is for the week of <strong>{{ forecast.week_date }}</strong>, so it is <strong>not</strong> the forecast shown on the Dashboard.
+            Barangay {{ forecast.barangay }}'s current forecast is for the week of <strong>{{ current_forecast.week_date }}</strong>.
+            {% else %}
+            A <strong>newer forecast</strong> was made for this same week ({{ forecast.week_date }}), so the Dashboard shows that one instead.
+            {% endif %}
+          </p>
+          <a href="/result?id={{ current_forecast.id }}" class="rsn-btn">
+            View the current forecast
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+      </div>
+      {% endif %}
+
       <div class="report-section">
         <div class="report-section-title">Forecast Summary</div>
         <div class="summary-cards-row">

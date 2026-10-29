@@ -953,3 +953,30 @@ input::placeholder { color: var(--gray-400); }
 .cases-source.ok::before      { content: '✓  '; font-weight: 700; }
 .cases-source.partial::before,
 .cases-source.none::before    { content: '⚠  '; }
+
+/* ── PAST / FUTURE WEEK WARNING ── */
+.week-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: #FFFBEB;
+  border: 2px solid #FCD34D;
+  border-left: 6px solid #F59E0B;
+  border-radius: 10px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #78350F;
+}
+
+.week-warning::before {
+  content: '⚠';
+  flex-shrink: 0;
+  font-size: 20px;
+  line-height: 1.1;
+  color: #D97706;
+}
+
+.week-warning strong { color: #78350F; }
+.week-warning[hidden] { display: none; }

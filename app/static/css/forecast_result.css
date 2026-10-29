@@ -901,3 +901,58 @@
 @media print {
   body .outcome-section { display: none; }
 }
+
+/* ── NOT THE CURRENT FORECAST ── */
+.report-status-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin: 24px 32px 0;
+  padding: 18px 22px;
+  background: #E8F1FB;
+  border: 2px solid #9CC0EA;
+  border-left: 8px solid var(--blue-primary);
+  border-radius: 12px;
+}
+
+.report-status-note > svg { flex-shrink: 0; color: var(--blue-primary); }
+
+.rsn-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--blue-deep);
+}
+
+.rsn-body p {
+  margin: 6px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--gray-800);
+}
+
+.rsn-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 18px;
+  border-radius: 9px;
+  background: var(--blue-primary);
+  color: var(--white);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.rsn-btn:hover { background: var(--blue-deep); color: var(--white); text-decoration: none; }
+.rsn-btn:focus-visible { outline: 3px solid #9CC0EA; outline-offset: 2px; }
+
+@media (max-width: 700px) {
+  .report-status-note { margin: 16px 16px 0; padding: 16px; }
+}
+
+@media print {
+  body .report-status-note { display: none; }
+}

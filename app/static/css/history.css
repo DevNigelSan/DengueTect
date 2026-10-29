@@ -339,3 +339,68 @@ a.btn-print { text-decoration: none; }
   .summary-row { grid-template-columns: repeat(2, 1fr); }
   .nav-center  { display: none; }
 }
+
+/* ── CURRENT vs PAST FORECASTS ── */
+.wk-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.wk-tag svg { flex-shrink: 0; }
+
+.wk-tag.current {
+  background: var(--blue-primary);
+  color: var(--white);
+  box-shadow: 0 1px 4px rgba(26, 86, 160, 0.35);
+}
+
+.wk-tag.old {
+  background: #E2E8F0;
+  color: #334155;
+}
+
+.td-week { white-space: nowrap; }
+.td-week .wk-date { display: inline-block; min-width: 92px; margin-right: 10px; }
+
+/* Current forecast rows: strong blue band */
+.forecast-table tr.is-current td {
+  background: #E8F1FB;
+  color: var(--gray-800);
+  font-weight: 600;
+  font-size: 14.5px;
+  border-bottom: 1px solid #BFD5F0;
+}
+
+.forecast-table tr.is-current td:first-child { box-shadow: inset 6px 0 0 var(--blue-primary); }
+.forecast-table tr.is-current td:first-child strong { color: var(--blue-deep); font-weight: 800; }
+
+/* Thick divider between current forecasts and older ones */
+.forecast-table tr.is-last-current td { border-bottom: 4px solid var(--blue-primary); }
+
+/* Older rows stay readable, just quieter */
+.forecast-table tr.is-old td { color: var(--gray-600); }
+.forecast-table tr.is-old td strong { color: var(--gray-600); font-weight: 600; }
+
+.wk-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 24px;
+  margin-top: 10px;
+  font-size: 13.5px;
+  color: var(--gray-600);
+}
+
+.wk-legend > span { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+@media print {
+  .forecast-table tr.is-current td { background: none; }
+}

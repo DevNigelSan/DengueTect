@@ -138,6 +138,7 @@ function clearForm() {
   });
   document.getElementById('barangay').value = '';
   document.getElementById('week_date').value = '';
+  checkWeekTiming();
 
   const status = document.getElementById('fetchStatus');
   status.innerHTML = '';
@@ -533,3 +534,40 @@ document.querySelectorAll('input[name^="cases_"]').forEach(input => {
 
 document.getElementById('barangay').addEventListener('change', loadRecordedCases);
 document.getElementById('week_date').addEventListener('change', loadRecordedCases);
+
+
+// ── PAST / FUTURE WEEK WARNING ──
+// Warn when the forecast week is not the current week
+function mondayOf(d) {
+  const m = new Date(d);
+  m.setHours(0, 0, 0, 0);
+  m.setDate(m.getDate() - ((m.getDay() + 6) % 7));
+  return m;
+}
+
+function checkWeekTiming() {
+  const input = document.getElementById('week_date');
+  let el = document.getElementById('weekWarning');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'weekWarning';
+    el.className = 'week-warning';
+    el.setAttribute('role', 'status');
+    input.closest('.field-row').insertAdjacentElement('afterend', el);
+  }
+  if (!input.value) { el.hidden = true; return; }
+
+  const weeks = Math.round((mondayOf(new Date(input.value + 'T00:00:00')) - mondayOf(new Date())) / (7 * 864e5));
+  if (weeks === 0) { el.hidden = true; return; }
+
+  const n = Math.abs(weeks);
+  const span = `${n} week${n !== 1 ? 's' : ''}`;
+  el.innerHTML = weeks < 0
+    ? `<span><strong>This is a past week</strong> (${span} ago). The forecast will be saved in History for review, but the Dashboard will keep showing a newer forecast if one exists.</span>`
+    : `<span><strong>This week hasn't started yet</strong> (${span} ahead). Climate data for it may not be available yet, so check the values before running the forecast.</span>`;
+  el.hidden = false;
+}
+
+document.getElementById('week_date').addEventListener('change', checkWeekTiming);
+document.getElementById('week_date').addEventListener('input', checkWeekTiming);
+checkWeekTiming();

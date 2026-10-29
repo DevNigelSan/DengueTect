@@ -246,17 +246,31 @@ def forecast_result():
             can_record = date.today() >= week_end
         except ValueError:
             pass
+    latest = get_latest_forecast(forecast['barangay']) if forecast and forecast.get('id') else None
+    status = _forecast_status(forecast, latest) if latest else 'current'
     return render_template('forecast_result.html', forecast=forecast,
+                           status=status, current_forecast=latest,
                            insights=forecast_insights(forecast) if forecast else None,
                            outcome=_outcome(forecast), can_record=can_record,
                            recorded_actual=recorded_week_cases(forecast.get('barangay'), forecast.get('week_date'))
                                            if forecast and forecast.get('actual_cases') is None else None,
                            week_end=week_end.isoformat() if week_end else '')
 
+def _forecast_status(f, latest):
+    """'current' if this is the barangay's forecast shown on the Dashboard,
+    'replaced' if a newer forecast exists for the same week, otherwise 'past'."""
+    if not latest or f.get('id') == latest.get('id'):
+        return 'current'
+    return 'replaced' if f.get('week_date') == latest.get('week_date') else 'past'
+
 @main.route('/history')
 @login_required
 def history():
     rows = get_all_forecasts()
+    current = {b: get_latest_forecast(b) for b in ['Nangka', 'Tumana', 'Malanday']}
+    for f in rows:
+        f['status'] = _forecast_status(f, current.get(f['barangay']))
+    rows.sort(key=lambda f: f['status'] != 'current')   # current forecasts first, the rest newest first
     return render_template('history.html', rows=rows)
 
 @main.route('/history/export')
