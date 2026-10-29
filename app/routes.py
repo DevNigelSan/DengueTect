@@ -249,6 +249,8 @@ def forecast_result():
     return render_template('forecast_result.html', forecast=forecast,
                            insights=forecast_insights(forecast) if forecast else None,
                            outcome=_outcome(forecast), can_record=can_record,
+                           recorded_actual=recorded_week_cases(forecast.get('barangay'), forecast.get('week_date'))
+                                           if forecast and forecast.get('actual_cases') is None else None,
                            week_end=week_end.isoformat() if week_end else '')
 
 @main.route('/history')

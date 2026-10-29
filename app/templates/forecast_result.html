@@ -276,13 +276,19 @@
         {% endif %}
 
         {% if can_record %}
+                {% if recorded_actual is not none and not outcome %}
+        <div class="outcome-notice ok">
+          MCHO records show <strong>{{ recorded_actual }} case{{ 's' if recorded_actual != 1 }}</strong>
+          in Barangay {{ forecast.barangay }} for this week. The value is filled in below. Click <strong>Save</strong> to use it.
+        </div>
+        {% endif %}
         <form method="POST" action="{{ url_for('main.record_actual', forecast_id=forecast.id) }}" class="outcome-form">
           <label for="actualCases">
             {% if outcome %}Correct the actual cases if needed{% else %}Actual dengue cases in Barangay {{ forecast.barangay }} for the week of {{ forecast.week_date }}{% endif %}
           </label>
           <div class="outcome-input-row">
             <input type="number" id="actualCases" name="actual_cases" min="0" max="500" step="1" required
-                   value="{{ outcome.actual if outcome else '' }}" placeholder="e.g. 3">
+                                      value="{{ outcome.actual if outcome else (recorded_actual if recorded_actual is not none else '') }}" placeholder="e.g. 3">
             <button type="submit" class="btn-outcome">{{ 'Update' if outcome else 'Save actual cases' }}</button>
           </div>
         </form>
