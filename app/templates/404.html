@@ -29,14 +29,14 @@
 
   <main class="error-main">
     <div class="error-wrap">
-      <div class="error-code">404</div>
+            <div class="error-code">{{ code or 404 }}</div>
       <div class="error-pulse">
         <svg viewBox="0 0 200 60" preserveAspectRatio="none">
           <path class="error-ekg" d="M0,30 L40,30 L55,30 L60,10 L65,50 L70,5 L77,45 L82,30 L120,30 L160,30 L200,30"/>
         </svg>
       </div>
-      <h1 class="error-title">Page not found</h1>
-      <p class="error-desc">The page you're looking for doesn't exist or you don't have permission to access it.</p>
+      <h1 class="error-title">{{ title or 'Page not found' }}</h1>
+      <p class="error-desc">{{ desc or "The page you're looking for doesn't exist or you don't have permission to access it." }}</p>
       <div class="error-actions">
         <a href="/dashboard" class="btn-forecast">Go to Dashboard</a>
         <a href="/input" class="btn-back">New Forecast</a>

@@ -142,30 +142,27 @@ def dashboard():
 @login_required
 def climate_input():
     if request.method == 'POST':
-        barangay  = request.form.get('barangay')
-        week_date = request.form.get('week_date')
+        clean, errors, bad = _validate_forecast_form(request.form)
+        if errors:
+            return _input_form_error(errors, bad)
 
-        climate_inputs = {
-            'rain_w1':   request.form.get('rain_w1'),
-            'rain_w2':   request.form.get('rain_w2'),
-            'rain_w3':   request.form.get('rain_w3'),
-            'rain_w4':   request.form.get('rain_w4'),
-            'temp_w1':   request.form.get('temp_w1'),
-            'temp_w2':   request.form.get('temp_w2'),
-            'temp_w3':   request.form.get('temp_w3'),
-            'temp_w4':   request.form.get('temp_w4'),
-            'humid_w1':  request.form.get('humid_w1'),
-            'humid_w2':  request.form.get('humid_w2'),
-            'humid_w3':  request.form.get('humid_w3'),
-            'humid_w4':  request.form.get('humid_w4'),
-            'cases_w1':  request.form.get('cases_w1'),
-            'cases_w2':  request.form.get('cases_w2'),
-            'cases_w3':  request.form.get('cases_w3'),
-            'cases_w4':  request.form.get('cases_w4'),
-            'generated_by': session.get('user_name'),
-        }
+        barangay  = clean['barangay']
+        week_date = clean['week_date']
 
-        result = run_forecast(barangay, week_date, climate_inputs)
+        climate_inputs = {name: clean[name] for name in (
+            'rain_w1', 'rain_w2', 'rain_w3', 'rain_w4',
+            'temp_w1', 'temp_w2', 'temp_w3', 'temp_w4',
+            'humid_w1', 'humid_w2', 'humid_w3', 'humid_w4',
+            'cases_w1', 'cases_w2', 'cases_w3', 'cases_w4')}
+        climate_inputs['generated_by'] = session.get('user_name')
+
+        try:
+            result = run_forecast(barangay, week_date, climate_inputs)
+        except Exception:
+            from flask import current_app
+            current_app.logger.exception('Forecast failed')
+            return _input_form_error(['The forecast could not be generated from these values. '
+                                      'Please check them and try again, or contact the IT Admin.'], [])
         result.update(climate_inputs)
         new_id = save_forecast(result)
         _log('forecast', f"Brgy. {result['barangay']} · week of {week_date} · "
@@ -682,3 +679,65 @@ def technical():
         importance = None
     return render_template('technical.html', eval_data=eval_data,
                            split=_split_evaluation(eval_data), summary=summary, importance=importance)
+
+
+
+# ── Climate Input: server-side checks ──
+FORECAST_LIMITS = {
+    'rain':  ('Rainfall',    0,   1000, 'mm'),
+    'temp':  ('Temperature', 15,  40,   '°C'),
+    'humid': ('Humidity',    0,   100,  '%'),
+    'cases': ('Cases',       0,   500,  'cases'),
+}
+WEEK_NAMES = {1: 'Week 1 (latest)', 2: 'Week 2', 3: 'Week 3', 4: 'Week 4 (oldest)'}
+
+def _validate_forecast_form(form):
+    """Checks every Climate Input value. Returns (clean values, errors, names of bad fields)."""
+    import math
+    from datetime import date, datetime, timedelta
+    errors, bad, clean = [], [], {}
+
+    barangay = (form.get('barangay') or '').strip().lower()
+    if barangay not in ('nangka', 'tumana', 'malanday'):
+        errors.append('Please choose a barangay: Nangka, Tumana or Malanday.')
+        bad.append('barangay')
+    clean['barangay'] = barangay
+
+    week_date = (form.get('week_date') or '').strip()
+    try:
+        week = datetime.strptime(week_date, '%Y-%m-%d').date()
+        if week < date(2017, 1, 1) or week > date.today() + timedelta(days=366):
+            errors.append('The week must be between 2017 and one year from today.')
+            bad.append('week_date')
+    except ValueError:
+        errors.append('Please choose a valid week starting date.')
+        bad.append('week_date')
+    clean['week_date'] = week_date
+
+    for prefix, (label, low, high, unit) in FORECAST_LIMITS.items():
+        for n in (1, 2, 3, 4):
+            field = f'{prefix}_w{n}'
+            raw = (form.get(field) or '').strip()
+            where = f'{label}, {WEEK_NAMES[n]}'
+            try:
+                value = float(raw)
+                if not math.isfinite(value):
+                    raise ValueError
+            except ValueError:
+                errors.append(f'{where}: enter a number{" (0 if there were no cases)" if prefix == "cases" else ""}.')
+                bad.append(field)
+                continue
+            if prefix == 'cases' and value != int(value):
+                errors.append(f'{where}: cases must be a whole number.')
+                bad.append(field)
+            elif not low <= value <= high:
+                errors.append(f'{where}: {raw} {unit} is outside the allowed range of {low}–{high} {unit}.')
+                bad.append(field)
+            else:
+                clean[field] = str(int(value)) if prefix == 'cases' else raw
+    return clean, errors, bad
+
+def _input_form_error(errors, bad):
+    """Show Climate Input again with the typed values kept and the problems listed."""
+    return render_template('climate_input.html', form_errors=errors, bad_fields=bad,
+                           form_values=request.form.to_dict()), 400

@@ -83,7 +83,20 @@
     <div class="input-layout">
 
       <!-- LEFT: FORM -->
-      <form class="input-form-wrap" action="/input" method="POST">
+        <form class="input-form-wrap" action="/input" method="POST">
+
+        {% if form_errors %}
+        <div class="form-error-box" id="formErrors" role="alert">
+          <div class="feb-head">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <strong>No forecast was made. Please fix {{ form_errors | length }} problem{{ 's' if form_errors | length != 1 }}:</strong>
+          </div>
+          <ul>
+            {% for e in form_errors %}<li>{{ e }}</li>{% endfor %}
+          </ul>
+          <div class="feb-foot">Your other entries were kept. Boxes with a problem are outlined in red.</div>
+        </div>
+        {% endif %}
 
         <!-- STEP 1: Barangay + Week -->
         <div class="form-section">
@@ -308,7 +321,7 @@
             </div>
             <div class="info-step">
               <div class="info-step-num">3</div>
-              <div class="info-step-text">Random Forest predicts case count; Logistic Regression classifies outbreak risk</div>
+                            <div class="info-step-text">Random Forest and XGBoost estimate the case count together; Logistic Regression rates the outbreak risk</div>
             </div>
             <div class="info-step">
               <div class="info-step-num">4</div>
@@ -339,4 +352,28 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/climate_input.js') }}"></script>
 <script src="{{ url_for('static', filename='js/forecast_loader.js') }}"></script>
+{% if form_values %}
+<script>
+  // The server sent the form back: put the typed values back and outline the boxes with problems
+  (function () {
+    const values = {{ form_values | tojson }};
+    const bad    = {{ (bad_fields or []) | tojson }};
+    Object.entries(values).forEach(([name, value]) => {
+      const el = document.querySelector(`[name="${name}"]`);
+      if (el) el.value = value;
+    });
+    bad.forEach(name => {
+      const el = document.querySelector(`[name="${name}"]`);
+      if (!el) return;
+      el.classList.add('field-invalid');
+      el.addEventListener('input',  () => el.classList.remove('field-invalid'));
+      el.addEventListener('change', () => el.classList.remove('field-invalid'));
+    });
+    if (typeof checkWeekTiming === 'function') checkWeekTiming();
+    if (typeof validateCases === 'function') validateCases();
+    const box = document.getElementById('formErrors');
+    if (box) box.scrollIntoView({ block: 'center' });
+  })();
+</script>
+{% endif %}
 {% endblock %}

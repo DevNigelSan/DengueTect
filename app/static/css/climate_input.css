@@ -980,3 +980,28 @@ input::placeholder { color: var(--gray-400); }
 
 .week-warning strong { color: #78350F; }
 .week-warning[hidden] { display: none; }
+
+/* ── SERVER-SIDE INPUT ERRORS ── */
+.form-error-box {
+  margin-bottom: 20px;
+  padding: 16px 20px;
+  background: #FEF2F2;
+  border: 2px solid #FCA5A5;
+  border-left: 6px solid var(--red-alert);
+  border-radius: 12px;
+  color: #991B1B;
+}
+
+.feb-head { display: flex; align-items: center; gap: 10px; font-size: 16px; }
+.feb-head svg { flex-shrink: 0; color: var(--red-alert); }
+
+.form-error-box ul { margin: 10px 0 8px 32px; padding: 0; }
+.form-error-box li { margin-bottom: 4px; font-size: 15px; line-height: 1.5; }
+.feb-foot { margin-left: 32px; font-size: 13.5px; color: #B91C1C; }
+
+input.field-invalid,
+select.field-invalid {
+  border: 2.5px solid var(--red-alert) !important;
+  background: #FEF2F2 !important;
+  box-shadow: 0 0 0 3px #FEE2E2 !important;
+}
