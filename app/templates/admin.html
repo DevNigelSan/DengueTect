@@ -78,56 +78,46 @@
       </div>
     </div>
 
-    <!-- SYSTEM STATS -->
+        <!-- SYSTEM STATS (live) -->
     <div class="admin-stats-row">
       <div class="admin-stat-card">
         <div class="asc-icon blue">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </div>
         <div class="asc-info">
-          <div class="asc-num">6</div>
-          <div class="asc-label">Registered Users</div>
+          <div class="asc-num">{{ stats.active_users }}</div>
+          <div class="asc-label">Active Accounts</div>
+          <div class="asc-sub">of {{ stats.total_users }} registered</div>
         </div>
       </div>
       <div class="admin-stat-card">
         <div class="asc-icon green">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-          </svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         </div>
         <div class="asc-info">
-          <div class="asc-num">24</div>
+          <div class="asc-num">{{ stats.forecasts }}</div>
           <div class="asc-label">Forecasts Generated</div>
-        </div>
-      </div>
-      <div class="admin-stat-card">
-        <div class="asc-icon yellow">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
-          </svg>
-        </div>
-        <div class="asc-info">
-          <div class="asc-num">v1.0</div>
-          <div class="asc-label">System Version</div>
+          <div class="asc-sub">{{ stats.published }} published to the community</div>
         </div>
       </div>
       <div class="admin-stat-card">
         <div class="asc-icon red">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         </div>
         <div class="asc-info">
-          <div class="asc-num">3</div>
-          <div class="asc-label">Active Alerts</div>
+          <div class="asc-num">{{ stats.high_risk | length }}</div>
+          <div class="asc-label">High-Risk Barangays</div>
+          <div class="asc-sub">{{ stats.high_risk | join(', ') if stats.high_risk else 'None in the latest forecasts' }}</div>
+        </div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="asc-icon yellow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <div class="asc-info">
+          <div class="asc-num">{{ stats.outcomes }}</div>
+          <div class="asc-label">Outcomes Recorded</div>
+          <div class="asc-sub">forecasts with actual cases entered</div>
         </div>
       </div>
     </div>
@@ -136,11 +126,35 @@
     <div class="admin-grid">
 
       <!-- USER MANAGEMENT -->
-      <div class="admin-panel">
+      <div class="admin-panel" id="users">
         <div class="panel-header">
-          <div class="panel-title">User Accounts</div>
-          <button class="btn-add-user" onclick="showAddUser()">+ Add User</button>
+          <div>
+            <div class="panel-title">User Accounts</div>
+            <div class="panel-sub">Who can sign in to DengueTect</div>
+          </div>
+          <button type="button" class="btn-add-user" onclick="openUserModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add User
+          </button>
         </div>
+
+        {% set user_msgs = {
+          'added':       'The account was created. The new user can now sign in.',
+          'updated':     'The account was updated.',
+          'activated':   'The account was activated. This user can sign in again.',
+          'deactivated': 'The account was deactivated. This user can no longer sign in.',
+        } %}
+        {% if request.args.get('user_msg') in user_msgs %}
+        <div class="user-notice ok" role="status">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          {{ user_msgs[request.args.get('user_msg')] }}
+        </div>
+        {% elif request.args.get('user_error') and not request.args.get('form') %}
+        <div class="user-notice error" role="alert">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          {{ request.args.get('user_error') }}
+        </div>
+        {% endif %}
 
         <div class="user-table-wrap">
           <table class="admin-table">
@@ -154,73 +168,65 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
+              {% for u in users %}
+              {% set is_me = (u.email == session.user_email) %}
+              <tr class="{{ 'is-inactive' if not u.active }}">
                 <td>
                   <div class="user-cell">
-                    <div class="user-dot">HO</div>
-                    Maria Santos
+                    <div class="user-dot {{ 'admin' if u.role == 'admin' }}">{{ u.name.split()[0][:1] }}{{ u.name.split()[-1][:1] if u.name.split() | length > 1 }}</div>
+                    <span>{{ u.name }}{% if is_me %} <span class="you-tag">You</span>{% endif %}</span>
                   </div>
                 </td>
-                <td>m.santos@marikina.gov.ph</td>
-                <td><span class="role-tag ho">Health Officer</span></td>
-                <td><span class="status-tag active">Active</span></td>
+                <td class="user-email">{{ u.email }}</td>
+                <td>
+                  {% if u.role == 'admin' %}<span class="role-tag admin">IT Admin</span>
+                  {% else %}<span class="role-tag ho">Health Officer</span>{% endif %}
+                </td>
+                <td>
+                  {% if u.active %}
+                  <span class="status-tag active">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Active
+                  </span>
+                  {% else %}
+                  <span class="status-tag inactive">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="5.6" y1="5.6" x2="18.4" y2="18.4"/></svg>
+                    Deactivated
+                  </span>
+                  {% endif %}
+                </td>
                 <td>
                   <div class="action-btns">
-                    <button class="btn-edit">Edit</button>
-                    <button class="btn-deactivate">Deactivate</button>
+                    <button type="button" class="btn-edit"
+                            data-id="{{ u.id }}" data-name="{{ u.name }}" data-email="{{ u.email }}" data-role="{{ u.role }}"
+                            onclick="openUserModal(this)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                      Edit
+                    </button>
+                    {% if not is_me %}
+                    <form method="POST" action="{{ url_for('main.admin_user_status', user_id=u.id) }}"
+                          data-confirm="{{ ('Deactivate ' ~ u.name ~ '? They will no longer be able to sign in.') if u.active else ('Activate ' ~ u.name ~ '? They will be able to sign in again.') }}"
+                          onsubmit="return confirm(this.dataset.confirm);">
+                      <input type="hidden" name="active" value="{{ 0 if u.active else 1 }}">
+                      {% if u.active %}
+                      <button type="submit" class="btn-deactivate">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="5.6" y1="5.6" x2="18.4" y2="18.4"/></svg>
+                        Deactivate
+                      </button>
+                      {% else %}
+                      <button type="submit" class="btn-activate">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Activate
+                      </button>
+                      {% endif %}
+                    </form>
+                    {% endif %}
                   </div>
                 </td>
               </tr>
-              <tr>
-                <td>
-                  <div class="user-cell">
-                    <div class="user-dot">HO</div>
-                    Juan dela Cruz
-                  </div>
-                </td>
-                <td>j.delacruz@marikina.gov.ph</td>
-                <td><span class="role-tag ho">Health Officer</span></td>
-                <td><span class="status-tag active">Active</span></td>
-                <td>
-                  <div class="action-btns">
-                    <button class="btn-edit">Edit</button>
-                    <button class="btn-deactivate">Deactivate</button>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="user-cell">
-                    <div class="user-dot">HO</div>
-                    Ana Reyes
-                  </div>
-                </td>
-                <td>a.reyes@marikina.gov.ph</td>
-                <td><span class="role-tag ho">Health Officer</span></td>
-                <td><span class="status-tag inactive">Inactive</span></td>
-                <td>
-                  <div class="action-btns">
-                    <button class="btn-edit">Edit</button>
-                    <button class="btn-activate">Activate</button>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="user-cell">
-                    <div class="user-dot admin">AD</div>
-                    IT Admin
-                  </div>
-                </td>
-                <td>admin@marikina.gov.ph</td>
-                <td><span class="role-tag admin">IT Admin</span></td>
-                <td><span class="status-tag active">Active</span></td>
-                <td>
-                  <div class="action-btns">
-                    <button class="btn-edit">Edit</button>
-                  </div>
-                </td>
-              </tr>
+              {% else %}
+              <tr><td colspan="5" class="act-empty">No accounts yet</td></tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>
@@ -229,56 +235,98 @@
       <!-- RIGHT COLUMN -->
       <div class="admin-right">
 
-        <!-- MODEL CONFIG -->
+        <!-- MODEL CONFIG (read from the loaded models) -->
         <div class="admin-panel">
           <div class="panel-header">
-            <div class="panel-title">Model Configuration</div>
+            <div>
+              <div class="panel-title">Model Configuration</div>
+              <div class="panel-sub">Read from the models the system is using now</div>
+            </div>
           </div>
           <div class="config-list">
+            {% for m in models %}
             <div class="config-item">
               <div class="config-info">
-                <div class="config-name">Random Forest</div>
-                <div class="config-desc">Case count prediction model</div>
+                <div class="config-name">{{ m.name }}</div>
+                <div class="config-desc">{{ m.desc }}</div>
               </div>
               <div class="config-right">
-                <div class="config-val">n=100 trees</div>
-                <span class="model-status active">Loaded</span>
+                {% if m.val %}<div class="config-val">{{ m.val }}</div>{% endif %}
+                {% if m.status == 'ok' %}
+                <span class="model-status active">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  {{ m.label or 'Loaded' }}
+                </span>
+                {% elif m.status == 'missing' %}
+                <span class="model-status missing">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  {{ m.label or 'Not loaded' }}
+                </span>
+                {% else %}
+                <span class="model-status neutral">{{ m.label or 'Setting' }}</span>
+                {% endif %}
               </div>
             </div>
-            <div class="config-item">
-              <div class="config-info">
-                <div class="config-name">Logistic Regression</div>
-                <div class="config-desc">Outbreak classification model</div>
-              </div>
-              <div class="config-right">
-                <div class="config-val">threshold=0.5</div>
-                <span class="model-status active">Loaded</span>
-              </div>
-            </div>
-            <div class="config-item">
-              <div class="config-info">
-                <div class="config-name">Lag Window</div>
-                <div class="config-desc">Climate variable lag applied</div>
-              </div>
-              <div class="config-right">
-                <div class="config-val">4 weeks</div>
-                <span class="model-status neutral">Config</span>
-              </div>
-            </div>
-            <div class="config-item">
-              <div class="config-info">
-                <div class="config-name">Alert Threshold</div>
-                <div class="config-desc">High risk classification cutoff</div>
-              </div>
-              <div class="config-right">
-                <div class="config-val">≥ 75%</div>
-                <span class="model-status neutral">Config</span>
-              </div>
-            </div>
+            {% endfor %}
           </div>
         </div>
 
+      </div>
+    </div>
 
+    <!-- ADD / EDIT USER WINDOW -->
+    {% set reopen = request.args.get('form') %}
+    <div class="user-modal-overlay" id="userModal" hidden
+         data-reopen="{{ reopen or '' }}" data-uid="{{ request.args.get('uid', '') }}"
+         data-name="{{ request.args.get('name', '') }}" data-email="{{ request.args.get('email', '') }}"
+         data-role="{{ request.args.get('role', '') }}">
+      <div class="user-modal" role="dialog" aria-modal="true" aria-labelledby="userModalTitle">
+        <div class="user-modal-head">
+          <h2 id="userModalTitle">Add User</h2>
+          <button type="button" class="user-modal-x" onclick="closeUserModal()" aria-label="Close">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        {% if reopen and request.args.get('user_error') %}
+        <div class="user-notice error in-modal" role="alert">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          {{ request.args.get('user_error') }}
+        </div>
+        {% endif %}
+
+        <form method="POST" id="userForm" action="{{ url_for('main.admin_add_user') }}"
+              data-add-action="{{ url_for('main.admin_add_user') }}"
+              data-edit-action="{{ url_for('main.admin_edit_user', user_id=0) }}">
+          <label class="uf-field">
+            <span>Full name</span>
+            <input type="text" name="name" id="ufName" required minlength="2" maxlength="80" autocomplete="off">
+          </label>
+          <label class="uf-field">
+            <span>Email</span>
+            <input type="email" name="email" id="ufEmail" required maxlength="120" autocomplete="off">
+          </label>
+          <label class="uf-field">
+            <span>Role</span>
+            <select name="role" id="ufRole" required>
+              <option value="health_officer">Health Officer</option>
+              <option value="admin">IT Admin</option>
+            </select>
+          </label>
+          <label class="uf-field">
+            <span id="ufPassLabel">Password</span>
+            <input type="password" name="password" id="ufPass" minlength="8" maxlength="128" autocomplete="new-password">
+            <small id="ufPassHint">At least 8 characters.</small>
+          </label>
+          <label class="uf-show">
+            <input type="checkbox" id="ufShow"> Show password
+          </label>
+
+          <div class="user-modal-actions">
+            <button type="button" class="uf-cancel" onclick="closeUserModal()">Cancel</button>
+            <button type="submit" class="uf-save" id="ufSave">Create Account</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -296,6 +344,10 @@
       'export':       ('History exported',      'blue',   'exports'),
       'actual':       ('Actual cases recorded', 'blue',   'forecasts'),
       'undo':         ('Undo',                  'yellow', 'undo'),
+      'user_add':        ('Account created',     'green',  'accounts'),
+      'user_edit':       ('Account edited',      'blue',   'accounts'),
+      'user_deactivate': ('Account deactivated', 'red',    'accounts'),
+      'user_activate':   ('Account activated',   'green',  'accounts'),
     } %}
     {% set undoable = ['forecast', 'publish', 'unpublish', 'delete'] %}
     {% set undo_msgs = {
@@ -326,6 +378,7 @@
             <option value="exports">Exports</option>
             <option value="security">Security</option>
             <option value="undo">Undo actions</option>
+            <option value="accounts">Accounts</option>
           </select>
         </div>
       </div>

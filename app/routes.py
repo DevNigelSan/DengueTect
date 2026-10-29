@@ -4,7 +4,8 @@ from app.ml.storage import (save_forecast, get_latest_forecast, get_all_forecast
                             get_latest_published_forecast, toggle_published, get_forecast_by_id,
                             set_published, restore_forecast, set_actual_cases, get_forecasts_with_actuals)
 from datetime import date, timedelta
-from app.ml.auth import verify_password
+from app.ml.auth import (verify_password, get_all_users, get_user, create_user, update_user,
+                         set_user_active, is_active_user, ROLES)
 from app.ml.insights import forecast_insights, recorded_cases, recorded_week_cases
 from app.ml.activity import (log_activity, get_recent_activity, get_activity, mark_undone, record_failed_login,
                              clear_failed_logins, failed_logins_left, login_lock_minutes,
@@ -29,6 +30,9 @@ def login_required(f):
     def decorated(*args, **kwargs):
         if 'user_email' not in session:
             return redirect(url_for('main.login'))
+        if not is_active_user(session['user_email']):
+            session.clear()
+            return redirect(url_for('main.login'))
         return f(*args, **kwargs)
     return decorated
 
@@ -36,6 +40,9 @@ def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if 'user_email' not in session:
+            return redirect(url_for('main.login'))
+        if not is_active_user(session['user_email']):
+            session.clear()
             return redirect(url_for('main.login'))
         if session.get('user_role') != 'admin':
              return redirect(url_for('main.history'))
@@ -64,6 +71,9 @@ def login():
             log_activity('login_locked', f'Blocked sign-in attempt for {email}', ip_address=request.remote_addr)
         else:
             user = verify_password(email, password)
+            if user and not user.get('active', 1):
+                _log('login_failed', f'{email} · account deactivated')
+                return render_template('login.html', error='This account has been deactivated. Please contact the IT Admin.')
             if not user:
                 record_failed_login(email, request.remote_addr)
                 log_activity('login_failed', f'Failed sign-in for {email}', ip_address=request.remote_addr)
@@ -360,12 +370,124 @@ def publish_latest():
             _log('publish', f"Brgy. {brgy} · week of {f['week_date']} (Publish all)", target_id=f['id'])
     return redirect(url_for('main.dashboard'))
 
+# ── Admin page: live stats, user accounts and model status ──
+def _admin_stats(users):
+    from app.ml.database import get_db
+    conn = get_db()
+    forecasts = conn.execute('SELECT COUNT(*) FROM forecasts').fetchone()[0]
+    published = conn.execute('SELECT COUNT(*) FROM forecasts WHERE published = 1').fetchone()[0]
+    outcomes  = conn.execute('SELECT COUNT(*) FROM forecasts WHERE actual_cases IS NOT NULL').fetchone()[0]
+    conn.close()
+    high_risk = []
+    for brgy in ('Nangka', 'Tumana', 'Malanday'):
+        latest = get_latest_forecast(brgy)
+        if latest and str(latest['risk_level']).lower() == 'high':
+            high_risk.append(brgy)
+    return {
+        'total_users':  len(users),
+        'active_users': sum(1 for u in users if u['active']),
+        'forecasts':    forecasts,
+        'published':    published,
+        'outcomes':     outcomes,
+        'high_risk':    high_risk,
+    }
+
+def _model_status():
+    """What the forecasting code actually loaded, so this list can't go out of date."""
+    import joblib
+    from pathlib import Path
+    from app.ml import predict
+    rf, xgb, lr = (getattr(predict, n, None) for n in ('rf_model', 'xgb_model', 'lr_model'))
+
+    def trees(model):
+        n = getattr(model, 'n_estimators', None)
+        return f'{n} trees' if n else ''
+
+    try:
+        cfg = joblib.load(Path(__file__).resolve().parent.parent / 'models' / 'outbreak_config.pkl')
+    except Exception:
+        cfg = None
+    blend = isinstance(cfg, dict) and cfg.get('method') == 'blend'
+
+    def loaded(model):
+        return 'ok' if model is not None else 'missing'
+
+    return [
+        {'name': 'Random Forest', 'desc': 'Case forecast · 60% of the Ensemble',
+         'val': trees(rf), 'status': loaded(rf)},
+        {'name': 'XGBoost', 'desc': 'Case forecast · 40% of the Ensemble',
+         'val': trees(xgb), 'status': loaded(xgb)},
+        {'name': 'Logistic Regression', 'desc': 'Outbreak probability from climate and recent cases',
+         'val': '', 'status': loaded(lr)},
+        {'name': 'Outbreak Blend', 'desc': '50% Logistic Regression + 50% chance from the Ensemble forecast',
+         'val': '', 'status': 'ok' if blend else 'missing',
+         'label': 'In use' if blend else 'Off · LR only'},
+        {'name': 'Lag Window', 'desc': 'Weeks of past climate and cases used',
+         'val': '4 weeks', 'status': 'setting'},
+        {'name': 'Risk Levels', 'desc': 'Outbreak probability cut-offs',
+         'val': 'High ≥ 75% · Moderate ≥ 50%', 'status': 'setting'},
+    ]
+
 @main.route('/admin')
 @admin_required
 def admin():
-    from app.ml.auth import get_all_users
     users = get_all_users()
-    return render_template('admin.html', users=users, activity=get_recent_activity(200))
+    return render_template('admin.html', users=users, activity=get_recent_activity(200),
+                           stats=_admin_stats(users), models=_model_status())
+
+def _back_to_users(**args):
+    return redirect(url_for('main.admin', _anchor='users', **args))
+
+def _form_values():
+    f = request.form
+    return f.get('name', '').strip(), f.get('email', '').strip().lower(), f.get('role', '')
+
+@main.route('/admin/users/add', methods=['POST'])
+@admin_required
+def admin_add_user():
+    name, email, role = _form_values()
+    user_id, error = create_user(name, email, role, request.form.get('password', ''))
+    if error:
+        return _back_to_users(user_error=error, form='add', name=name, email=email, role=role)
+    _log('user_add', f'{name} ({email}) · {ROLES[role]}', target_id=user_id)
+    return _back_to_users(user_msg='added')
+
+@main.route('/admin/users/<int:user_id>/edit', methods=['POST'])
+@admin_required
+def admin_edit_user(user_id):
+    name, email, role = _form_values()
+    new_password = request.form.get('password', '')
+    before = get_user(user_id)
+    error = update_user(user_id, name, email, role, new_password)
+    if error:
+        return _back_to_users(user_error=error, form='edit', uid=user_id, name=name, email=email, role=role)
+
+    changes = []
+    if before['name'] != name:
+        changes.append(f'name: {before["name"]} → {name}')
+    if before['email'] != email:
+        changes.append(f'email: {before["email"]} → {email}')
+    if before['role'] != role:
+        changes.append(f'role: {ROLES.get(before["role"], before["role"])} → {ROLES[role]}')
+    if new_password:
+        changes.append('password reset')
+    _log('user_edit', f'{name} ({email}) · ' + (', '.join(changes) or 'no changes'), target_id=user_id)
+
+    # Editing your own account: keep your session in step
+    if before['email'] == session.get('user_email'):
+        session['user_email'], session['user_name'], session['user_role'] = email, name, role
+    return _back_to_users(user_msg='updated')
+
+@main.route('/admin/users/<int:user_id>/status', methods=['POST'])
+@admin_required
+def admin_user_status(user_id):
+    active = request.form.get('active') == '1'
+    user = get_user(user_id)
+    error = set_user_active(user_id, active, session.get('user_email'))
+    if error:
+        return _back_to_users(user_error=error)
+    _log('user_activate' if active else 'user_deactivate', f'{user["name"]} ({user["email"]})', target_id=user_id)
+    return _back_to_users(user_msg='activated' if active else 'deactivated')
 
 UNDOABLE = {'forecast', 'publish', 'unpublish', 'delete'}
 

@@ -56,5 +56,13 @@ def init_db():
         if name not in existing:
             cursor.execute(f'ALTER TABLE forecasts ADD COLUMN {name} {col_type}')
 
+    # Account status for the Admin page (older databases get these columns automatically)
+    cursor.execute('PRAGMA table_info(users)')
+    user_cols = [row['name'] for row in cursor.fetchall()]
+    if 'active' not in user_cols:
+        cursor.execute('ALTER TABLE users ADD COLUMN active INTEGER NOT NULL DEFAULT 1')
+    if 'created_at' not in user_cols:
+        cursor.execute('ALTER TABLE users ADD COLUMN created_at TEXT')
+
     conn.commit()
     conn.close()
