@@ -364,6 +364,17 @@
         </div>
         {% endfor %}
       </div>
+            {% if importance.climate_combined %}
+      {% set cc = importance.climate_combined %}
+      <div class="fi-combined">
+        <div class="fi-combined-num">+{{ '%.2f' | format(cc.mae_increase if cc.mae_increase > 0 else 0) }}<span>cases error</span></div>
+        <div class="fi-combined-text">
+          <strong>All climate together</strong> (rainfall, temperature and humidity scrambled at once):
+          forecasts become <strong>{{ cc.pct_worse }}% less accurate</strong>.
+                    This is the true climate effect. It is smaller than the separate bars added up, because scrambling one input alone creates weather that never happens (for example, very humid but no rain).
+        </div>
+      </div>
+      {% endif %}
       <p class="ts-foot">
         Share = portion of the total importance on unseen data. RF and XGB % show how often each input is used inside the trees during training.
         Baseline Ensemble error on these weeks: ±{{ importance.base_mae }} cases.

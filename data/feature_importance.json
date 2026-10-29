@@ -1,6 +1,10 @@
 {
   "test_start": "2025-01-01",
   "base_mae": 1.17,
+  "climate_combined": {
+    "mae_increase": 0.111,
+    "pct_worse": 9.6
+  },
   "groups": [
     {
       "name": "Recent cases (4-week average)",
