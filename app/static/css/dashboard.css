@@ -1092,3 +1092,57 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
+
+/* ── MOBILE NAVBAR (all pages) ── */
+@media (max-width: 900px) {
+  .navbar {
+    height: auto;
+    flex-wrap: wrap;
+    row-gap: 10px;
+    padding: 10px 16px;
+  }
+
+  /* Page links move to a second row that scrolls sideways instead of disappearing */
+  .nav-center {
+    display: block;
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav-center::-webkit-scrollbar { display: none; }
+
+  .nav-center .nav-links {
+    display: flex;
+    flex-wrap: nowrap;
+    width: max-content;
+  }
+
+  .nav-link { white-space: nowrap; }
+}
+
+@media (max-width: 600px) {
+  .nav-sub,
+  .nav-status,
+  .nav-divider,
+  .user-info { display: none; }
+
+  .nav-right { gap: 8px; }
+  .user-avatar { width: 34px; height: 34px; font-size: 12px; }
+
+  /* Sign out keeps its icon only */
+  .btn-logout { font-size: 0; gap: 0; padding: 8px 10px; }
+  .btn-logout svg { width: 16px; height: 16px; }
+
+  /* Page title and "Last updated" stack instead of squeezing side by side */
+  .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+}
+
+/* ── MOBILE STATUS BAR ── */
+@media (max-width: 700px) {
+  .status-bar { padding: 14px 16px; }
+  .status-bar-inner { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .status-bar-right { flex-wrap: wrap; }
+}

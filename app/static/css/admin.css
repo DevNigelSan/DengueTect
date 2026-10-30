@@ -376,7 +376,6 @@
 
 @media (max-width: 768px) {
   .admin-stats-row { grid-template-columns: 1fr 1fr; }
-  .nav-center { display: none; }
 }
 
 /* ── ACTIVITY LOG (full width) ── */

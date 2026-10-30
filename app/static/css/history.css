@@ -337,7 +337,6 @@ a.btn-print { text-decoration: none; }
 
 @media (max-width: 768px) {
   .summary-row { grid-template-columns: repeat(2, 1fr); }
-  .nav-center  { display: none; }
 }
 
 /* ── CURRENT vs PAST FORECASTS ── */
