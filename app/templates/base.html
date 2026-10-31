@@ -8,7 +8,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/globals.css') }}"/>
-  {% block styles %}{% endblock %}
+    {% block styles %}{% endblock %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dark.css') }}"/>
+  <script>
+    // Apply the saved light/dark choice before the page draws, so it doesn't flash
+    try { if (localStorage.getItem('dt-theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {}
+  </script>
 </head>
 <body>
   {% block content %}{% endblock %}
@@ -47,6 +52,33 @@
   </a>
   {% endif %}
 
+    <script>
+    // Light / dark mode button in the navbar (signed-in pages)
+    (function () {
+      const right = document.querySelector('.navbar .nav-right');
+      if (!right) return;
+      const root = document.documentElement;
+      const MOON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+      const SUN  = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'theme-toggle';
+      function paint() {
+        const dark = root.getAttribute('data-theme') === 'dark';
+        btn.innerHTML = (dark ? SUN : MOON) + '<span class="tt-label">' + (dark ? 'Light mode' : 'Dark mode') + '</span>';
+        btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+        btn.title = btn.getAttribute('aria-label');
+      }
+      btn.addEventListener('click', function () {
+        const dark = root.getAttribute('data-theme') !== 'dark';
+        if (dark) root.setAttribute('data-theme', 'dark'); else root.removeAttribute('data-theme');
+        try { localStorage.setItem('dt-theme', dark ? 'dark' : 'light'); } catch (e) {}
+        paint();
+      });
+      paint();
+      right.insertBefore(btn, right.firstChild);
+    })();
+  </script>
   <script src="{{ url_for('static', filename='js/delete-modal.js') }}"></script>
   {% block scripts %}{% endblock %}
 </body>
