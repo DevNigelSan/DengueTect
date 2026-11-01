@@ -121,5 +121,34 @@
   html[data-theme="dark"]:has(.navbar) .forecast-table tr.is-current td { background: #14213A; }
 
   /* Delete confirmation window */
-  html[data-theme="dark"]:has(.navbar) .delete-modal { background: #111A2B; border: 1px solid #22304A; }
+    html[data-theme="dark"]:has(.navbar) .delete-modal { background: #111A2B; border: 1px solid #22304A; }
+
+  /* ── Heatmap page ── */
+  html[data-theme="dark"]:has(.navbar) {
+    --syn-ink:    #C4B5FD;
+    --syn-accent: #A78BFA;
+    --syn-bg:     rgba(167,139,250,0.10);
+    --syn-border: #4C3A86;
+    --syn-hatch:  repeating-linear-gradient(135deg, rgba(11,18,32,0.55) 0 2px, transparent 2px 5px);
+  }
+  html[data-theme="dark"]:has(.navbar) .heatmap-guide { background: #111A2B; border-color: #22304A; }
+  html[data-theme="dark"]:has(.navbar) .heatmap-guide-title { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .heatmap-guide-body, html[data-theme="dark"]:has(.navbar) .heatmap-guide-item { color: var(--gray-600); }
+  html[data-theme="dark"]:has(.navbar) .heatmap-guide-label { color: var(--cc-cyan); }
+  html[data-theme="dark"]:has(.navbar) .prov-seg.syn,
+  html[data-theme="dark"]:has(.navbar) .hz-syn {
+    background-color: rgba(167,139,250,0.12);
+    background-image: repeating-linear-gradient(135deg, rgba(167,139,250,0.18) 0 6px, transparent 6px 12px);
+    color: var(--syn-ink);
+  }
+  html[data-theme="dark"]:has(.navbar) .year-group.syn {
+    background-color: #120F22;
+    background-image: repeating-linear-gradient(135deg, rgba(167,139,250,0.05) 0 10px, transparent 10px 20px);
+    border-color: var(--syn-border);
+  }
+  html[data-theme="dark"]:has(.navbar) .heatmap-summary-card.syn { background: #171330; border-color: var(--syn-border); }
+  html[data-theme="dark"]:has(.navbar) .heatmap-summary-card.syn * { color: var(--gray-600); }
+  html[data-theme="dark"]:has(.navbar) .legend-syn { background: var(--syn-bg); border-color: var(--syn-border); color: var(--syn-ink); }
+  html[data-theme="dark"]:has(.navbar) .heatmap-cell.is-syn { opacity: 0.6; }
+  html[data-theme="dark"]:has(.navbar) .heatmap-cell:hover { box-shadow: 0 0 0 1.5px #FFFFFF; }
 }
