@@ -79,6 +79,24 @@
       right.insertBefore(btn, right.firstChild);
     })();
   </script>
+    <script>
+    // Security token for every form: blocks form submissions forged by other websites
+    (function () {
+      const token = '{{ csrf_token() }}';
+      function addToken(form) {
+        if (!form || form.tagName !== 'FORM') return;
+        if ((form.getAttribute('method') || '').toLowerCase() !== 'post') return;
+        if (form.querySelector('input[name="csrf_token"]')) return;
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'csrf_token';
+        input.value = token;
+        form.appendChild(input);
+      }
+      document.querySelectorAll('form').forEach(addToken);
+      document.addEventListener('submit', e => addToken(e.target), true);
+    })();
+  </script>
   <script src="{{ url_for('static', filename='js/delete-modal.js') }}"></script>
   {% block scripts %}{% endblock %}
 </body>

@@ -3,7 +3,7 @@ import secrets
 from datetime import timedelta
 from pathlib import Path
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request, session
 
 
 def _secret_key():
@@ -43,6 +43,26 @@ def create_app():
         return render_template('404.html', code=500, title='Something went wrong',
                                desc='DengueTect hit an unexpected problem and could not finish this request. '
                                     'Please go back and try again. If it keeps happening, contact the IT Admin.'), 500
+
+    # ── CSRF protection: every POST form must carry this session's security token ──
+    @app.before_request
+    def csrf_protect():
+        if request.method in ('POST', 'PUT', 'PATCH', 'DELETE'):
+            token = session.get('_csrf_token')
+            sent  = request.form.get('csrf_token') or request.headers.get('X-CSRFToken')
+            if not token or not sent or not secrets.compare_digest(token, sent):
+                return render_template('404.html', code=400, title='This form has expired',
+                                       desc='For your security, this form could not be accepted. It may have been '
+                                            'open too long or sent from another website. Go back, refresh the page '
+                                            'and try again.'), 400
+
+    @app.context_processor
+    def csrf_token_helper():
+        def csrf_token():
+            if '_csrf_token' not in session:
+                session['_csrf_token'] = secrets.token_hex(32)
+            return session['_csrf_token']
+        return {'csrf_token': csrf_token}
 
     # Initialize database and default users on startup
     from app.ml.database import init_db
