@@ -89,12 +89,11 @@
   html[data-theme="dark"]:has(.navbar) .status-bar.high .status-bar-title     { color: var(--cc-glow-high); }
   html[data-theme="dark"]:has(.navbar) .status-bar.moderate .status-bar-title { color: var(--cc-glow-mod); }
   html[data-theme="dark"]:has(.navbar) .status-bar.low .status-bar-title      { color: var(--cc-glow-low); }
-  html[data-theme="dark"]:has(.navbar) .status-bar .status-bar-title { font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; }
   html[data-theme="dark"]:has(.navbar) .status-bar-desc { color: var(--gray-600); }
   html[data-theme="dark"]:has(.navbar) .status-bar.high .status-icon     { background: rgba(255,90,78,0.15);  color: var(--cc-glow-high); }
   html[data-theme="dark"]:has(.navbar) .status-bar.moderate .status-icon { background: rgba(255,181,71,0.15); color: var(--cc-glow-mod); }
   html[data-theme="dark"]:has(.navbar) .status-bar.low .status-icon      { background: rgba(61,220,132,0.15); color: var(--cc-glow-low); }
-  html[data-theme="dark"]:has(.navbar) .status-pill { background: transparent; border: 1px solid currentColor; font-family: 'IBM Plex Mono', monospace; }
+    html[data-theme="dark"]:has(.navbar) .status-pill { background: transparent; border: 1px solid currentColor; }
   html[data-theme="dark"]:has(.navbar) .status-bar.high .status-pill     { color: var(--cc-glow-high); }
   html[data-theme="dark"]:has(.navbar) .status-bar.moderate .status-pill { color: var(--cc-glow-mod); }
   html[data-theme="dark"]:has(.navbar) .status-bar.low .status-pill      { color: var(--cc-glow-low); }
