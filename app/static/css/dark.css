@@ -369,3 +369,11 @@
   html[data-theme="dark"]:has(.navbar) .faq-item.open { background: color-mix(in srgb, var(--cat) 10%, #111A2B); }
   html[data-theme="dark"]:has(.navbar) .faq-steplist li:not(:last-child)::after { background: color-mix(in srgb, var(--cat) 35%, #111A2B); }
 }
+
+
+/* ── Small fixes: Technical badge, top importance bar, "You" tag ── */
+@media screen {
+  html[data-theme="dark"]:has(.navbar) .tech-admin-badge { background: rgba(92,200,255,0.10); color: #5CC8FF; border: 1px solid rgba(92,200,255,0.45); }
+  html[data-theme="dark"]:has(.navbar) .fi-row:first-child .fi-bar i { background: #5CC8FF; }
+  html[data-theme="dark"]:has(.navbar) .you-tag { background: #5CC8FF; color: #04121F; }
+}

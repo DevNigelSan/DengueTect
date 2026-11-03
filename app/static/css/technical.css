@@ -326,4 +326,11 @@
 
 @media (max-width: 700px) {
   .fi-combined { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+  
+/* ── Fit wide tables (e.g. Per-Barangay Performance) on laptop screens ── */
+.tech-table th,
+.tech-table td { padding-left: 12px; padding-right: 12px; }
+.tech-table th { white-space: normal; line-height: 1.3; vertical-align: bottom; }
+.tech-table td.ts-syn-col { white-space: nowrap; }
 }
