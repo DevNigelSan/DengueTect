@@ -163,6 +163,39 @@
 
 /* ── Light-tinted boxes, chips and borders on every page, darkened (generated) ── */
 @media screen {
+  html[data-theme="dark"]:has(.navbar) .faq-hero-title { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .faq-chip { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .faq-step:hover { border-color: #234C7C; }
+  html[data-theme="dark"]:has(.navbar) .faq-step-icon.sky { background: #123D4D; }
+  html[data-theme="dark"]:has(.navbar) .faq-step-icon.amber { background: #363729; }
+  html[data-theme="dark"]:has(.navbar) .faq-step-icon.green { background: #153C36; }
+  html[data-theme="dark"]:has(.navbar) .faq-nav-link.active .faq-nav-count { border-color: #234C7C; }
+  html[data-theme="dark"]:has(.navbar) .faq-support-card { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .faq-tool-btn.primary { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .faq-tool-btn.primary:hover { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .faq-cat-icon { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .faq-q:hover .faq-chevron { border-color: #234C7C; }
+  html[data-theme="dark"]:has(.navbar) .faq-item.open .faq-chevron { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .faq-steplist li::before { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .faq-callout.tip { border-color: #234C7C; }
+  html[data-theme="dark"]:has(.navbar) .faq-callout.warn { background: #373728; border-color: #7A6B25; color: #F0AE89; }
+  html[data-theme="dark"]:has(.navbar) .faq-callout.danger { background: #341D2B; border-color: #7A1C25; color: #EB8E8E; }
+  html[data-theme="dark"]:has(.navbar) .faq-action { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .faq-week.now { background: #123D4D; border-color: #187487; }
+  html[data-theme="dark"]:has(.navbar) .faq-week.target span, html[data-theme="dark"]:has(.navbar) .faq-week.target small { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .faq-risk.low { background: #173A35; border-color: #20764B; }
+  html[data-theme="dark"]:has(.navbar) .faq-risk.moderate { background: #373728; border-color: #7A6B25; }
+  html[data-theme="dark"]:has(.navbar) .faq-risk.high { background: #341D2B; border-color: #7A1C25; }
+  html[data-theme="dark"]:has(.navbar) .faq-source-tag.sky { background: #123D4D; }
+  html[data-theme="dark"]:has(.navbar) .faq-source-tag.green { background: #153C36; }
+  html[data-theme="dark"]:has(.navbar) .faq-source-tag.violet { background: #1A1C4B; color: #B28EEB; }
+  html[data-theme="dark"]:has(.navbar) .faq-term:hover { border-color: #234C7C; }
+  html[data-theme="dark"]:has(.navbar) .faq-content mark { background: #373A29; }
+  html[data-theme="dark"]:has(.navbar) .nav-title { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .btab:hover { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .user-avatar { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .user-name { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .btn-logout:hover { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .fcard-trend.up { background: #361B29; }
   html[data-theme="dark"]:has(.navbar) .fcard-trend.down { background: #153C36; }
   html[data-theme="dark"]:has(.navbar) .fcard-tag { border: 1px solid #234C7C; }
@@ -172,21 +205,26 @@
   html[data-theme="dark"]:has(.navbar) .badge.high { background: #361B29; }
   html[data-theme="dark"]:has(.navbar) .badge.moderate { background: #363729; }
   html[data-theme="dark"]:has(.navbar) .badge.low { background: #153C36; }
+  html[data-theme="dark"]:has(.navbar) .btn-pub:hover { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .pub-undo:hover { background: #341D2B; }
+  html[data-theme="dark"]:has(.navbar) .btn-pub-all { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .btn-delete { border: 1.5px solid #7A1C25; background: #341D2B; }
   html[data-theme="dark"]:has(.navbar) .btn-delete:hover { background: #361B29; }
   html[data-theme="dark"]:has(.navbar) .brgy-card.high { border-color: #7A1C25; }
   html[data-theme="dark"]:has(.navbar) .brgy-card.moderate { border-color: #7A6B25; }
   html[data-theme="dark"]:has(.navbar) .brgy-card.low { border-color: #20764B; }
   html[data-theme="dark"]:has(.navbar) .map-legend { background: #16223A; }
+  html[data-theme="dark"]:has(.navbar) .nav-link:hover { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .badge.high { background: #361B29; }
   html[data-theme="dark"]:has(.navbar) .badge.moderate { background: #363729; }
   html[data-theme="dark"]:has(.navbar) .badge.low { background: #153C36; }
   html[data-theme="dark"]:has(.navbar) .btn-publish { border: 1.5px solid #234C7C; }
   html[data-theme="dark"]:has(.navbar) .btn-publish.on { background: #173A35; border-color: #20764B; }
   html[data-theme="dark"]:has(.navbar) .btn-publish.on:hover { background: #341D2B; border-color: #7A1C25; }
+  html[data-theme="dark"]:has(.navbar) .wk-tag.current { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .wk-tag.old { background: #1A2B46; color: #8EB5EB; }
   html[data-theme="dark"]:has(.navbar) .forecast-table tr.is-current td { background: #182C47; border-bottom: 1px solid #284A77; }
+  html[data-theme="dark"]:has(.navbar) .nav-link:hover { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .cir-icon.rain { background: #122A4D; }
   html[data-theme="dark"]:has(.navbar) .cir-icon.temp { background: #341D2B; }
   html[data-theme="dark"]:has(.navbar) .cir-icon.humid { background: #173A35; }
@@ -218,6 +256,7 @@
   html[data-theme="dark"]:has(.navbar) .form-error-box { background: #341D2B; border: 2px solid #791D26; color: #EB8E8E; }
   html[data-theme="dark"]:has(.navbar) .feb-foot { color: #EE8C8C; }
   html[data-theme="dark"]:has(.navbar) input.field-invalid, html[data-theme="dark"]:has(.navbar) select.field-invalid { background: #341D2B !important; }
+  html[data-theme="dark"]:has(.navbar) .nav-link:hover { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .verdict-block.high { background: #341D2B; }
   html[data-theme="dark"]:has(.navbar) .verdict-block.moderate { background: #373728; }
   html[data-theme="dark"]:has(.navbar) .verdict-block.low { background: #173A35; }
@@ -237,15 +276,22 @@
   html[data-theme="dark"]:has(.navbar) .outcome-notice.warn { background: #373728; }
   html[data-theme="dark"]:has(.navbar) .outcome-stat.good { background: #173A35; border-color: #20764B; }
   html[data-theme="dark"]:has(.navbar) .outcome-stat.bad { background: #341D2B; border-color: #7A1C25; }
+  html[data-theme="dark"]:has(.navbar) .btn-outcome { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .report-status-note { background: #182C47; border: 2px solid #274B78; }
+  html[data-theme="dark"]:has(.navbar) .rsn-btn { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .rsn-btn:hover { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .nav-link:hover { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .confusion-cell.correct { background: #173A35; }
   html[data-theme="dark"]:has(.navbar) .confusion-cell.warning { background: #373728; }
   html[data-theme="dark"]:has(.navbar) .eval-plain-icon.blue { background: #122A4D; }
   html[data-theme="dark"]:has(.navbar) .eval-plain-icon.green { background: #173A35; }
   html[data-theme="dark"]:has(.navbar) .eval-plain-icon.red { background: #341D2B; }
+  html[data-theme="dark"]:has(.navbar) .dv-btn.active { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .dv-btn.dv-syn { color: #B28EEB; background: #1D1A4D; }
   html[data-theme="dark"]:has(.navbar) .dv-btn.dv-syn:hover { background: #181A4D; color: #B28EEB; }
+  html[data-theme="dark"]:has(.navbar) .dv-btn.dv-syn.active { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .prov-seg.syn { background-color: #1A1C4B; }
+  html[data-theme="dark"]:has(.navbar) .prov-seg.real { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .prov-caveat { background: #373728; border: 1px solid #7A6B25; color: #F3AF86; }
   html[data-theme="dark"]:has(.navbar) .src-chip.real { border: 1px solid #234C7C; }
   html[data-theme="dark"]:has(.navbar) .src-chip.mixed { background: #373728; color: #F3AF86; border: 1px solid #7A6B25; }
@@ -260,6 +306,7 @@
   html[data-theme="dark"]:has(.navbar) .ts-tile.test { border-color: #284A77; }
   html[data-theme="dark"]:has(.navbar) .tech-table .ts-syn-col { background: #251A4D; }
   html[data-theme="dark"]:has(.navbar) .fi-combined { border: 1.5px solid #284A77; }
+  html[data-theme="dark"]:has(.navbar) .nav-link:hover { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .admin-role-badge { border: 1.5px solid #234C7C; }
   html[data-theme="dark"]:has(.navbar) .asc-icon.green { background: #153C36; }
   html[data-theme="dark"]:has(.navbar) .asc-icon.yellow { background: #363729; }
@@ -276,8 +323,10 @@
   html[data-theme="dark"]:has(.navbar) .act-chip.yellow { background: #363729; }
   html[data-theme="dark"]:has(.navbar) .act-chip.red { background: #361B29; }
   html[data-theme="dark"]:has(.navbar) .act-undo-btn { border: 1.5px solid #7A6825; background: #373728; }
+  html[data-theme="dark"]:has(.navbar) .act-undo-btn:hover { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .act-notice.ok { background: #173A35; }
   html[data-theme="dark"]:has(.navbar) .act-notice.warn { background: #373728; }
+  html[data-theme="dark"]:has(.navbar) .you-tag { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .status-tag.active { background: #153C36; border: 1.5px solid #21754C; }
   html[data-theme="dark"]:has(.navbar) .status-tag.inactive { background: #1A2C46; border: 1.5px solid #294B76; }
   html[data-theme="dark"]:has(.navbar) .admin-table tr.is-inactive td { background: #1A2C46; }
@@ -288,15 +337,35 @@
   html[data-theme="dark"]:has(.navbar) .model-status.missing { background: #361B29; color: #EE8C8C; }
   html[data-theme="dark"]:has(.navbar) .uf-field input, html[data-theme="dark"]:has(.navbar) .uf-field select { border: 2px solid #294B76; }
   html[data-theme="dark"]:has(.navbar) .uf-cancel { border: 2px solid #294B76; }
+  html[data-theme="dark"]:has(.navbar) .uf-save { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .dv-btn.active { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .dv-btn.dv-syn { color: #B28EEB; background: #1D1A4D; }
   html[data-theme="dark"]:has(.navbar) .dv-btn.dv-syn:hover { background: #181A4D; color: #B28EEB; }
+  html[data-theme="dark"]:has(.navbar) .dv-btn.dv-syn.active { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .prov-seg.syn { background-color: #1A1C4B; }
+  html[data-theme="dark"]:has(.navbar) .prov-seg.real { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .heatmap-guide { background: #122A4D; border: 1.5px solid #164889; }
   html[data-theme="dark"]:has(.navbar) .hz-syn { background-color: #1A1C4B; }
   html[data-theme="dark"]:has(.navbar) .hz-real { border: 1.5px solid #234C7C; }
   html[data-theme="dark"]:has(.navbar) .tt-src.syn { color: #AF8EEB; }
+  html[data-theme="dark"]:has(.navbar) .yg-tag.real { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .year-group.syn { background-color: #1D1A4D; }
   html[data-theme="dark"]:has(.navbar) .heatmap-summary-card.syn { border: 1.5px dashed #2C1C88; }
   html[data-theme="dark"]:has(.navbar) .sz.real { border: 1px solid #234C7C; }
+  html[data-theme="dark"]:has(.navbar) .map-syn-flag { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .nav-link:hover { color: #FFFFFF; }
   html[data-theme="dark"]:has(.navbar) .delete-modal-icon { background: #361B29; }
+  html[data-theme="dark"]:has(.navbar) .help-fab { color: #FFFFFF; }
+  html[data-theme="dark"]:has(.navbar) .nav-link[href="/input"] { color: #FFFFFF; }
+}
+
+/* ── Help Center (FAQ) page ── */
+@media screen {
+  html[data-theme="dark"]:has(.navbar) .faq-hero { background: linear-gradient(150deg, #0B2A55 0%, #123468 60%, #0F1828 100%); border: 1px solid #22304A; }
+  html[data-theme="dark"]:has(.navbar) .faq-support-card { background: linear-gradient(160deg, #0B2A55, #1A4C8F); }
+  html[data-theme="dark"]:has(.navbar) .faq-cat-header { background: linear-gradient(90deg, color-mix(in srgb, var(--cat) 24%, #111A2B), #111A2B 70%); }
+  html[data-theme="dark"]:has(.navbar) .faq-cat-header * { color: inherit; }
+  html[data-theme="dark"]:has(.navbar) .faq-nav-icon { background: color-mix(in srgb, var(--cat) 22%, #111A2B); }
+  html[data-theme="dark"]:has(.navbar) .faq-item.open { background: color-mix(in srgb, var(--cat) 10%, #111A2B); }
+  html[data-theme="dark"]:has(.navbar) .faq-steplist li:not(:last-child)::after { background: color-mix(in srgb, var(--cat) 35%, #111A2B); }
 }
