@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 {% endblock %}
 
+{% macro cases(f) %}{{ (f.ensemble_cases if f.ensemble_cases is not none else f.predicted_cases) if f else 0 }}{% endmacro %}
 {% block content %}
 <div class="app-shell">
 
@@ -93,7 +94,7 @@
             {{ highest.risk | upper }} RISK DETECTED — Barangay {{ highest.forecast.barangay }}
           </div>
           <div class="status-bar-desc">
-            Highest risk among monitored barangays · {{ highest.forecast.outbreak_proba }}% outbreak probability · {{ highest.forecast.predicted_cases }} projected cases
+            Highest risk among monitored barangays · {{ highest.forecast.outbreak_proba }}% outbreak probability · {{ cases(highest.forecast) }} projected cases
           </div>
         </div>
       </div>
@@ -166,7 +167,7 @@
         {% if f %}
         <div class="brgy-card-body">
           <div class="brgy-stat">
-            <div class="brgy-stat-num">{{ f.predicted_cases }}</div>
+            <div class="brgy-stat-num">{{ cases(f) }}</div>
             <div class="brgy-stat-label">Projected Cases</div>
           </div>
           <div class="brgy-divider"></div>
@@ -263,18 +264,6 @@
           <div class="panel-sub">Current forecast cycle</div>
         </div>
         <div class="climate-stack">
-          <div class="climate-row">
-            <div class="climate-icon-wrap rain">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
-            </div>
-            <div class="climate-info">
-              <div class="climate-label">Barangays Monitored</div>
-            </div>
-            <div class="climate-val" style="font-size:22px">3</div>
-          </div>
 
           <div class="climate-row">
             <div class="climate-icon-wrap temp">
@@ -286,9 +275,7 @@
               <div class="climate-label">Total Projected Cases</div>
             </div>
             <div class="climate-val" style="font-size:22px">
-              {{ (nangka.predicted_cases if nangka else 0) +
-                 (tumana.predicted_cases if tumana else 0) +
-                 (malanday.predicted_cases if malanday else 0) }}
+                {{ cases(nangka)|int + cases(tumana)|int + cases(malanday)|int }}
             </div>
           </div>
 
@@ -386,7 +373,7 @@
       lat: 14.6734,
       lng: 121.1087,
       risk: '{{ nangka.risk_level if nangka else "none" }}',
-      cases: {{ nangka.predicted_cases if nangka else 0 }},
+      cases: {{ cases(nangka) }},
       proba: {{ nangka.outbreak_proba if nangka else 0 }},
       week: '{{ nangka.week_date if nangka else "No data" }}'
     },
@@ -395,7 +382,7 @@
       lat: 14.6607,
       lng: 121.1004,
       risk: '{{ tumana.risk_level if tumana else "none" }}',
-      cases: {{ tumana.predicted_cases if tumana else 0 }},
+      cases: {{ cases(tumana) }},
       proba: {{ tumana.outbreak_proba if tumana else 0 }},
       week: '{{ tumana.week_date if tumana else "No data" }}'
     },

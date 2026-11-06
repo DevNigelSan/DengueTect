@@ -73,7 +73,7 @@
         <h1 class="page-title">Model Evaluation</h1>
                 <p class="page-sub">How closely DengueTect's forecasts matched real case counts</p>
       </div>
-      {% if prov.n_syn %}
+            {% if prov.n_syn and session.user_role == 'admin' %}
             <div class="data-view-toggle" role="group" aria-label="Which weeks to show">
         <span class="dv-label">Show</span>
         <button type="button" class="dv-btn active" data-view="recorded" title="Show only actual case records">
@@ -104,7 +104,7 @@
             {% else %}
             These results compare the forecasts with <strong>{{ prov.n_real }} weeks of recorded cases</strong> per barangay.
             {% endif %}
-            {% if prov.n_syn %}The {{ prov.syn_years[0] }}–{{ prov.syn_years[-1] }} weeks on the chart are synthetic estimates used only to train the system, not actual case records.{% endif %}
+            {% if prov.n_syn and session.user_role == 'admin' %}The {{ prov.syn_years[0] }}–{{ prov.syn_years[-1] }} weeks on the chart are synthetic estimates used only to train the system, not actual case records.{% endif %}
           </div>
         </div>
       </div>

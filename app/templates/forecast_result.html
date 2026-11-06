@@ -185,7 +185,9 @@
 
       <div class="report-section">
         <div class="report-section-title">Forecast Summary</div>
+          {% set is_admin = session.user_role == 'admin' %}
         <div class="summary-cards-row">
+          {% if is_admin %}
                     <div class="summary-info-card">
             <div class="sic-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -210,10 +212,11 @@
             </div>
             <div class="sic-body">
               <div class="sic-num">{{ forecast.xgb_predicted_cases if forecast.xgb_predicted_cases is not none else '—' }}</div>
-              <div class="sic-label">Projected Cases (XGBoost)</div>
+                            <div class="sic-label">Projected Cases (XGBoost)</div>
               <div class="sic-sub">XGBoost estimate</div>
             </div>
           </div>
+          {% endif %}
                     <div class="summary-info-card" style="border-color: var(--blue-primary);">
             <div class="sic-icon" style="background: var(--blue-light); color: var(--blue-primary);">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -224,8 +227,8 @@
             </div>
             <div class="sic-body">
               <div class="sic-num">{{ forecast.ensemble_cases if forecast.ensemble_cases is not none else '—' }}</div>
-              <div class="sic-label">Ensemble Estimate</div>
-              <div class="sic-sub">RF + XGBoost combined</div>
+                            <div class="sic-label">{{ 'Ensemble Estimate' if is_admin else 'Projected Cases' }}</div>
+              <div class="sic-sub">{{ '0.6 × RF + 0.4 × XGBoost' if is_admin else 'Expected dengue cases next week' }}</div>
             </div>
           </div>
 
@@ -402,7 +405,8 @@
       </div>
       {% endif %}
 
-      <!-- RECOMMENDED ACTIONS — PARAGRAPH FORM -->
+            <!-- RECOMMENDED ACTIONS — PARAGRAPH FORM -->
+      {% set proj = forecast.ensemble_cases if forecast.ensemble_cases is not none else forecast.predicted_cases %}
       <div class="report-section">
         <div class="report-section-title">Health Response Recommendations</div>
 
@@ -410,7 +414,7 @@
         <div class="recommendation-block high">
           <div class="rec-risk-label high">HIGH RISK — Immediate Action Required</div>
           <div class="rec-body">
-            <p>Based on the current dengue outlook for Barangay {{ forecast.barangay }}, the forecasting system has detected a <strong>high probability of a dengue outbreak</strong> in the coming weeks, with an estimated {{ forecast.predicted_cases }} projected cases. The outbreak likelihood stands at {{ forecast.outbreak_proba }}%, driven by elevated rainfall, high humidity levels, and recent case trends in the area. Immediate and coordinated public health action is strongly advised.</p>
+            <p>Based on the current dengue outlook for Barangay {{ forecast.barangay }}, the forecasting system has detected a <strong>high probability of a dengue outbreak</strong> in the coming weeks, with an estimated {{ proj }} projected cases. The outbreak likelihood stands at {{ forecast.outbreak_proba }}%, driven by elevated rainfall, high humidity levels, and recent case trends in the area. Immediate and coordinated public health action is strongly advised.</p>
 
             <p>The barangay health response team should be activated without delay and coordinated with the Marikina City Health Office for the deployment of health workers to Barangay {{ forecast.barangay }}. Emergency fogging operations must be prioritized, particularly in flood-prone zones and areas with standing water near the Marikina River, where Aedes aegypti mosquito breeding is most likely to occur under current climate conditions.</p>
 
@@ -422,7 +426,7 @@
         <div class="recommendation-block moderate">
           <div class="rec-risk-label moderate">MODERATE RISK — Increased Vigilance Advised</div>
           <div class="rec-body">
-            <p>The dengue forecast for Barangay {{ forecast.barangay }} indicates a <strong>moderate level of outbreak risk</strong> for the coming weeks, with an estimated {{ forecast.predicted_cases }} projected cases and an outbreak likelihood of {{ forecast.outbreak_proba }}%. While this does not yet constitute an emergency, the current climate and case conditions warrant heightened surveillance and preventive action to avoid escalation to a high-risk situation.</p>
+            <p>The dengue forecast for Barangay {{ forecast.barangay }} indicates a <strong>moderate level of outbreak risk</strong> for the coming weeks, with an estimated {{ proj }} projected cases and an outbreak likelihood of {{ forecast.outbreak_proba }}%. While this does not yet constitute an emergency, the current climate and case conditions warrant heightened surveillance and preventive action to avoid escalation to a high-risk situation.</p>
 
             <p>Surveillance activities in Barangay {{ forecast.barangay }} and surrounding areas should be stepped up immediately. Health workers are advised to conduct more frequent monitoring visits and to actively screen for early dengue symptoms among community members. Preventive fogging operations should be scheduled for high-risk zones within the barangay, focusing on areas prone to waterlogging and poor drainage.</p>
 
@@ -434,7 +438,7 @@
         <div class="recommendation-block low">
           <div class="rec-risk-label low">LOW RISK — Routine Monitoring</div>
           <div class="rec-body">
-            <p>The dengue forecast for Barangay {{ forecast.barangay }} currently indicates a <strong>low level of outbreak risk</strong> for the coming weeks, with an estimated {{ forecast.predicted_cases }} projected cases and an outbreak likelihood of {{ forecast.outbreak_proba }}%. Present climate conditions and recent case trends do not suggest an imminent outbreak; however, continued vigilance and routine surveillance remain essential to detect any early signs of increased transmission.</p>
+            <p>The dengue forecast for Barangay {{ forecast.barangay }} currently indicates a <strong>low level of outbreak risk</strong> for the coming weeks, with an estimated {{ proj }} projected cases and an outbreak likelihood of {{ forecast.outbreak_proba }}%. Present climate conditions and recent case trends do not suggest an imminent outbreak; however, continued vigilance and routine surveillance remain essential to detect any early signs of increased transmission.</p>
 
             <p>Health officers are advised to maintain regular weekly surveillance activities in Barangay {{ forecast.barangay }} in accordance with standard CHO monitoring protocols. Case reporting should continue on its regular schedule, with health workers remaining attentive to any unusual clustering of dengue symptoms among residents. Routine environmental health activities, including community clean-up drives and inspection of potential breeding sites, should be sustained.</p>
 
@@ -515,7 +519,7 @@
 
       <!-- REPORT FOOTER -->
       <div class="report-footer">
-        <p>This forecast report was automatically generated by the DengueTect Dengue Outbreak Forecasting System using machine learning models trained on historical epidemiological and climate data from Marikina City (2022–2026). The projections contained in this report are intended to support — and not replace — the professional judgment of authorized public health personnel. All recommended actions should be implemented in accordance with existing Marikina City Health Office protocols and Department of Health guidelines.</p>
+        <p>This forecast report was automatically generated by the DengueTect Dengue Outbreak Forecasting System using machine learning models trained on Marikina City dengue and climate data from 2017–2024 and tested on recorded weeks from 2025–2026. The projections contained in this report are intended to support — and not replace — the professional judgment of authorized public health personnel. All recommended actions should be implemented in accordance with existing Marikina City Health Office protocols and Department of Health guidelines.</p>
         <div class="report-footer-meta">
           <span>DengueTect v1.0</span>
           <span>·</span>

@@ -115,16 +115,7 @@
         </div>
         <div class="summary-label">Low Risk</div>
       </div>
-      <div class="summary-card">
-        <div class="summary-num">
-          {% if rows %}
-            {{ (rows | map(attribute='outbreak_proba') | map('float') | sum / rows | length) | round(1) }}%
-          {% else %}
-            —
-          {% endif %}
-        </div>
-        <div class="summary-label">Avg. Probability</div>
-      </div>
+      
     </div>
 
     <!-- FILTER BAR -->

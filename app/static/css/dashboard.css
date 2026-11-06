@@ -1146,3 +1146,8 @@
   .status-bar-inner { flex-direction: column; align-items: flex-start; gap: 12px; }
   .status-bar-right { flex-wrap: wrap; }
 }
+
+
+/* "Live" indicator removed: forecasts update when an officer runs one, not in real time */
+.nav-status,
+.nav-divider { display: none !important; }

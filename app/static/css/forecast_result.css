@@ -956,3 +956,7 @@
 @media print {
   body .report-status-note { display: none; }
 }
+
+
+/* Summary cards: officers see 3, admins see 5; spread them evenly either way */
+.summary-cards-row { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }

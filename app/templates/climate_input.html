@@ -321,7 +321,7 @@
             </div>
             <div class="info-step">
               <div class="info-step-num">3</div>
-                            <div class="info-step-text">Random Forest and XGBoost estimate the case count together; Logistic Regression rates the outbreak risk</div>
+                            <div class="info-step-text">{% if session.user_role == 'admin' %}Random Forest and XGBoost estimate the case count together; Logistic Regression rates the outbreak risk{% else %}DengueTect estimates next week's dengue cases and the chance of an outbreak{% endif %}</div>
             </div>
             <div class="info-step">
               <div class="info-step-num">4</div>
