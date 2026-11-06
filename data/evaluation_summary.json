@@ -7,31 +7,36 @@
       "mae": 1.16,
       "rmse": 1.59,
       "within1": 71.0,
-      "within2": 89.2
+      "within2": 89.2,
+      "r2": 0.192
     },
     "XGBoost": {
       "mae": 1.23,
       "rmse": 1.71,
       "within1": 71.0,
-      "within2": 88.2
+      "within2": 88.2,
+      "r2": 0.062
     },
     "Ensemble (0.6 RF + 0.4 XGB)": {
       "mae": 1.17,
       "rmse": 1.61,
       "within1": 72.0,
-      "within2": 89.8
+      "within2": 89.8,
+      "r2": 0.173
     },
     "Baseline: same as last week": {
       "mae": 1.38,
       "rmse": 1.92,
       "within1": 61.3,
-      "within2": 81.7
+      "within2": 81.7,
+      "r2": -0.176
     },
     "Baseline: 4-week average": {
       "mae": 1.25,
       "rmse": 1.66,
       "within1": 64.5,
-      "within2": 88.2
+      "within2": 88.2,
+      "r2": 0.121
     }
   },
   "outbreak": {
