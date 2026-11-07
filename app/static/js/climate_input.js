@@ -99,6 +99,12 @@ function updateParamIndicator(input) {
     }
   }
 
+    // Dark mode: a faint tint of the level colour instead of the light background
+  if (document.documentElement.dataset.theme === 'dark') {
+    bgColor = borderColor + '22';
+    color   = borderColor;
+  }
+
   // Update row styling
   row.style.borderColor = borderColor;
   row.style.background  = bgColor;
