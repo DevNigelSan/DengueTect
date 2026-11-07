@@ -422,7 +422,7 @@ def _model_status():
         {'name': 'Lag Window', 'desc': 'Weeks of past climate and cases used',
          'val': '4 weeks', 'status': 'setting'},
         {'name': 'Risk Levels', 'desc': 'Outbreak probability cut-offs',
-         'val': 'High ≥ 75% · Moderate ≥ 50%', 'status': 'setting'},
+         'val': 'High ≥ 75% · Moderate ≥ 40%', 'status': 'setting'},
     ]
 
 @main.route('/admin')

@@ -31,7 +31,7 @@ def poisson_outbreak_proba(expected_cases, threshold):
 def get_risk_level(probability):
     if probability >= 0.75:
         return 'high'
-    elif probability >= 0.50:
+    elif probability >= outbreak_config.get('cutoff', 0.50):
         return 'moderate'
     else:
         return 'low'
