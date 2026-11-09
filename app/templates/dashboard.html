@@ -239,7 +239,7 @@
                 </form>
               {% elif p.latest %}
                 <span class="pub-state">{{ 'Older week live' if p.shown else 'Not published' }}</span>
-                <form action="{{ url_for('main.toggle_publish') }}" method="POST">
+                <form action="{{ url_for('main.toggle_publish') }}" method="POST" data-passcode>
                   <input type="hidden" name="forecast_id" value="{{ p.latest.id }}">
                   <input type="hidden" name="next" value="dashboard">
                   <button type="submit" class="btn-pub">Publish</button>
@@ -251,7 +251,8 @@
         </div>
 
         {% if pending | length > 1 %}
-        <form action="{{ url_for('main.publish_latest') }}" method="POST" class="pub-footer">
+                <form action="{{ url_for('main.publish_latest') }}" method="POST" class="pub-footer"
+              data-passcode="Publishing shows the newest forecast of every barangay to residents on the Community page. Enter the passcode kept in the health office.">
           <button type="submit" class="btn-pub-all">Publish all ({{ pending | length }})</button>
         </form>
         {% endif %}
@@ -391,7 +392,7 @@
       lat: 14.6502,
       lng: 121.0938,
       risk: '{{ malanday.risk_level if malanday else "none" }}',
-      cases: {{ malanday.predicted_cases if malanday else 0 }},
+      cases: {{ cases(malanday) }},
       proba: {{ malanday.outbreak_proba if malanday else 0 }},
       week: '{{ malanday.week_date if malanday else "No data" }}'
     }

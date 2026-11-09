@@ -11,6 +11,7 @@ from app.ml.activity import (log_activity, get_recent_activity, get_activity, ma
                              clear_failed_logins, failed_logins_left, login_lock_minutes,
                              LOCK_MINUTES)
 from functools import wraps
+from app.ml.passcode import passcode_status, set_passcode, check_passcode
 from app.ml.case_records import (weekly_counts, current_counts, compare, create_upload, get_upload,
                                  recent_uploads, save_upload, cancel_upload, provisional_from,
                                  merge_into_heatmap, MAX_FILE_MB)
@@ -344,25 +345,42 @@ def community():
         malanday=_with_age(get_latest_published_forecast('Malanday'))
     )
 
+def _passcode_refused():
+    """Checks the office passcode sent with a publish. Returns None if it is right,
+    otherwise the reason to show on the page."""
+    ok, reason, n = check_passcode(session.get('user_email'), request.form.get('passcode'))
+    if ok:
+        return None
+    if reason == 'wrong':
+        _log('passcode_failed', f'Wrong publishing passcode · {n} tr{"y" if n == 1 else "ies"} left')
+    elif reason == 'locked':
+        _log('passcode_locked', f'Publishing paused for {n} minute{"s" if n != 1 else ""} after wrong passcodes')
+    return {'passcode': reason, 'n': n}
+
 @main.route('/toggle-publish', methods=['POST'])
 @login_required
 def toggle_publish():
+    page = 'main.dashboard' if request.form.get('next') == 'dashboard' else 'main.history'
     forecast_id = request.form.get('forecast_id')
     if forecast_id:
-        from app.ml.storage import get_forecast_by_id
         f = get_forecast_by_id(int(forecast_id))
+        if f and not f.get('published'):            # publishing to residents needs the office passcode
+            refused = _passcode_refused()
+            if refused:
+                return redirect(url_for(page, **refused))
         toggle_published(int(forecast_id))
         if f:
             _log('unpublish' if f.get('published') else 'publish',
                  f"Brgy. {f['barangay']} · week of {f['week_date']}", target_id=f['id'])
-    if request.form.get('next') == 'dashboard':
-        return redirect(url_for('main.dashboard'))
-    return redirect(url_for('main.history'))
+    return redirect(url_for(page))
 
 @main.route('/publish-latest', methods=['POST'])
 @login_required
 def publish_latest():
     # Publishes the newest forecast of every barangay that isn't on the community page yet
+    refused = _passcode_refused()
+    if refused:
+        return redirect(url_for('main.dashboard', **refused))
     for brgy in ['Nangka', 'Tumana', 'Malanday']:
         f = get_latest_forecast(brgy)
         if f and not f.get('published'):
@@ -433,7 +451,21 @@ def _model_status():
 def admin():
     users = get_all_users()
     return render_template('admin.html', users=users, activity=get_recent_activity(200),
-                           stats=_admin_stats(users), models=_model_status())
+                           stats=_admin_stats(users), models=_model_status(), passcode=passcode_status())
+
+@main.route('/admin/passcode', methods=['POST'])
+@admin_required
+def admin_passcode():
+    """Set or change the office passcode for publishing. Only its hash is stored."""
+    was_set = passcode_status()['is_set']
+    error = set_passcode(session.get('user_email'), request.form.get('current'), request.form.get('new'),
+                         request.form.get('confirm'), session.get('user_name') or session.get('user_email'))
+    if error:
+        if 'current passcode is wrong' in error:
+            _log('passcode_failed', 'Wrong current passcode while changing the publishing passcode')
+        return redirect(url_for('main.admin', pc_error=error, _anchor='passcode'))
+    _log('passcode_set', 'Publishing passcode changed' if was_set else 'Publishing passcode set')
+    return redirect(url_for('main.admin', pc_msg='saved', _anchor='passcode'))
 
 def _back_to_users(**args):
     return redirect(url_for('main.admin', _anchor='users', **args))
@@ -518,6 +550,9 @@ def undo_activity(log_id):
     elif action == 'unpublish':
         if not f or f.get('published'):
             return back('changed')
+        refused = _passcode_refused()                # undoing an unpublish publishes it again
+        if refused:
+            return redirect(url_for('main.admin', _anchor='activity', **refused))
         set_published(fid, 1)
         what = 'Published again'
     else:  # delete

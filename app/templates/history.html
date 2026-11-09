@@ -185,7 +185,7 @@
               <td><span class="badge {{ f.risk_level }}">{{ f.risk_level | title }}</span></td>
               <td class="td-done">{{ f.generated_at }}</td>
               <td>
-                <form action="{{ url_for('main.toggle_publish') }}" method="POST">
+                     <form action="{{ url_for('main.toggle_publish') }}" method="POST"{% if not f.published %} data-passcode{% endif %}>
                   <input type="hidden" name="forecast_id" value="{{ f.id }}"/>
                   {% if f.published %}
                   <button type="submit" class="btn-publish on" title="Residents can see this. Click to hide it.">

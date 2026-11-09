@@ -330,7 +330,83 @@
       </div>
     </div>
 
-              <!-- ACTIVITY LOG -->
+                  <!-- PUBLISHING PASSCODE -->
+    <section class="admin-panel pcode-panel" id="passcode">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Publishing Passcode</div>
+          <div class="panel-sub">Needed to publish a forecast to residents on the Community page</div>
+        </div>
+        {% if passcode.is_set %}
+        <span class="pcode-state on">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Set
+        </span>
+        {% else %}
+        <span class="pcode-state off">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Not set
+        </span>
+        {% endif %}
+      </div>
+
+      <div class="pcode-body">
+        {% if request.args.get('pc_msg') == 'saved' %}
+        <div class="pcode-msg ok" role="status">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <div><strong>Passcode saved.</strong> Write it on the office copy and keep it in the health office.</div>
+        </div>
+        {% elif request.args.get('pc_error') %}
+        <div class="pcode-msg error" role="alert">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div><strong>Not saved.</strong> {{ request.args.get('pc_error') }}</div>
+        </div>
+        {% endif %}
+
+        {% if passcode.is_set %}
+        <p class="pcode-note">Last changed {{ passcode.changed_at }}{% if passcode.changed_by %} by {{ passcode.changed_by }}{% endif %}.</p>
+        {% else %}
+        <div class="pcode-msg error">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div><strong>Publishing is blocked</strong> until a passcode is set.</div>
+        </div>
+        {% endif %}
+
+        <div class="pcode-rules">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+          <div>
+            <strong>Keep the passcode on paper in the health office only.</strong>
+            Don't send it by message, email or chat, and don't save it on a computer or phone.
+            The system stores only a scrambled copy, so no one can read it back. Change it regularly, and right away if it may have been seen.
+          </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('main.admin_passcode') }}" class="pcode-form" autocomplete="off">
+          {% if passcode.is_set %}
+          <label class="pcode-field">
+            <span>Current passcode</span>
+            <input type="password" name="current" required maxlength="20" autocomplete="off">
+          </label>
+          {% endif %}
+          <label class="pcode-field">
+            <span>New passcode (6–20 characters)</span>
+            <input type="password" name="new" required minlength="6" maxlength="20" autocomplete="new-password">
+          </label>
+          <label class="pcode-field">
+            <span>Type it again</span>
+            <input type="password" name="confirm" required minlength="6" maxlength="20" autocomplete="new-password">
+          </label>
+          <button type="submit" class="pcode-save">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            {{ 'Change passcode' if passcode.is_set else 'Set passcode' }}
+          </button>
+        </form>
+        <p class="pcode-lost">Lost the passcode? The IT Admin can clear it on the server and then set a new one here.</p>
+      </div>
+    </section>
+
+    <!-- ACTIVITY LOG -->
+
     {% set act = {
       'login':        ('Signed in',             'green',  'signin'),
       'logout':       ('Signed out',            'green',  'signin'),
@@ -348,6 +424,10 @@
       'user_edit':       ('Account edited',      'blue',   'accounts'),
       'user_deactivate': ('Account deactivated', 'red',    'accounts'),
       'user_activate':   ('Account activated',   'green',  'accounts'),
+      'passcode_set':    ('Publishing passcode changed', 'yellow', 'security'),
+      'passcode_failed': ('Wrong publishing passcode',   'red',    'security'),
+      'passcode_locked': ('Publishing paused',           'red',    'security'),
+      'cases_upload':    ('Case records updated',        'blue',   'forecasts'),
     } %}
     {% set undoable = ['forecast', 'publish', 'unpublish', 'delete'] %}
     {% set undo_msgs = {
@@ -419,7 +499,7 @@
                 {% if a.undone_at %}
                   <span class="act-undone">Undone by {{ a.undone_by or 'admin' }}<br>{{ a.undone_at }}</span>
                 {% elif a.action in undoable and a.target_id %}
-                  <form method="POST" action="{{ url_for('main.undo_activity', log_id=a.id) }}"
+                      <form method="POST" action="{{ url_for('main.undo_activity', log_id=a.id) }}"{% if a.action == 'unpublish' %} data-passcode="Undoing this shows the forecast to residents again. Enter the passcode kept in the health office."{% endif %}
                         data-confirm="Undo “{{ info[0] }}” — {{ a.details }}?"
                         onsubmit="return confirm(this.dataset.confirm);">
                                         <button type="submit" class="act-undo-btn">
