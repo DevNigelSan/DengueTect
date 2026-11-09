@@ -350,6 +350,7 @@
 
 {% block scripts %}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='js/gis.js') }}"></script>
 <script>
   const maxCases = {{ heatmap_data.max_cases }};
   const N_SYN    = {{ prov.n_syn }};
@@ -418,56 +419,13 @@
     none:     '#E2E8F0'
   };
 
-  const barangayPolygons = {
-    'Nangka': [
-      [14.681,121.102],[14.683,121.108],[14.679,121.116],
-      [14.672,121.118],[14.668,121.112],[14.666,121.105],
-      [14.670,121.100],[14.676,121.099],[14.681,121.102]
-    ],
-    'Tumana': [
-      [14.664,121.097],[14.666,121.104],[14.663,121.110],
-      [14.657,121.111],[14.653,121.106],[14.652,121.099],
-      [14.656,121.095],[14.661,121.094],[14.664,121.097]
-    ],
-    'Malanday': [
-      [14.652,121.094],[14.654,121.100],[14.651,121.106],
-      [14.645,121.107],[14.641,121.102],[14.640,121.095],
-      [14.644,121.090],[14.649,121.089],[14.652,121.094]
-    ]
-  };
-
+  // Real barangay boundaries, the river and health facilities (static/js/gis.js)
+  const GEO  = {{ geo | tojson }};
   const cmap = L.map('choropleth-map').setView([14.661, 121.100], 14);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors', maxZoom: 18
   }).addTo(cmap);
-
-  L.polyline([
-    [14.682,121.112],[14.673,121.109],[14.661,121.100],[14.650,121.094],[14.638,121.088]
-  ], { color:'#3B82F6', weight:3, opacity:0.6, dashArray:'6,4' })
-   .addTo(cmap).bindTooltip('Marikina River');
-
-  const polygonLayers = {};
-
-  barangays.forEach(brgy => {
-    const coords = barangayPolygons[brgy];
-    polygonLayers[brgy] = L.polygon(coords, {
-      fillColor: '#E2E8F0', fillOpacity: 0.75,
-      color: 'white', weight: 2
-    }).addTo(cmap);
-
-    const center = coords.reduce(
-      (acc, c) => [acc[0] + c[0]/coords.length, acc[1] + c[1]/coords.length], [0,0]
-    );
-    L.marker(center, {
-      icon: L.divIcon({
-        className: '',
-        html: `<div style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;
-                           color:white;text-shadow:0 1px 3px rgba(0,0,0,0.7);text-align:center;">
-                 ${brgy}</div>`,
-        iconSize: [70, 20], iconAnchor: [35, 10]
-      })
-    }).addTo(cmap);
-  });
+  const polygonLayers = DTGIS.setup(cmap, GEO);
 
   const synFlag  = document.getElementById('mapSynFlag');
   const weekSrc  = document.getElementById('weekSrc');
@@ -482,6 +440,7 @@
       const entry = weeks[weekIdx] || weeks[weeks.length - 1];
       const color = riskColors[entry.risk] || riskColors.none;
       isSyn = entry.source === 'synthetic';
+      if (!polygonLayers[brgy]) return;
 
       polygonLayers[brgy].setStyle({
         fillColor: color,
@@ -510,6 +469,7 @@
             ${entry.risk === 'none' ? 'No Cases' : entry.risk.charAt(0).toUpperCase() + entry.risk.slice(1) + ' Risk'}
           </div>
           ${isSyn ? `<div style="margin-top:8px;font-size:11.5px;color:#6D28D9;">Modelled value — not an actual case count</div>` : ''}
+          <div style="margin-top:8px;font-size:12px;color:#64748B;">👥 ${DTGIS.population(polygonLayers[brgy])}</div>
         </div>
       `, { maxWidth: 220 });
     });

@@ -251,7 +251,7 @@
         </div>
 
         {% if pending | length > 1 %}
-                <form action="{{ url_for('main.publish_latest') }}" method="POST" class="pub-footer"
+        <form action="{{ url_for('main.publish_latest') }}" method="POST" class="pub-footer"
               data-passcode="Publishing shows the newest forecast of every barangay to residents on the Community page. Enter the passcode kept in the health office.">
           <button type="submit" class="btn-pub-all">Publish all ({{ pending | length }})</button>
         </form>
@@ -367,6 +367,7 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='js/gis.js') }}"></script>
 <script>
   const barangayData = [
     {
@@ -398,34 +399,27 @@
     }
   ];
 
+  const GEO = {{ geo | tojson }};
   const riskColors  = { high:'#DC2626', moderate:'#D97706', low:'#16A34A', none:'#94A3B8' };
   const riskLabels  = { high:'HIGH RISK', moderate:'MODERATE RISK', low:'LOW RISK', none:'No Data' };
 
-  const map = L.map('dengue-map', { zoomControl: true }).setView([14.661, 121.098], 14);
-
+  const map = L.map('dengue-map', { zoomControl: true }).setView([14.661, 121.100], 14);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
     maxZoom: 18
   }).addTo(map);
 
-  const riverCoords = [
-    [14.682, 121.112],[14.673, 121.109],
-    [14.661, 121.100],[14.650, 121.094],[14.638, 121.088]
-  ];
-  L.polyline(riverCoords, { color:'#3B82F6', weight:3, opacity:0.6, dashArray:'6, 4' })
-   .addTo(map).bindTooltip('Marikina River');
+  // Real barangay boundaries, the river and health facilities (static/js/gis.js)
+  const shapes = DTGIS.setup(map, GEO);
 
   barangayData.forEach(brgy => {
+    const shape = shapes[brgy.name];
+    if (!shape) return;
     const color = riskColors[brgy.risk] || riskColors.none;
     const label = riskLabels[brgy.risk] || 'No Data';
-
-    const circle = L.circleMarker([brgy.lat, brgy.lng], {
-      radius: 28, fillColor: color, color: 'white',
-      weight: 3, opacity: 1, fillOpacity: 0.85
-    }).addTo(map);
-
-    circle.bindPopup(`
-      <div style="font-family:'Inter',sans-serif;min-width:180px;">
+    shape.setStyle({ fillColor: color, fillOpacity: brgy.risk === 'none' ? 0.35 : 0.65, color: '#FFFFFF', weight: 2.5 });
+    shape.bindPopup(`
+      <div style="font-family:'Inter',sans-serif;min-width:190px;">
         <div style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#0D3B7A;margin-bottom:6px;">
           Barangay ${brgy.name}
         </div>
@@ -433,20 +427,10 @@
                     background:${color};color:white;margin-bottom:10px;">${label}</div>
         <div style="font-size:13px;color:#475569;margin-bottom:4px;">📅 Week of ${brgy.week}</div>
         <div style="font-size:13px;color:#475569;margin-bottom:4px;">🦟 Projected cases: <strong>${brgy.cases}</strong></div>
-        <div style="font-size:13px;color:#475569;">📊 Outbreak probability: <strong>${brgy.proba}%</strong></div>
+        <div style="font-size:13px;color:#475569;margin-bottom:4px;">📊 Outbreak probability: <strong>${brgy.proba}%</strong></div>
+        <div style="font-size:12px;color:#64748B;">👥 ${DTGIS.population(shape)}</div>
       </div>
-    `, { maxWidth: 220 });
-
-    L.marker([brgy.lat, brgy.lng], {
-      icon: L.divIcon({
-        className: '',
-        html: `<div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;
-                           color:white;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,0.5);">
-                 ${brgy.name}</div>`,
-        iconSize: [60, 20],
-        iconAnchor: [30, -18]
-      })
-    }).addTo(map);
+    `, { maxWidth: 240 });
   });
 </script>
 {% endblock %}

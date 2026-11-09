@@ -128,6 +128,15 @@ def _publish_status():
         status.append({'barangay': brgy, 'latest': latest, 'shown': shown, 'state': state})
     return status
 
+def _geo():
+    """Barangay boundaries, river and health facilities for the maps (OpenStreetMap data)."""
+    path = Path(__file__).resolve().parent / 'static' / 'geo' / 'marikina.geojson'
+    try:
+        with open(path, encoding='utf-8') as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {'type': 'FeatureCollection', 'features': []}
+
 @main.route('/dashboard')
 @login_required
 def dashboard():
@@ -139,7 +148,8 @@ def dashboard():
         tumana=tumana,
         malanday=malanday,
         active_forecast=nangka or tumana or malanday,
-        publish=_publish_status()
+        publish=_publish_status(),
+        geo=_geo()
     )
 
 @main.route('/input', methods=['GET', 'POST'])
@@ -766,7 +776,7 @@ def heatmap():
         'real_years': [y for y in years if y not in syn_years],
         'last_week': first_brgy[-1]['week'] if first_brgy else '',
     }
-    return render_template('heatmap.html', heatmap_data=heatmap_data, years=years, prov=prov)
+    return render_template('heatmap.html', heatmap_data=heatmap_data, years=years, prov=prov, geo=_geo())
 
 
 @main.route('/technical')
