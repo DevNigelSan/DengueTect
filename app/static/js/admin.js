@@ -12,8 +12,8 @@ function openUserModal(btn, values) {
   document.getElementById('ufSave').textContent        = editing ? 'Save Changes' : 'Create Account';
   document.getElementById('ufPassLabel').textContent   = editing ? 'New password (optional)' : 'Password';
   document.getElementById('ufPassHint').textContent    = editing
-    ? 'Leave blank to keep the current password. At least 8 characters if changed.'
-    : 'At least 8 characters. Give it to the user privately.';
+    ? 'Leave blank to keep the current password. If changed: at least 10 characters, with a capital letter, a small letter, a number and a symbol.'
+    : 'At least 10 characters, with a capital letter, a small letter, a number and a symbol. Give it to the user privately.';
 
   userForm.action = editing
     ? userForm.dataset.editAction.replace('/0/', '/' + v.id + '/')

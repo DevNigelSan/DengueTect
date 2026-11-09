@@ -62,7 +62,28 @@ def verify_password(email, password):
 
 # ── Account management (Admin page) ──
 ROLES = {'health_officer': 'Health Officer', 'admin': 'IT Admin'}
-MIN_PASSWORD = 8
+MIN_PASSWORD = 10
+
+def password_problem(password, email=''):
+    """Why a password is too weak, or None if it is strong enough."""
+    p = password or ''
+    if len(p) < MIN_PASSWORD:
+        return f'The password must be at least {MIN_PASSWORD} characters.'
+    if ' ' in p:
+        return 'The password cannot contain spaces.'
+    missing = [label for ok, label in (
+        (any(c.isupper() for c in p), 'a capital letter'),
+        (any(c.islower() for c in p), 'a small letter'),
+        (any(c.isdigit() for c in p), 'a number'),
+        (any(not c.isalnum() for c in p), 'a symbol such as ! @ # $ or %'),
+    ) if not ok]
+    if missing:
+        listed = missing[0] if len(missing) == 1 else ', '.join(missing[:-1]) + ' and ' + missing[-1]
+        return f'The password needs {listed}.'
+    name = (email or '').split('@')[0].lower()
+    if len(name) >= 3 and name in p.lower():
+        return 'The password cannot contain the email name.'
+    return None
 
 def get_all_users():
     conn = get_db()
@@ -98,8 +119,9 @@ def _check_fields(name, email, role, password, password_required):
     if role not in ROLES:
         return 'Please choose a role.'
     if password or password_required:
-        if len(password or '') < MIN_PASSWORD:
-            return f'The password must be at least {MIN_PASSWORD} characters.'
+        problem = password_problem(password, email)
+        if problem:
+            return problem
     return None
 
 def create_user(name, email, role, password):
