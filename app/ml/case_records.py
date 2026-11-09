@@ -31,7 +31,9 @@ def _pick_columns(names):
             onset = name
     if barangay is None:   # fall back to any barangay column
         barangay = next((n for n in names if 'barangay' in str(n).lower()), None)
-    return barangay, onset
+    city = next((n for n in names if 'current' in str(n).lower() and 'city' in str(n).lower()), None)
+    case_id = next((n for n in names if str(n).strip().lower() in ('case id', 'caseid', 'epiid')), None)
+    return barangay, onset, city, case_id
 
 
 def _read_two_columns(data, filename):
@@ -47,7 +49,7 @@ def _read_two_columns(data, filename):
     except Exception:
         return None, 'This file could not be opened. Please check that it is the CHO case file and try again.'
 
-    brgy_col, onset_col = _pick_columns(names)
+    brgy_col, onset_col, city_col, id_col = _pick_columns(names)
     missing = [label for label, col in (('(Current Address) Barangay', brgy_col), ('DOnset (date of onset)', onset_col))
                if col is None]
     if missing:
@@ -55,7 +57,7 @@ def _read_two_columns(data, filename):
                       + ' and '.join(f'"{m}"' for m in missing)
                       + '. Please upload the case file exported from the CHO surveillance records.')
 
-    keep = [brgy_col, onset_col]
+    keep = [brgy_col, onset_col] + ([city_col] if city_col else []) + ([id_col] if id_col else [])
     try:
         if ext in ('xlsx', 'xls'):
             df = pd.read_excel(io.BytesIO(data), usecols=keep)
@@ -63,7 +65,8 @@ def _read_two_columns(data, filename):
             df = pd.read_csv(io.BytesIO(data), usecols=keep, encoding='utf-8-sig')
     except Exception:
         return None, 'This file could not be read. Please check that it is the CHO case file and try again.'
-    df.columns = ['barangay', 'onset']
+    df = df[keep]
+    df.columns = ['barangay', 'onset'] + (['city'] if city_col else []) + (['case_id'] if id_col else [])
     return df, None
 
 
@@ -77,7 +80,19 @@ def weekly_counts(data, filename):
     if error:
         return None, error
 
+    # One case can appear on several rows (one per laboratory test): count each case ID once
+    repeated = 0
+    if 'case_id' in df.columns:
+        has_id = df['case_id'].notna() & (df['case_id'].astype(str).str.strip() != '')
+        dup = has_id & df['case_id'].astype(str).str.strip().duplicated()
+        repeated = int(dup.sum())
+        df = df[~dup].drop(columns='case_id')
     df['barangay'] = df['barangay'].astype(str).str.strip().str.title()
+    # Other towns have barangays with the same names (e.g. Malanday in San Mateo), so keep
+    # Marikina residents only when the file has a city column
+    other_town = pd.Series(False, index=df.index)
+    if 'city' in df.columns:
+        other_town = ~df['city'].astype(str).str.contains('marikina', case=False, na=False)
     df['onset'] = pd.to_datetime(df['onset'], errors='coerce')
     today = pd.Timestamp(date.today())
     dated = df.dropna(subset=['onset'])
@@ -100,9 +115,10 @@ def weekly_counts(data, filename):
         start = earlier
     first, last = start, city_weeks[-1]
 
-    in_target = df['barangay'].isin(TARGET_BARANGAYS)
+    in_target = df['barangay'].isin(TARGET_BARANGAYS) & ~other_town
+    other_town_cases = int((df['barangay'].isin(TARGET_BARANGAYS) & other_town).sum())
     no_date = int((in_target & df['onset'].isna()).sum())
-    use = dated[dated['barangay'].isin(TARGET_BARANGAYS) & (dated['week'] >= first)]
+    use = dated[dated['barangay'].isin(TARGET_BARANGAYS) & ~other_town.loc[dated.index] & (dated['week'] >= first)]
     outside = int(in_target.sum()) - no_date - len(use)
     df = use
     if df.empty:
@@ -128,7 +144,8 @@ def weekly_counts(data, filename):
         'first_week': first.isoformat(),
         'last_week': last.isoformat(),
         'rows_used': int(len(df)),
-        'skipped': {'no_date': no_date, 'outside_period': outside},
+        'skipped': {'no_date': no_date, 'outside_period': outside, 'other_town': other_town_cases,
+                    'repeated_rows': repeated},
     }, None
 
 
@@ -154,38 +171,41 @@ def current_counts(csv_real):
     return counts
 
 
-def _to_write(result, existing):
-    """The (barangay, week, cases) an upload would write: everything except a partial first week
-    that the records already have."""
+def _to_write(result, existing, replace_existing=False):
+    """The (barangay, week, cases) an upload would write. Weeks already in the records are only
+    replaced when asked, and never the partial first week of a file."""
     partial = result.get('partial_week')
     for brgy, series in result['weeks'].items():
         for week, cases in series.items():
-            if week == partial and (brgy, week) in existing:
+            if (brgy, week) in existing and (not replace_existing or week == partial):
                 continue
             yield brgy, week, int(cases)
 
 
 def compare(result, existing):
-    """How an upload differs from the current records, per barangay."""
+    """Per barangay: new weeks, and how the file agrees with the weeks already in the records."""
     summary = []
-    rows = list(_to_write(result, existing))
-    for brgy in result['weeks']:
-        new = changed = same = 0
+    partial = result.get('partial_week')
+    for brgy, series in result['weeks'].items():
+        new = overlap = differ = file_total = rec_total = 0
         changes = []
-        for b, week, cases in rows:
-            if b != brgy:
-                continue
+        for week, cases in series.items():
             before = existing.get((brgy, week))
             if before is None:
                 new += 1
-            elif before != cases:
-                changed += 1
+                continue
+            if week == partial:
+                continue
+            overlap += 1
+            file_total += cases
+            rec_total += before
+            if before != cases:
+                differ += 1
                 changes.append({'week': week, 'before': before, 'after': cases})
-            else:
-                same += 1
-        summary.append({'barangay': brgy, 'new': new, 'changed': changed, 'same': same,
-                        'cases': sum(result['weeks'][brgy].values()), 'changes': changes[:8],
-                        'more_changes': max(0, len(changes) - 8)})
+        summary.append({'barangay': brgy, 'new': new, 'overlap': overlap, 'differ': differ,
+                        'file_total': file_total, 'rec_total': rec_total,
+                        'new_cases': sum(c for w, c in series.items() if (brgy, w) not in existing),
+                        'changes': changes[:8], 'more_changes': max(0, len(changes) - 8)})
     return summary
 
 
@@ -228,12 +248,12 @@ def recent_uploads(limit=10):
     return [dict(r) for r in rows]
 
 
-def save_upload(upload_id, existing):
+def save_upload(upload_id, existing, replace_existing=False):
     """Write a pending upload's weekly counts. Overlapping weeks are replaced, never added twice."""
     up = get_upload(upload_id)
     if not up or up['status'] != 'pending':
         return None
-    rows = list(_to_write(up, existing))
+    rows = list(_to_write(up, existing, replace_existing))
     conn = get_db()
     for brgy, week, cases in rows:
         conn.execute('INSERT OR REPLACE INTO case_records (barangay, week_start, case_count, upload_id) '

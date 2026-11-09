@@ -108,32 +108,40 @@
       <div class="rec-table-wrap">
         <table class="rec-table">
           <thead>
-            <tr><th>Barangay</th><th>New weeks</th><th>Updated weeks</th><th>Unchanged</th><th>Cases in file</th></tr>
+            <tr><th>Barangay</th><th>New weeks to add</th><th>Cases in new weeks</th><th>Weeks already in the records</th><th>Those weeks: file vs records</th></tr>
           </thead>
           <tbody>
             {% for s in summary %}
             <tr>
               <td class="rec-brgy">{{ s.barangay }}</td>
               <td><span class="rec-pill new">+ {{ s.new }}</span></td>
-              <td><span class="rec-pill {{ 'upd' if s.changed else 'zero' }}">{{ s.changed }}</span></td>
-              <td>{{ s.same }}</td>
-              <td>{{ s.cases }}</td>
+              <td>{{ s.new_cases }}</td>
+              <td>{{ s.overlap }}{% if s.differ %} <span class="rec-pill upd">{{ s.differ }} differ</span>{% endif %}</td>
+              <td>{% if s.overlap %}{{ s.file_total }} vs {{ s.rec_total }} cases{% else %}—{% endif %}</td>
             </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
 
-      {% set ns = namespace(any=false) %}
-      {% for s in summary %}{% if s.changes %}{% set ns.any = true %}{% endif %}{% endfor %}
-      {% if ns.any %}
+      {% set ns = namespace(differ=0, overlap=0) %}
+      {% for s in summary %}{% set ns.differ = ns.differ + s.differ %}{% set ns.overlap = ns.overlap + s.overlap %}{% endfor %}
+      {% if ns.overlap %}
       <div class="rec-changes">
-        <div class="rec-sub-title">Weeks that will change</div>
+        <div class="rec-sub-title">Weeks the system already has</div>
+        <p class="rec-lead rec-small">
+          {% if ns.differ == 0 %}
+            This file agrees with the current records for all {{ ns.overlap }} overlapping barangay-weeks. That's a good sign it was counted the same way.
+          {% else %}
+            For {{ ns.differ }} of the {{ ns.overlap }} overlapping barangay-weeks, this file has a different count than the current records.
+            By default these weeks <strong>keep their current records</strong>. Only replace them if this file is the complete, newer record for those weeks.
+          {% endif %}
+        </p>
         {% for s in summary if s.changes %}
         <div class="rec-change-group">
           <span class="rec-brgy">{{ s.barangay }}</span>
           {% for c in s.changes %}
-          <span class="rec-change">Week of {{ c.week }}: {{ c.before }} → <strong>{{ c.after }}</strong></span>
+          <span class="rec-change">Week of {{ c.week }}: records {{ c.before }} · file <strong>{{ c.after }}</strong></span>
           {% endfor %}
           {% if s.more_changes %}<span class="rec-change more">and {{ s.more_changes }} more</span>{% endif %}
         </div>
@@ -158,6 +166,18 @@
           <span>{{ upload.skipped.no_date }} case{{ 's' if upload.skipped.no_date != 1 }} in these barangays had no onset date and {{ 'were' if upload.skipped.no_date != 1 else 'was' }} not counted.</span>
         </li>
         {% endif %}
+        {% if upload.skipped.repeated_rows %}
+        <li>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <span>{{ upload.skipped.repeated_rows }} repeated row{{ 's' if upload.skipped.repeated_rows != 1 }} for the same case (for example one row per laboratory test) {{ 'were' if upload.skipped.repeated_rows != 1 else 'was' }} counted once.</span>
+        </li>
+        {% endif %}
+        {% if upload.skipped.other_town %}
+        <li>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <span>{{ upload.skipped.other_town }} case{{ 's' if upload.skipped.other_town != 1 }} from a barangay with the same name in another town (not Marikina) {{ 'were' if upload.skipped.other_town != 1 else 'was' }} not counted.</span>
+        </li>
+        {% endif %}
         {% if upload.skipped.outside_period %}
         <li>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -173,7 +193,13 @@
             Cancel
           </button>
         </form>
-        <form method="post" action="{{ url_for('main.records_confirm', upload_id=upload.id) }}">
+        <form method="post" action="{{ url_for('main.records_confirm', upload_id=upload.id) }}" class="rec-confirm">
+          {% if ns.differ %}
+          <label class="rec-check">
+            <input type="checkbox" name="replace_existing" value="1">
+            Also replace the {{ ns.differ }} week{{ 's' if ns.differ != 1 }} that differ with this file's counts
+          </label>
+          {% endif %}
           <button type="submit" class="rec-btn primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             Save records

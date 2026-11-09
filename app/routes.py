@@ -694,9 +694,11 @@ def records_confirm(upload_id):
     if not upload or upload['status'] != 'pending':
         return redirect(url_for('main.records'))
     existing = current_counts(_csv_history()[1])
+    replace = request.form.get('replace_existing') == '1'
     summary = compare(upload, existing)
-    new, changed = sum(s['new'] for s in summary), sum(s['changed'] for s in summary)
-    save_upload(upload_id, existing)
+    new = sum(s['new'] for s in summary)
+    changed = sum(s['differ'] for s in summary) if replace else 0
+    save_upload(upload_id, existing, replace)
     _log('cases_upload', f"{upload['filename']} · weeks of {upload['first_week']} to {upload['last_week']} · "
                          f"{new} new and {changed} updated barangay-weeks", target_id=upload_id)
     session['records_saved'] = (f"Weeks of {upload['first_week']} to {upload['last_week']} were saved: "
