@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Case Records{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/records.css') }}"/>
+{% endblock %}
+
+{% block content %}
+<div class="app-shell">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+      <div class="nav-brand-text">
+        <span class="nav-title">DengueTect</span>
+        <span class="nav-sub">Marikina City Health Office</span>
+      </div>
+    </div>
+
+    <div class="nav-center">
+      <div class="nav-links">
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/input" class="nav-link">Climate Input</a>
+        <a href="/history" class="nav-link">History</a>
+        <a href="/evaluation" class="nav-link">Model Evaluation</a>
+        <a href="/heatmap" class="nav-link">Heatmap</a>
+        {% if session.user_role == 'admin' %}
+        <a href="/technical" class="nav-link">Technical</a>
+        <a href="/admin" class="nav-link">Admin</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <div class="nav-user">
+        <div class="user-avatar">{{ 'AD' if session.user_role == 'admin' else 'HO' }}</div>
+        <div class="user-info">
+          <span class="user-name">{{ 'IT Admin' if session.user_role == 'admin' else 'Health Officer' }}</span>
+          <span class="user-role">{{ 'IT Admin' if session.user_role == 'admin' else 'Marikina CHO' }}</span>
+        </div>
+      </div>
+      <a href="/logout" class="btn-logout">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Sign out
+      </a>
+    </div>
+  </nav>
+
+  <main class="main-content rec-page">
+
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Case Records</h1>
+        <p class="page-sub">Keep the recorded dengue cases up to date with the latest CHO case file</p>
+      </div>
+    </div>
+
+    <!-- CURRENT STATUS -->
+    <section class="rec-status">
+      <div class="rec-status-icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      </div>
+      <div>
+        <div class="rec-status-label">Recorded cases currently end</div>
+        <div class="rec-status-value">{{ records_end or 'No records yet' }}</div>
+        <div class="rec-status-note">Climate Input, Forecast Insights and the Heatmap use these records.</div>
+      </div>
+    </section>
+
+    {% if saved %}
+    <div class="rec-msg ok" role="status">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <div><strong>Records updated.</strong> {{ saved }}</div>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="rec-msg error" role="alert">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div><strong>The file was not used.</strong> {{ error }}</div>
+    </div>
+    {% endif %}
+
+    {% if upload %}
+    <!-- STEP 2: PREVIEW -->
+    <section class="rec-card">
+      <div class="rec-step"><span class="rec-step-num">2</span> Check the changes before saving</div>
+      <p class="rec-lead">
+        <strong>{{ upload.filename }}</strong> covers the weeks of
+        <strong>{{ upload.first_week }}</strong> to <strong>{{ upload.last_week }}</strong>
+        ({{ upload.rows_used }} case{{ 's' if upload.rows_used != 1 }} in Nangka, Tumana and Malanday).
+        Nothing is saved until you click <strong>Save records</strong>.
+      </p>
+
+      <div class="rec-table-wrap">
+        <table class="rec-table">
+          <thead>
+            <tr><th>Barangay</th><th>New weeks</th><th>Updated weeks</th><th>Unchanged</th><th>Cases in file</th></tr>
+          </thead>
+          <tbody>
+            {% for s in summary %}
+            <tr>
+              <td class="rec-brgy">{{ s.barangay }}</td>
+              <td><span class="rec-pill new">+ {{ s.new }}</span></td>
+              <td><span class="rec-pill {{ 'upd' if s.changed else 'zero' }}">{{ s.changed }}</span></td>
+              <td>{{ s.same }}</td>
+              <td>{{ s.cases }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% set ns = namespace(any=false) %}
+      {% for s in summary %}{% if s.changes %}{% set ns.any = true %}{% endif %}{% endfor %}
+      {% if ns.any %}
+      <div class="rec-changes">
+        <div class="rec-sub-title">Weeks that will change</div>
+        {% for s in summary if s.changes %}
+        <div class="rec-change-group">
+          <span class="rec-brgy">{{ s.barangay }}</span>
+          {% for c in s.changes %}
+          <span class="rec-change">Week of {{ c.week }}: {{ c.before }} → <strong>{{ c.after }}</strong></span>
+          {% endfor %}
+          {% if s.more_changes %}<span class="rec-change more">and {{ s.more_changes }} more</span>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <ul class="rec-notes">
+        <li>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>The newest weeks (from <strong>{{ provisional_from }}</strong>) may still change as late reports come in. Upload a newer file later to update them.</span>
+        </li>
+        {% if upload.partial_week %}
+        <li>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <span>The file starts partway through the week of <strong>{{ upload.partial_week }}</strong>, so that week keeps its current record where there is one.</span>
+        </li>
+        {% endif %}
+        {% if upload.skipped.no_date %}
+        <li>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>{{ upload.skipped.no_date }} case{{ 's' if upload.skipped.no_date != 1 }} in these barangays had no onset date and {{ 'were' if upload.skipped.no_date != 1 else 'was' }} not counted.</span>
+        </li>
+        {% endif %}
+        {% if upload.skipped.outside_period %}
+        <li>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>{{ upload.skipped.outside_period }} case{{ 's' if upload.skipped.outside_period != 1 }} had an onset date outside the period this file covers (before 2022, in the future, or an isolated older date) and {{ 'were' if upload.skipped.outside_period != 1 else 'was' }} not counted.</span>
+        </li>
+        {% endif %}
+      </ul>
+
+      <div class="rec-actions">
+        <form method="post" action="{{ url_for('main.records_cancel', upload_id=upload.id) }}">
+          <button type="submit" class="rec-btn secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Cancel
+          </button>
+        </form>
+        <form method="post" action="{{ url_for('main.records_confirm', upload_id=upload.id) }}">
+          <button type="submit" class="rec-btn primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Save records
+          </button>
+        </form>
+      </div>
+    </section>
+
+    {% else %}
+    <!-- STEP 1: UPLOAD -->
+    <section class="rec-card">
+      <div class="rec-step"><span class="rec-step-num">1</span> Upload the CHO case file</div>
+      <p class="rec-lead">
+        Use the dengue case file exported from the CHO surveillance records, the same kind of file as
+        <em>dengue-cases-2026.xlsx</em>. Excel (.xlsx) or CSV, up to {{ max_mb }} MB. You will see the changes before anything is saved.
+      </p>
+
+      <form method="post" action="{{ url_for('main.records_upload') }}" enctype="multipart/form-data" class="rec-upload">
+        <label class="rec-file" for="caseFile">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span id="caseFileName">Choose file…</span>
+          <input type="file" id="caseFile" name="case_file" accept=".xlsx,.csv" required>
+        </label>
+        <button type="submit" class="rec-btn primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.4 18.4A5 5 0 0 0 18 9h-1.3A8 8 0 1 0 3 16.3"/></svg>
+          Read file
+        </button>
+      </form>
+
+      <div class="rec-privacy">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <div>
+          <strong>Patient details are never stored.</strong>
+          The system reads only the barangay and date-of-onset columns, counts the cases per week for
+          Nangka, Tumana and Malanday, and keeps only those weekly counts. The file itself is not saved.
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- RECENT UPLOADS -->
+    {% if uploads %}
+    <section class="rec-card">
+      <div class="rec-sub-title">Recent uploads</div>
+      <div class="rec-table-wrap">
+        <table class="rec-table">
+          <thead><tr><th>Uploaded</th><th>By</th><th>File</th><th>Weeks covered</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for u in uploads %}
+            <tr>
+              <td>{{ u.uploaded_at }}</td>
+              <td>{{ u.uploaded_by or '—' }}</td>
+              <td class="rec-file-name">{{ u.filename }}</td>
+              <td>{{ u.first_week }} to {{ u.last_week }}</td>
+              <td>
+                {% if u.status == 'saved' %}<span class="rec-pill new">✓ Saved</span>
+                {% elif u.status == 'pending' %}<a class="rec-pill upd" href="{{ url_for('main.records_preview', upload_id=u.id) }}">Waiting · review</a>
+                {% else %}<span class="rec-pill zero">Cancelled</span>{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% endif %}
+
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Show the chosen file's name on the button
+  const caseFile = document.getElementById('caseFile');
+  if (caseFile) {
+    caseFile.addEventListener('change', () => {
+      document.getElementById('caseFileName').textContent =
+        caseFile.files.length ? caseFile.files[0].name : 'Choose file…';
+    });
+  }
+</script>
+{% endblock %}

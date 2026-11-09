@@ -62,7 +62,31 @@ def init_db():
     if 'active' not in user_cols:
         cursor.execute('ALTER TABLE users ADD COLUMN active INTEGER NOT NULL DEFAULT 1')
     if 'created_at' not in user_cols:
-        cursor.execute('ALTER TABLE users ADD COLUMN created_at TEXT')
+                cursor.execute('ALTER TABLE users ADD COLUMN created_at TEXT')
+
+    # Weekly case counts uploaded from CHO case files (no patient details)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS case_records (
+            barangay   TEXT NOT NULL,
+            week_start TEXT NOT NULL,
+            case_count INTEGER NOT NULL,
+            upload_id  INTEGER,
+            PRIMARY KEY (barangay, week_start)
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS case_uploads (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            uploaded_at TEXT NOT NULL,
+            uploaded_by TEXT,
+            filename    TEXT,
+            status      TEXT NOT NULL,
+            first_week  TEXT,
+            last_week   TEXT,
+            rows_used   INTEGER,
+            counts_json TEXT
+        )
+    ''')
 
     conn.commit()
     conn.close()

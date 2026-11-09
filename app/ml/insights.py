@@ -9,7 +9,7 @@ DATA_PATH = Path(__file__).resolve().parent.parent.parent / 'data' / 'processed_
 
 
 @lru_cache(maxsize=1)
-def _history():
+def _csv_history():
     d = pd.read_csv(DATA_PATH, parse_dates=['week_start'])
     # rainfall_lag on week W is the weather of week W-4, so shift it back to the week it happened
     clim = d.drop_duplicates('week_start')[['week_start', 'rainfall_lag', 'temp_lag', 'humidity_lag']].copy()
@@ -18,6 +18,25 @@ def _history():
     # Case history: recorded (real) weeks only, never the synthetic estimates
     real = d[d['source'] == 'real'].copy()
     real['woy'] = real['week_start'].dt.isocalendar().week.astype(int)
+    return clim, real
+
+
+def _history():
+    """The CSV history plus weekly counts uploaded on the Case Records page (uploads win on the same week)."""
+    clim, real = _csv_history()
+    try:
+        from app.ml.case_records import saved_records
+        records = saved_records()
+    except Exception:
+        records = {}
+    if not records:
+        return clim, real
+    up = pd.DataFrame([{'barangay': b, 'week_start': pd.Timestamp(w), 'case_count': c, 'source': 'real'}
+                       for (b, w), c in records.items()])
+    up['woy'] = up['week_start'].dt.isocalendar().week.astype(int)
+    replaced = pd.MultiIndex.from_frame(real[['barangay', 'week_start']]).isin(
+        pd.MultiIndex.from_frame(up[['barangay', 'week_start']]))
+    real = pd.concat([real[~replaced], up], ignore_index=True).sort_values(['barangay', 'week_start'])
     return clim, real
 
 

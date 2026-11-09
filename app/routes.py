@@ -11,6 +11,9 @@ from app.ml.activity import (log_activity, get_recent_activity, get_activity, ma
                              clear_failed_logins, failed_logins_left, login_lock_minutes,
                              LOCK_MINUTES)
 from functools import wraps
+from app.ml.case_records import (weekly_counts, current_counts, compare, create_upload, get_upload,
+                                 recent_uploads, save_upload, cancel_upload, provisional_from,
+                                 merge_into_heatmap, MAX_FILE_MB)
 import json
 from pathlib import Path
 
@@ -637,6 +640,75 @@ def evaluation():
     return render_template('evaluation.html', eval_data=eval_data, split=split, prov=prov, summary=summary,
                            tracking=_tracking())
 
+# ── Case Records: update the recorded cases from a CHO case file ──
+def _records_end():
+    """Last day covered by the recorded cases, e.g. 'October 26, 2026'."""
+    from app.ml.insights import _history
+    try:
+        _, real = _history()
+        last = real['week_start'].max()
+        return (last + timedelta(days=6)).strftime('%B %d, %Y').replace(' 0', ' ')
+    except Exception:
+        return None
+
+def _records_page(status=200, **extra):
+    return render_template('records.html', uploads=recent_uploads(), records_end=_records_end(),
+                           max_mb=MAX_FILE_MB, **extra), status
+
+@main.route('/records')
+@login_required
+def records():
+    return _records_page(saved=session.pop('records_saved', None))
+
+@main.route('/records/upload', methods=['POST'])
+@login_required
+def records_upload():
+    f = request.files.get('case_file')
+    if not f or not f.filename:
+        return _records_page(400, error='Please choose the CHO case file to upload.')
+    data = f.read(MAX_FILE_MB * 1024 * 1024 + 1)          # read in memory only; never saved to disk
+    if len(data) > MAX_FILE_MB * 1024 * 1024:
+        return _records_page(400, error=f'The file is larger than {MAX_FILE_MB} MB.')
+    result, error = weekly_counts(data, f.filename)
+    del data
+    if error:
+        return _records_page(400, error=error)
+    upload_id = create_upload(result, f.filename[:120], session.get('user_name') or session.get('user_email'))
+    return redirect(url_for('main.records_preview', upload_id=upload_id))
+
+@main.route('/records/<int:upload_id>')
+@login_required
+def records_preview(upload_id):
+    from app.ml.insights import _csv_history
+    upload = get_upload(upload_id)
+    if not upload or upload['status'] != 'pending':
+        return redirect(url_for('main.records'))
+    summary = compare(upload, current_counts(_csv_history()[1]))
+    return _records_page(upload=upload, summary=summary, provisional_from=provisional_from(upload['last_week']))
+
+@main.route('/records/<int:upload_id>/confirm', methods=['POST'])
+@login_required
+def records_confirm(upload_id):
+    from app.ml.insights import _csv_history
+    upload = get_upload(upload_id)
+    if not upload or upload['status'] != 'pending':
+        return redirect(url_for('main.records'))
+    existing = current_counts(_csv_history()[1])
+    summary = compare(upload, existing)
+    new, changed = sum(s['new'] for s in summary), sum(s['changed'] for s in summary)
+    save_upload(upload_id, existing)
+    _log('cases_upload', f"{upload['filename']} · weeks of {upload['first_week']} to {upload['last_week']} · "
+                         f"{new} new and {changed} updated barangay-weeks", target_id=upload_id)
+    session['records_saved'] = (f"Weeks of {upload['first_week']} to {upload['last_week']} were saved: "
+                                f"{new} new and {changed} updated barangay-weeks.")
+    return redirect(url_for('main.records'))
+
+@main.route('/records/<int:upload_id>/cancel', methods=['POST'])
+@login_required
+def records_cancel(upload_id):
+    cancel_upload(upload_id)
+    return redirect(url_for('main.records'))
+
 @main.route('/heatmap')
 @login_required
 def heatmap():
@@ -645,6 +717,7 @@ def heatmap():
     heatmap_path = Path(__file__).resolve().parent.parent / 'data' / 'heatmap.json'
     with open(heatmap_path, 'r') as f:
         heatmap_data = json.load(f)
+    heatmap_data = merge_into_heatmap(heatmap_data)   # add weeks uploaded on the Case Records page
     first_brgy = next(iter(heatmap_data['barangays'].values()), [])
     years = sorted({int(entry['week'][:4]) for entry in first_brgy}) or [date.today().year]
     syn_years = sorted({int(e['week'][:4]) for e in first_brgy if e.get('source') == 'synthetic'})

@@ -99,5 +99,18 @@
   </script>
   <script src="{{ url_for('static', filename='js/delete-modal.js') }}"></script>
   {% block scripts %}{% endblock %}
+<script>
+  // "Case Records" link after Heatmap on every signed-in page
+  (function () {
+    var links = document.querySelector('.nav-links');
+    if (!links || !document.querySelector('.btn-logout') || links.querySelector('a[href="/records"]')) return;
+    var a = document.createElement('a');
+    a.href = '/records';
+    a.className = 'nav-link' + (location.pathname.indexOf('/records') === 0 ? ' active' : '');
+    a.textContent = 'Case Records';
+    var heat = links.querySelector('a[href="/heatmap"]');
+    heat ? heat.insertAdjacentElement('afterend', a) : links.appendChild(a);
+  })();
+</script>
 </body>
 </html>

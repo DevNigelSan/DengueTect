@@ -530,6 +530,14 @@ function showCasesSource(type, msg) {
   }
   el.className = `cases-source ${type}`;
   el.textContent = msg;
+  if (type === 'none') {
+    const link = document.createElement('a');
+    link.href = '/records';
+    link.textContent = 'Upload newer CHO records →';
+    link.style.fontWeight = '700';
+    link.style.marginLeft = '6px';
+    el.appendChild(link);
+  }
   el.hidden = !msg;
 }
 
